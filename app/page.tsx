@@ -111,7 +111,7 @@ export default function Page() {
 
   const awards = [
     { title: "Dean's List", org: 'Cal Poly, SLO', year: 'All Terms Sept 2022 - Dec 2025' },
-    { title: "Presidential Award", org: 'Cal Poly, SLO', year: 'All Years 2022 - 2026' },
+    { title: "Presidential Award", org: 'Cal Poly, SLO', year: 'All Years 2022 - 2025' },
     { title: 'ACT', org: '36/36', year: 'April 2021' },
   ]
 
