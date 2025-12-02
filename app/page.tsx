@@ -1,5 +1,8 @@
 "use client";
-import { useMemo, useState } from "react";
+
+import SpaceBackground from "./components/SpaceBackground";
+import ActivityCard from "./components/ActivityCard";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -7,8 +10,6 @@ import {
   Github,
   Linkedin,
   Mail,
-  Moon,
-  Sun,
   Globe,
   ExternalLink,
   MapPin,
@@ -20,8 +21,8 @@ import {
   Trophy,
 } from "lucide-react";
 
+
 export default function Page() {
-  const [dark, setDark] = useState(true);
 
   const skills = useMemo(
     () => [
@@ -102,7 +103,7 @@ export default function Page() {
       {
         title: "Hack4Impact",
         org: "Software Developer",
-        period: "September 2022 — Present",
+        period: "September 2022 — June 2025",
         location: "San Luis Obispo, CA",
         bullets: [
           "Worked with Wilshire Health and Community to create a dynamic donation-tracking website with Full Stack Development, AWS Amplify, and GraphQL to increase tracking capabilities by 35%",
@@ -184,8 +185,10 @@ export default function Page() {
   ];
 
   return (
-    <div className={dark ? "dark" : ""}>
-      <div className="min-h-screen bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 transition-colors duration-300">
+    <div className="dark">
+      <SpaceBackground />
+      <ActivityCard />
+      <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
         {/* Navbar */}
         <nav className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/40 dark:supports-[backdrop-filter]:bg-black/30 bg-white/60 dark:bg-black/40 border-b border-black/5 dark:border-white/10">
           <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
@@ -206,8 +209,8 @@ export default function Page() {
               <a href="#skills" className="hover:opacity-80">
                 Skills
               </a>
-              <a href="#writing" className="hover:opacity-80">
-                Writing
+              <a href="#papers" className="hover:opacity-80">
+                Papers
               </a>
               <a href="#contact" className="hover:opacity-80">
                 Contact
@@ -223,23 +226,12 @@ export default function Page() {
               >
                 <Download className="h-4 w-4" /> Résumé
               </a>
-              <button
-                aria-label="Toggle theme"
-                onClick={() => setDark((d) => !d)}
-                className="rounded-xl border border-black/10 dark:border-white/10 p-2 hover:shadow-sm"
-              >
-                {dark ? (
-                  <Sun className="h-4 w-4" />
-                ) : (
-                  <Moon className="h-4 w-4" />
-                )}
-              </button>
             </div>
           </div>
         </nav>
 
         {/* Hero */}
-        <header className="mx-auto max-w-6xl px-4 pt-16 pb-8">
+        <header className="mx-auto max-w-6xl px-4 pt-20 pb-12">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 items-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -247,41 +239,41 @@ export default function Page() {
               transition={{ duration: 0.6 }}
               className="lg:col-span-3"
             >
-              <div className="inline-flex items-center gap-2 rounded-full border border-black/10 dark:border-white/10 px-3 py-1 text-xs mb-4">
-                <Globe className="h-3.5 w-3.5" /> Based in Bay Area, California
+              <div className="mb-6 flex items-center gap-3">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 p-[2px] shadow-xl">
+                  <div className="flex h-full w-full items-center justify-center rounded-full bg-neutral-950 text-white text-xl font-semibold">
+                    SK
+                  </div>
+                </div>
+                <div className="inline-flex flex-col text-xs text-neutral-300">
+                  <span className="uppercase tracking-wide text-emerald-300/90">Sharan Krishna</span>
+                  <span>CS @ Cal Poly · SWE · ML · Game Tech</span>
+                </div>
               </div>
+
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-[11px] mb-4 bg-black/40">
+                <Globe className="h-3.5 w-3.5" /> Based in Bay Area, California · Open to full-time opportunites & collabs
+              </div>
+
               <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight">
-                Hi, I’m Sharan Krishna.
+                Hi, I'm Sharan.
               </h1>
-              <p className="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-300 max-w-2xl">
-                I'm a rising professional working with different tech stacks,
-                such as full-stack development, mobile app development, and
-                machine learning. Here, you’ll find class projects, research,
-                and real‑world work with companies like Apple and global
-                organizations like Hack4Impact.
+              <p className="mt-4 text-base sm:text-lg text-neutral-300 max-w-2xl">
+                I work across many different tech spaces, such as full stack development, machine learning, mobile app development and game tech.
               </p>
+
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <a
+                  href="#projects"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-neutral-100 text-neutral-900 dark:bg-white dark:text-neutral-900 px-4 py-2 font-medium shadow hover:shadow-md"
+                >
+                  See projects <ArrowRight className="h-4 w-4" />
+                </a>
+                <a
                   href="#contact"
-                  className="inline-flex items-center gap-2 rounded-2xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-4 py-2 font-medium shadow hover:shadow-md"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-2 font-medium hover:shadow-sm"
                 >
-                  Email Me <Mail className="h-4 w-4" />
-                </a>
-                <a
-                  href="https://github.com/SilverXer0"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-2xl border border-black/10 dark:border-white/10 px-4 py-2 font-medium hover:shadow-sm"
-                >
-                  Github <Github className="h-4 w-4" />
-                </a>
-                <a
-                  href="https://www.linkedin.com/in/sharankrishna14/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-2xl border border-black/10 dark:border-white/10 px-4 py-2 font-medium hover:shadow-sm"
-                >
-                  LinkedIn <Linkedin className="h-4 w-4" />
+                  Get in touch <Mail className="h-4 w-4" />
                 </a>
               </div>
             </motion.div>
@@ -292,9 +284,9 @@ export default function Page() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="lg:col-span-2"
             >
-              <div className="relative overflow-hidden rounded-3xl border border-black/10 dark:border-white/10 p-6 bg-gradient-to-b from-neutral-100 to-white dark:from-neutral-900 dark:to-neutral-950">
+              <div className="relative overflow-hidden rounded-3xl border border-white/10 p-6 bg-white/5 backdrop-blur-xl">
                 <div className="flex items-start justify-between">
-                  <div className="text-sm text-neutral-600 dark:text-neutral-300">
+                  <div className="text-sm text-neutral-200">
                     <div className="font-semibold">BS, Computer Science</div>
                     <div className="flex items-center gap-1 mt-1">
                       <GraduationCap className="h-4 w-4" /> Cal Poly, SLO
@@ -303,24 +295,25 @@ export default function Page() {
                       <MapPin className="h-4 w-4" /> San Luis Obispo, CA
                     </div>
                   </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-black/10 dark:border-white/10 px-3 py-1 text-xs">
-                    <Trophy className="h-3.5 w-3.5" /> GPA 3.95/4.0
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-xs bg-black/40">
+                    <Trophy className="h-3.5 w-3.5" /> GPA 3.95 / 4.0
                   </div>
                 </div>
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                  {[{ label: "Expected", value: "December 2025" }].map(
-                    (card) => (
-                      <div
-                        key={card.label}
-                        className="rounded-2xl border border-black/10 dark:border-white/10 p-3 text-sm"
-                      >
-                        <div className="text-neutral-500 dark:text-neutral-400">
-                          {card.label}
-                        </div>
-                        <div className="font-medium">{card.value}</div>
-                      </div>
-                    )
-                  )}
+                <div className="mt-6 grid grid-cols-2 gap-3 text-xs">
+                  {[
+                    { label: "Expected grad", value: "Dec 2025" },
+                    { label: "Focus", value: "SWE / ML" },
+                    { label: "Current", value: "Sharpening General Skills" },
+                    { label: "Side", value: "Chilling!" },
+                  ].map((card) => (
+                    <div
+                      key={card.label}
+                      className="rounded-2xl border border-white/10 p-3"
+                    >
+                      <div className="text-neutral-400">{card.label}</div>
+                      <div className="font-medium text-neutral-50">{card.value}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </motion.div>
@@ -332,34 +325,81 @@ export default function Page() {
           titleIcon={<Code2 className="h-5 w-5" />}
           title="About"
         >
-          <p className="mt-3 text-neutral-700 dark:text-neutral-300 leading-relaxed">
-            I build software with an eye for product polish and scalability and
-            reliability. Recently I’ve been exploring{" "}
-            <strong>AI‑assisted tooling</strong>,{" "}
-            <strong>procedural generation for games</strong>, and{" "}
-            <strong>metrics‑driven experimentation</strong>. In class, I’ve
-            implemented parsers and interpreters (Racket), schedulers, and
-            memory models; outside class, I’ve shipped web apps and mobile
-            prototypes used by real people and companies.
-          </p>
-          <ul className="mt-4 grid sm:grid-cols-2 gap-3 text-sm text-neutral-600 dark:text-neutral-300">
-            <li className="flex items-start gap-2">
-              <ChevronRight className="h-4 w-4 mt-0.5" /> Seeking: Connections,
-              Collaborations, and any other Opportunites.{" "}
-            </li>
-            <li className="flex items-start gap-2">
-              <ChevronRight className="h-4 w-4 mt-0.5" /> Interests: Machine
-              Learning, Swift Development, Cloud, and Game Tech.
-            </li>
-            <li className="flex items-start gap-2">
-              <ChevronRight className="h-4 w-4 mt-0.5" /> Currently: Polishing
-              Unity ML Aim Trainer.
-            </li>
-            <li className="flex items-start gap-2">
-              <ChevronRight className="h-4 w-4 mt-0.5" /> Outside Fun: Valorant,
-              Basketball, PC parts and peripherals.
-            </li>
-          </ul>
+          <div className="mt-4 max-w-3xl">
+            <p className="text-neutral-200 leading-relaxed">
+              I build software with an eye for product polish, scalability, and reliability. Recently I’ve been exploring
+              <strong> AI-assisted tooling</strong>, <strong> procedural generation for games</strong>, and
+              <strong> metrics-driven experimentation</strong>. In class, I’ve implemented parsers and interpreters,
+              schedulers, and memory models; outside class, I’ve shipped web apps and mobile prototypes used by real people and companies.
+            </p>
+            <ul className="mt-4 grid sm:grid-cols-2 gap-3 text-sm text-neutral-300">
+              <li className="flex items-start gap-2">
+                <ChevronRight className="h-4 w-4 mt-0.5" /> Seeking: connections, collaborations, and impactful SWE roles.
+              </li>
+              <li className="flex items-start gap-2">
+                <ChevronRight className="h-4 w-4 mt-0.5" /> Interests: Software Development, Machine learning, Cloud, and Game Tech.
+              </li>
+              <li className="flex items-start gap-2">
+                <ChevronRight className="h-4 w-4 mt-0.5" /> Currently: Polishing a Unity ML aim trainer and AniSense on GCP.
+              </li>
+              <li className="flex items-start gap-2">
+                <ChevronRight className="h-4 w-4 mt-0.5" /> Outside fun: Valorant, basketball, and tinkering with PC builds.
+              </li>
+            </ul>
+          </div>
+
+          {/* Media strip under About */}
+          <div className="mt-8 relative">
+            <div className="absolute -top-6 -left-4 h-24 w-24 rounded-full bg-purple-500/20 blur-3xl" />
+            <div className="absolute -bottom-4 right-8 h-24 w-24 rounded-full bg-blue-500/20 blur-3xl" />
+
+            <div className="relative flex flex-col md:flex-row md:items-stretch md:justify-center gap-4">
+              {[
+                {
+                  type: "video" as const,
+                  label: "Valorant & aim training",
+                  rotation: "-rotate-1",
+                },
+                {
+                  type: "image" as const,
+                  label: "Cal Poly · SLO",
+                  rotation: "rotate-3",
+                  src: "/photos/Cal-Poly-SLO.jpg",
+                },
+                {
+                  type: "image" as const,
+                  label: "Nightly coding sessions",
+                  rotation: "-rotate-2",
+                  src: "/photos/code.png",
+                },
+              ].map((p) => (
+                <div
+                  key={p.label}
+                  className={`group flex-1 max-w-md rounded-2xl border border-white/10 bg-white/5 p-3 shadow-sm backdrop-blur-md ${p.rotation}`}
+                >
+                  {p.type === "video" ? (
+                    <div className="aspect-[16/9] w-full overflow-hidden rounded-xl bg-black">
+                      <iframe
+                        className="h-full w-full"
+                        src="https://www.youtube.com/embed/j34JIwGZIKE"
+                        title="Valorant Aim Training"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-[16/9] w-full overflow-hidden rounded-xl bg-neutral-900">
+                      <img
+                        src={p.src}
+                        alt={p.label}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </Section>
 
         <Section
@@ -367,30 +407,25 @@ export default function Page() {
           titleIcon={<Rocket className="h-5 w-5" />}
           title="Experience"
         >
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="mt-6 space-y-4">
             {experience.map((job) => (
               <Card key={job.title}>
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
                     <h3 className="font-semibold text-lg leading-snug">
-                      {job.title}
+                      {job.org}
                     </h3>
-                    <div className="text-neutral-500 text-sm">
-                      {job.org} · {job.period}
-                    </div>
-                    <div className="text-neutral-500 text-xs flex items-center gap-1 mt-1">
+                    <p className="text-neutral-300 text-sm mt-0.5">
+                      {job.title}
+                    </p>
+                  </div>
+                  <div className="text-xs text-neutral-400 text-left sm:text-right">
+                    <div>{job.period}</div>
+                    <div className="flex items-center gap-1 sm:justify-end mt-1">
                       <MapPin className="h-3.5 w-3.5" /> {job.location}
                     </div>
                   </div>
                 </div>
-                <ul className="mt-3 space-y-2 text-sm text-neutral-700 dark:text-neutral-300">
-                  {job.bullets.map((b, i) => (
-                    <li key={i} className="flex gap-2">
-                      <ChevronRight className="h-4 w-4 flex-none mt-0.5" />{" "}
-                      <span>{b}</span>
-                    </li>
-                  ))}
-                </ul>
               </Card>
             ))}
           </div>
@@ -403,7 +438,9 @@ export default function Page() {
         >
           <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((p) => (
-              <Card key={p.name}>
+              <Card key={p.name}
+              href={p.links && p.links.length > 0 ? p.links[0].href : undefined}
+              >
                 <h3 className="font-semibold text-lg leading-snug">{p.name}</h3>
                 <div className="text-neutral-500 text-sm mt-1">{p.tagline}</div>
                 <p className="mt-3 text-sm text-neutral-700 dark:text-neutral-300">
@@ -468,7 +505,7 @@ export default function Page() {
           </div>
         </Section>
 
-        <Section id="writing" titleIcon={<PenIcon />} title="Writing">
+        <Section id="papers" titleIcon={<PenIcon />} title="Papers">
           <div className="mt-6 grid md:grid-cols-2 gap-6">
             {[
               {
@@ -483,7 +520,7 @@ export default function Page() {
                 href={w.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-2xl border border-black/10 dark:border-white/10 p-5 bg-white/60 dark:bg-white/5 hover:shadow-sm transition"
+                className="rounded-2xl border border-black/10 dark:border-white/10 p-5 bg-white/60 dark:bg-white/5 shadow-sm transition-shadow hover:shadow-[0_0_25px_6px_rgba(80,140,255,0.6)]"
               >
                 <div className="font-semibold">{w.title}</div>
                 <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-1">
@@ -522,7 +559,7 @@ export default function Page() {
             <Card>
               <p className="text-neutral-700 dark:text-neutral-300">
                 I’m always down to chat about job opportunites, research, or fun
-                side projects. Feel free to email me or ping me on LinkedIn!.
+                side projects. Feel free to email me or ping me on LinkedIn!
               </p>
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 <a
@@ -587,14 +624,40 @@ function Section({
   );
 }
 
-function Card({ children }: { children: React.ReactNode }) {
+function Card({
+  children,
+  href,
+}: {
+  children: React.ReactNode;
+  href?: string;
+}) {
+  const className =
+    "rounded-2xl border border-black/10 dark:border-white/10 p-5 bg-white/60 dark:bg-white/5 shadow-sm transition-shadow hover:shadow-[0_0_25px_6px_rgba(80,140,255,0.6)]";
+
+  if (href) {
+    return (
+      <motion.a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.4 }}
+        className={className + " cursor-pointer"}
+      >
+        {children}
+      </motion.a>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className="rounded-2xl border border-black/10 dark:border-white/10 p-5 bg-white/60 dark:bg-white/5"
+      className={className}
     >
       {children}
     </motion.div>

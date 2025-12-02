@@ -3,7 +3,8 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Sharan — Personal Site',
   description: 'CS @ Cal Poly. React/Next, Mobile, Systems. Projects, experience, and writing.',
-  metadataBase: new URL('https://example.com'), // TODO: set to your domain later
+
+  metadataBase: new URL('https://sharan-krishna.vercel.app/'),
   openGraph: {
     title: 'Sharan — Personal Site',
     description: 'CS @ Cal Poly. React/Next, Mobile, Systems.',
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body>{children}</body>
     </html>
   )
