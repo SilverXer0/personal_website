@@ -22,7 +22,7 @@ export default function ActivityCard() {
         <div className="flex items-center justify-between gap-2">
           <div>
             <div className="text-[10px] uppercase tracking-wide text-emerald-300/80">Now</div>
-            <div className="font-medium text-sm">Sharan is probably coding</div>
+            <div className="font-medium text-sm">Sharan is Working</div>
           </div>
           <div className="text-right text-[11px] text-neutral-300">
             <div className="flex items-center gap-1 justify-end">
@@ -33,7 +33,7 @@ export default function ActivityCard() {
         </div>
         <div className="mt-2 flex items-center gap-2 text-[11px] text-neutral-300">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span>Working on: Sharpening Skills</span>
+          <span>Working on: Reading Papers</span>
         </div>
         <div className="mt-2 flex items-center gap-3">
           <a

@@ -127,6 +127,15 @@ export default function Page() {
         ],
       },
       {
+        name: "Aurora",
+        tagline: "High-throughput telemetry backend",
+        desc: "C++ backend that ingests real-time telemetry via gRPC, stores data in a hot in-memory cache and RocksDB, and exposes low-latency aggregate queries with OpenTelemetry-style tracing.",
+        tech: ["C++", "gRPC", "Protobuf", "RocksDB", "OpenTelemetry"],
+        links: [
+          { label: "Repo", href: "https://github.com/SilverXer0/Aurora" },
+        ],
+      },
+      {
         name: "MoodMuse",
         tagline: "Emotion-aware journaling",
         desc: "Captures images and entries, performs on-device analysis, and surfaces trends privately.",
@@ -247,7 +256,7 @@ export default function Page() {
                 </div>
                 <div className="inline-flex flex-col text-xs text-neutral-300">
                   <span className="uppercase tracking-wide text-emerald-300/90">Sharan Krishna</span>
-                  <span>CS @ Cal Poly · SWE · ML · Game Tech</span>
+                  <span>CS @ Cal Poly · SWE · ML · Distributed Systems</span>
                 </div>
               </div>
 
@@ -259,7 +268,7 @@ export default function Page() {
                 Hi, I'm Sharan.
               </h1>
               <p className="mt-4 text-base sm:text-lg text-neutral-300 max-w-2xl">
-                I work across many different tech spaces, such as full stack development, machine learning, mobile app development and game tech.
+                I work across many different tech spaces, such as Distributed Systems, Full Stack Development, and Mobile App Development.
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -302,9 +311,9 @@ export default function Page() {
                 <div className="mt-6 grid grid-cols-2 gap-3 text-xs">
                   {[
                     { label: "Expected grad", value: "Dec 2025" },
-                    { label: "Focus", value: "SWE / ML" },
-                    { label: "Current", value: "Sharpening General Skills" },
-                    { label: "Side", value: "Chilling!" },
+                    { label: "Focus", value: "SWE / Distributed Systems" },
+                    { label: "Current", value: "Reading Papers" },
+                    { label: "Side", value: "Sharpening AWS Skills" },
                   ].map((card) => (
                     <div
                       key={card.label}
@@ -327,20 +336,23 @@ export default function Page() {
         >
           <div className="mt-4 max-w-3xl">
             <p className="text-neutral-200 leading-relaxed">
-              I build software with an eye for product polish, scalability, and reliability. Recently I’ve been exploring
-              <strong> AI-assisted tooling</strong>, <strong> procedural generation for games</strong>, and
-              <strong> metrics-driven experimentation</strong>. In class, I’ve implemented parsers and interpreters,
-              schedulers, and memory models; outside class, I’ve shipped web apps and mobile prototypes used by real people and companies.
+              I am an engineer that focuses on building the best software possible regardless of the details, learning everything I can to do the greatest job possible. 
+              I have had a focus on <strong> distributed systems </strong> with an emphasis on scalability and reliability. I have dug into
+              <strong> load balancing and service design</strong>, including a survey paper on the evolution of load balancing algorithms 
+              in distributed systems, and have recently worked at Apple where I dealth with <strong> concurrency in Swift </strong> and built a <strong> high 
+              throughput telemetry backend </strong> (Aurora) that ingests real time data with gRPC and tiered storage on RocksDB.  
+              I am also actively studying <strong> AWS </strong> to get multiple certifications and applying cloud design patterns like managed 
+              databases and observability in my own projects.
             </p>
             <ul className="mt-4 grid sm:grid-cols-2 gap-3 text-sm text-neutral-300">
               <li className="flex items-start gap-2">
                 <ChevronRight className="h-4 w-4 mt-0.5" /> Seeking: connections, collaborations, and impactful SWE roles.
               </li>
               <li className="flex items-start gap-2">
-                <ChevronRight className="h-4 w-4 mt-0.5" /> Interests: Software Development, Machine learning, Cloud, and Game Tech.
+                <ChevronRight className="h-4 w-4 mt-0.5" /> Interests: Software Development, Distributed Systems & Cloud, and Machine Learning.
               </li>
               <li className="flex items-start gap-2">
-                <ChevronRight className="h-4 w-4 mt-0.5" /> Currently: Polishing a Unity ML aim trainer and AniSense on GCP.
+                <ChevronRight className="h-4 w-4 mt-0.5" /> Currently: Reading Papers on Distributed Systems and Researching.
               </li>
               <li className="flex items-start gap-2">
                 <ChevronRight className="h-4 w-4 mt-0.5" /> Outside fun: Valorant, basketball, and tinkering with PC builds.
