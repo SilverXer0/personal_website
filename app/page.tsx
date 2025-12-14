@@ -1,8 +1,7 @@
 "use client";
 
 import SpaceBackground from "./components/SpaceBackground";
-import ActivityCard from "./components/ActivityCard";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -10,6 +9,8 @@ import {
   Github,
   Linkedin,
   Mail,
+  Moon,
+  Sun,
   Globe,
   ExternalLink,
   MapPin,
@@ -17,12 +18,37 @@ import {
   Cpu,
   Code2,
   Rocket,
-  ChevronRight,
   Trophy,
 } from "lucide-react";
 
+const APPLE_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
 
 export default function Page() {
+
+  const [theme, setTheme] = useState<"dark" | "light">("light");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+
+    const saved = window.localStorage.getItem("theme");
+    if (saved === "dark" || saved === "light") {
+      setTheme(saved);
+      return;
+    }
+
+    setTheme("light");
+  }, []);
+
+
+  useEffect(() => {
+    if (!mounted) {
+      return;
+    }
+    window.localStorage.setItem("theme", theme);
+  }, [theme, mounted]);
+
 
   const skills = useMemo(
     () => [
@@ -194,47 +220,43 @@ export default function Page() {
   ];
 
   return (
-    <div className="dark">
+    <div className={mounted && theme === "dark" ? "dark" : ""} suppressHydrationWarning>
       <SpaceBackground />
-      <ActivityCard />
       <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
         {/* Navbar */}
-        <nav className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/40 dark:supports-[backdrop-filter]:bg-black/30 bg-white/60 dark:bg-black/40 border-b border-black/5 dark:border-white/10">
+        <nav className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-black/35">
           <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 font-semibold">
+            <div className="flex items-center gap-2 font-medium">
               <Cpu className="h-5 w-5" />
               <span>Sharan</span>
             </div>
             <div className="hidden md:flex items-center gap-6 text-sm">
-              <a href="#about" className="hover:opacity-80">
-                About
-              </a>
-              <a href="#experience" className="hover:opacity-80">
-                Experience
-              </a>
-              <a href="#projects" className="hover:opacity-80">
-                Projects
-              </a>
-              <a href="#skills" className="hover:opacity-80">
-                Skills
-              </a>
-              <a href="#papers" className="hover:opacity-80">
-                Papers
-              </a>
-              <a href="#contact" className="hover:opacity-80">
-                Contact
-              </a>
+              <a href="#about" className="hover:opacity-80">About</a>
+              <a href="#experience" className="hover:opacity-80">Experience</a>
+              <a href="#projects" className="hover:opacity-80">Projects</a>
+              <a href="#skills" className="hover:opacity-80">Skills</a>
+              <a href="#papers" className="hover:opacity-80">Papers</a>
+              <a href="#contact" className="hover:opacity-80">Contact</a>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <a
                 href="/resume/Sharan_K_Resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-xl border border-black/10 dark:border-white/10 px-3 py-1.5 text-sm hover:shadow-sm"
+                className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-sm text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:bg-white/80 hover:-translate-y-0.5 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
                 title="Open resume (PDF)"
               >
                 <Download className="h-4 w-4" /> Résumé
               </a>
+
+              <button
+                type="button"
+                aria-label="Toggle theme"
+                onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:bg-white/80 hover:-translate-y-0.5 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
+              >
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
             </div>
           </div>
         </nav>
@@ -245,42 +267,42 @@ export default function Page() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.7, ease: APPLE_EASE }}
               className="lg:col-span-3"
             >
               <div className="mb-6 flex items-center gap-3">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 p-[2px] shadow-xl">
-                  <div className="flex h-full w-full items-center justify-center rounded-full bg-neutral-950 text-white text-xl font-semibold">
+                <div className="w-16 h-16 rounded-full border border-black/10 bg-white/70 p-[2px] shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)]">
+                  <div className="flex h-full w-full items-center justify-center rounded-full bg-white/80 text-neutral-900 text-xl font-semibold dark:bg-black/40 dark:text-neutral-100">
                     SK
                   </div>
                 </div>
-                <div className="inline-flex flex-col text-xs text-neutral-300">
-                  <span className="uppercase tracking-wide text-emerald-300/90">Sharan Krishna</span>
+                <div className="inline-flex flex-col text-xs text-neutral-600 dark:text-neutral-300">
+                  <span className="uppercase tracking-wide text-neutral-700 dark:text-neutral-200">Sharan Krishna</span>
                   <span>CS @ Cal Poly · SWE · ML · Distributed Systems</span>
                 </div>
               </div>
 
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-[11px] mb-4 bg-black/40">
+              <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1 text-[11px] mb-4 text-neutral-700 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-neutral-200">
                 <Globe className="h-3.5 w-3.5" /> Based in Bay Area, California · Open to full-time opportunites & collabs
               </div>
 
-              <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+              <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
                 Hi, I'm Sharan.
               </h1>
-              <p className="mt-4 text-base sm:text-lg text-neutral-300 max-w-2xl">
+              <p className="mt-4 text-base sm:text-lg text-neutral-700 dark:text-neutral-300 max-w-2xl">
                 I work across many different tech spaces, such as Distributed Systems, Full Stack Development, and Mobile App Development.
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <a
                   href="#projects"
-                  className="inline-flex items-center gap-2 rounded-2xl bg-neutral-100 text-neutral-900 dark:bg-white dark:text-neutral-900 px-4 py-2 font-medium shadow hover:shadow-md"
+                  className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.22)] hover:ring-1 hover:ring-black/10 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/15"
                 >
                   See projects <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
                   href="#contact"
-                  className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-2 font-medium hover:shadow-sm"
+                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/75 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/10 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
                 >
                   Get in touch <Mail className="h-4 w-4" />
                 </a>
@@ -290,12 +312,12 @@ export default function Page() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
+              transition={{ duration: 0.7, delay: 0.06, ease: APPLE_EASE }}
               className="lg:col-span-2"
             >
-              <div className="relative overflow-hidden rounded-3xl border border-white/10 p-6 bg-white/5 backdrop-blur-xl">
+              <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
                 <div className="flex items-start justify-between">
-                  <div className="text-sm text-neutral-200">
+                  <div className="text-sm text-neutral-700 dark:text-neutral-200">
                     <div className="font-semibold">BS, Computer Science</div>
                     <div className="flex items-center gap-1 mt-1">
                       <GraduationCap className="h-4 w-4" /> Cal Poly, SLO
@@ -304,7 +326,7 @@ export default function Page() {
                       <MapPin className="h-4 w-4" /> San Luis Obispo, CA
                     </div>
                   </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-xs bg-black/40">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1 text-xs text-neutral-700 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-neutral-200">
                     <Trophy className="h-3.5 w-3.5" /> GPA 3.95 / 4.0
                   </div>
                 </div>
@@ -317,10 +339,10 @@ export default function Page() {
                   ].map((card) => (
                     <div
                       key={card.label}
-                      className="rounded-2xl border border-white/10 p-3"
+                      className="rounded-2xl border border-black/10 bg-white/60 p-3 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5 transition will-change-transform hover:-translate-y-0.5 hover:shadow-md hover:ring-1 hover:ring-black/10 dark:hover:shadow-lg dark:hover:ring-white/15"
                     >
-                      <div className="text-neutral-400">{card.label}</div>
-                      <div className="font-medium text-neutral-50">{card.value}</div>
+                      <div className="text-neutral-500 dark:text-neutral-400">{card.label}</div>
+                      <div className="font-medium text-neutral-900 dark:text-neutral-50">{card.value}</div>
                     </div>
                   ))}
                 </div>
@@ -329,68 +351,84 @@ export default function Page() {
           </div>
         </header>
 
+        {/* Highlights (Apple-style widgets) */}
+        <section className="mx-auto max-w-6xl px-4 pb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: "Now", value: "Full-time SWE search", meta: "Open to roles" },
+              { label: "Focus", value: "Distributed Systems", meta: "Reliability + scale" },
+              { label: "Recent", value: "Apple", meta: "Software Engineering Intern" },
+              { label: "Building", value: "Research", meta: "Distributed Systems and Cloud" },
+            ].map((w) => (
+              <motion.div
+                key={w.label}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.55, ease: APPLE_EASE }}
+                className="rounded-3xl border border-black/10 bg-white/70 p-4 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
+              >
+                <div className="text-[11px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
+                  {w.label}
+                </div>
+                <div className="mt-1 text-base font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                  {w.value}
+                </div>
+                <div className="mt-1 text-xs text-neutral-600 dark:text-neutral-300">
+                  {w.meta}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
         <Section
           id="about"
           titleIcon={<Code2 className="h-5 w-5" />}
           title="About"
         >
-          <div className="mt-4 max-w-3xl">
-            <p className="text-neutral-200 leading-relaxed">
-              I am an engineer that focuses on building the best software possible regardless of the details, learning everything I can to do the greatest job possible. 
-              I have had a focus on <strong> distributed systems </strong> with an emphasis on scalability and reliability. I have dug into
-              <strong> load balancing and service design</strong>, including a survey paper on the evolution of load balancing algorithms 
-              in distributed systems, and have recently worked at Apple where I dealth with <strong> concurrency in Swift </strong> and built a <strong> high 
-              throughput telemetry backend </strong> (Aurora) that ingests real time data with gRPC and tiered storage on RocksDB.  
-              I am also actively studying <strong> AWS </strong> to get multiple certifications and applying cloud design patterns like managed 
-              databases and observability in my own projects.
-            </p>
-            <ul className="mt-4 grid sm:grid-cols-2 gap-3 text-sm text-neutral-300">
-              <li className="flex items-start gap-2">
-                <ChevronRight className="h-4 w-4 mt-0.5" /> Seeking: connections, collaborations, and impactful SWE roles.
-              </li>
-              <li className="flex items-start gap-2">
-                <ChevronRight className="h-4 w-4 mt-0.5" /> Interests: Software Development, Distributed Systems & Cloud, and Machine Learning.
-              </li>
-              <li className="flex items-start gap-2">
-                <ChevronRight className="h-4 w-4 mt-0.5" /> Currently: Reading Papers on Distributed Systems and Researching.
-              </li>
-              <li className="flex items-start gap-2">
-                <ChevronRight className="h-4 w-4 mt-0.5" /> Outside fun: Valorant, basketball, and tinkering with PC builds.
-              </li>
-            </ul>
-          </div>
+          <div className="mt-6 grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+            <div className="lg:col-span-3">
+              <p className="text-neutral-700 dark:text-neutral-200 leading-relaxed">
+                I am an engineer that focuses on building the best software possible regardless of the details, learning everything I can to do the greatest job possible.
+                Recently, I have had a focus on <strong> distributed systems </strong> with an emphasis on scalability and reliability. I have dug into
+                <strong> load balancing and service design</strong>, including a survey paper on the evolution of load balancing algorithms
+                in distributed systems, and have recently worked at Apple where I often dealth with <strong> concurrency in Swift for real time UI updates 
+                </strong> and built a <strong> high
+                throughput telemetry backend </strong> (Aurora) that ingests real time data with gRPC and tiered storage on RocksDB.
+                I am also actively studying <strong> AWS </strong> to get multiple certifications and applying cloud design patterns like managed
+                databases and observability in my own projects.
+              </p>
 
-          {/* Media strip under About */}
-          <div className="mt-8 relative">
-            <div className="absolute -top-6 -left-4 h-24 w-24 rounded-full bg-purple-500/20 blur-3xl" />
-            <div className="absolute -bottom-4 right-8 h-24 w-24 rounded-full bg-blue-500/20 blur-3xl" />
+              <div className="mt-6 grid grid-cols-1 scm:grid-cols-2 gap-4">
+                {[
+                  { k: "Seeking", v: "Connections, collaborations, and impactful SWE roles" },
+                  { k: "Interests", v: "Software Development, Distributed Systems & Cloud, Machine Learning" },
+                  { k: "Currently", v: "Reading Distributed Systems papers and Researching" },
+                  { k: "Outside", v: "Valorant, basketball, PC tinkering" },
+                ].map((item) => (
+                  <div
+                    key={item.k}
+                    className="rounded-3xl border border-black/10 bg-white/70 p-4 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 transition will-change-transform hover:-translate-y-0.5 hover:shadow-md hover:ring-1 hover:ring-black/10 dark:hover:shadow-lg dark:hover:ring-white/15"
+                  >
+                    <div className="text-[11px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
+                      {item.k}
+                    </div>
+                    <div className="mt-1 text-sm text-neutral-800 dark:text-neutral-200">
+                      {item.v}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-            <div className="relative flex flex-col md:flex-row md:items-stretch md:justify-center gap-4">
-              {[
-                {
-                  type: "video" as const,
-                  label: "Valorant & aim training",
-                  rotation: "-rotate-1",
-                },
-                {
-                  type: "image" as const,
-                  label: "Cal Poly · SLO",
-                  rotation: "rotate-3",
-                  src: "/photos/Cal-Poly-SLO.jpg",
-                },
-                {
-                  type: "image" as const,
-                  label: "Nightly coding sessions",
-                  rotation: "-rotate-2",
-                  src: "/photos/code.png",
-                },
-              ].map((p) => (
-                <div
-                  key={p.label}
-                  className={`group flex-1 max-w-md rounded-2xl border border-white/10 bg-white/5 p-3 shadow-sm backdrop-blur-md ${p.rotation}`}
-                >
-                  {p.type === "video" ? (
-                    <div className="aspect-[16/9] w-full overflow-hidden rounded-xl bg-black">
+            <div className="lg:col-span-2">
+              <div className="rounded-3xl border border-black/10 bg-white/70 p-4 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
+                <div className="text-[11px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400"></div>
+
+                <div className="mt-3 space-y-3">
+                  <div className="overflow-hidden rounded-2xl border border-black/10 bg-black/5 dark:border-white/10 dark:bg-black">
+                    <div className="aspect-[16/9] w-full">
                       <iframe
                         className="h-full w-full"
                         src="https://www.youtube.com/embed/j34JIwGZIKE"
@@ -399,17 +437,30 @@ export default function Page() {
                         allowFullScreen
                       />
                     </div>
-                  ) : (
-                    <div className="aspect-[16/9] w-full overflow-hidden rounded-xl bg-neutral-900">
-                      <img
-                        src={p.src}
-                        alt={p.label}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { src: "/photos/Cal-Poly-SLO.jpg", label: "Cal Poly" },
+                      { src: "/photos/code.png", label: "Coding" },
+                    ].map((p) => (
+                      <div
+                        key={p.label}
+                        className="overflow-hidden rounded-2xl border border-black/10 bg-black/5 dark:border-white/10 dark:bg-neutral-900"
+                        title={p.label}
+                      >
+                        <div className="aspect-[16/10] w-full">
+                          <img src={p.src} alt={p.label} className="h-full w-full object-cover" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
+
+                <div className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
+                  Check out a little Valorant Clip Montage I made, and see a glance of my coding setup and Cal Poly!
+                </div>
+              </div>
             </div>
           </div>
         </Section>
@@ -427,11 +478,11 @@ export default function Page() {
                     <h3 className="font-semibold text-lg leading-snug">
                       {job.org}
                     </h3>
-                    <p className="text-neutral-300 text-sm mt-0.5">
+                    <p className="text-neutral-600 dark:text-neutral-300 text-sm mt-0.5">
                       {job.title}
                     </p>
                   </div>
-                  <div className="text-xs text-neutral-400 text-left sm:text-right">
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400 text-left sm:text-right">
                     <div>{job.period}</div>
                     <div className="flex items-center gap-1 sm:justify-end mt-1">
                       <MapPin className="h-3.5 w-3.5" /> {job.location}
@@ -476,7 +527,7 @@ export default function Page() {
                         href={l.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 rounded-xl border border-black/10 dark:border-white/10 px-3 py-1 text-xs hover:shadow-sm"
+                        className="inline-flex items-center gap-1 rounded-xl border border-black/10 bg-white/60 px-3 py-1 text-xs text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/75 hover:shadow-md hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/10 dark:hover:shadow-lg dark:hover:ring-white/15"
                       >
                         {l.label} <ExternalLink className="h-3.5 w-3.5" />
                       </a>
@@ -496,19 +547,25 @@ export default function Page() {
         >
           <div className="mt-6">
             <Card>
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="space-y-6">
                 {skills.map((s) => (
-                  <div key={s.group}>
-                    <div className="font-semibold mb-2">{s.group}</div>
-                    <div className="flex flex-wrap gap-2">
-                      {s.items.map((i) => (
-                        <span
-                          key={i}
-                          className="rounded-full border border-black/10 dark:border-white/10 px-2 py-1 text-sm"
-                        >
-                          {i}
-                        </span>
-                      ))}
+                  <div key={s.group} className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-6">
+                    <div className="md:col-span-1">
+                      <div className="text-[11px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
+                        {s.group}
+                      </div>
+                    </div>
+                    <div className="md:col-span-4">
+                      <div className="flex flex-wrap gap-2">
+                        {s.items.map((i) => (
+                          <span
+                            key={i}
+                            className="rounded-full border border-black/10 bg-white/60 px-2.5 py-1 text-xs text-neutral-800 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-neutral-200"
+                          >
+                            {i}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -532,7 +589,7 @@ export default function Page() {
                 href={w.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-2xl border border-black/10 dark:border-white/10 p-5 bg-white/60 dark:bg-white/5 shadow-sm transition-shadow hover:shadow-[0_0_25px_6px_rgba(80,140,255,0.6)]"
+                className="rounded-3xl border border-black/10 bg-white/70 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
               >
                 <div className="font-semibold">{w.title}</div>
                 <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-1">
@@ -571,14 +628,14 @@ export default function Page() {
             <Card>
               <p className="text-neutral-700 dark:text-neutral-300">
                 I’m always down to chat about job opportunites, research, or fun
-                side projects. Feel free to email me or ping me on LinkedIn!
+                side projects. Feel free to email me or connect with me on LinkedIn!
               </p>
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 <a
                   href="mailto:krishna.sharan@gmail.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-2xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-4 py-2 font-medium shadow hover:shadow-md"
+                  className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.22)] hover:ring-1 hover:ring-black/10 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/15"
                 >
                   <Mail className="h-4 w-4" /> Email Me
                 </a>
@@ -586,7 +643,7 @@ export default function Page() {
                   href="https://www.linkedin.com/in/sharankrishna14/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-2xl border border-black/10 dark:border-white/10 px-4 py-2 font-medium hover:shadow-sm"
+                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/75 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/10 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
                 >
                   <Linkedin className="h-4 w-4" /> LinkedIn
                 </a>
@@ -594,7 +651,7 @@ export default function Page() {
                   href="https://github.com/SilverXer0"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-2xl border border-black/10 dark:border-white/10 px-4 py-2 font-medium hover:shadow-sm"
+                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/75 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/10 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
                 >
                   <Github className="h-4 w-4" /> GitHub
                 </a>
@@ -624,12 +681,12 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="mx-auto max-w-6xl px-4 py-12">
+    <section id={id} className="mx-auto max-w-6xl px-4 py-14 scroll-mt-24">
       <div className="flex items-center gap-2">
         <div className="rounded-2xl border border-black/10 dark:border-white/10 px-2.5 py-1 text-xs inline-flex items-center gap-1">
           {titleIcon}
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold">{title}</h2>
+        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">{title}</h2>
       </div>
       {children}
     </section>
@@ -644,7 +701,7 @@ function Card({
   href?: string;
 }) {
   const className =
-    "rounded-2xl border border-black/10 dark:border-white/10 p-5 bg-white/60 dark:bg-white/5 shadow-sm transition-shadow hover:shadow-[0_0_25px_6px_rgba(80,140,255,0.6)]";
+    "rounded-3xl border border-black/10 bg-white/70 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15";
 
   if (href) {
     return (
@@ -655,7 +712,7 @@ function Card({
         initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.4 }}
+        transition={{ duration: 0.55, ease: APPLE_EASE }}
         className={className + " cursor-pointer"}
       >
         {children}
@@ -668,7 +725,7 @@ function Card({
       initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.55, ease: APPLE_EASE }}
       className={className}
     >
       {children}

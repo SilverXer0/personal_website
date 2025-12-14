@@ -1,72 +1,73 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
-type Star = { id: number; top: number; left: number; size: number; opacity: number; speed: number }
+import { useEffect, useMemo, useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 
 export default function SpaceBackground() {
-  const [stars, setStars] = useState<Star[]>([])
   const [scrollY, setScrollY] = useState(0)
+  const reduceMotion = useReducedMotion()
 
   useEffect(() => {
-    // Generate stars once
-    const newStars: Star[] = []
-    for (let i = 0; i < 140; i++) {
-      newStars.push({
-        id: i,
-        top: Math.random() * 120, // vh
-        left: Math.random() * 100, // vw
-        size: Math.random() * 2 + 1,
-        opacity: Math.random() * 0.4 + 0.2,
-        speed: Math.random() * 0.4 + 0.1,
-      })
+    if (reduceMotion) {
+      return
     }
-    setStars(newStars)
 
     let ticking = false
+
     const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          setScrollY(window.scrollY)
-          ticking = false
-        })
-        ticking = true
+      if (ticking) {
+        return
       }
+
+      ticking = true
+      window.requestAnimationFrame(() => {
+        setScrollY(window.scrollY)
+        ticking = false
+      })
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [reduceMotion])
+
+  // Extremely subtle parallax, Apple-like (nearly imperceptible)
+  const y1 = reduceMotion ? 0 : -(scrollY * 0.01)
+  const y2 = reduceMotion ? 0 : -(scrollY * 0.015)
+
+  const floatAnim = useMemo(() => {
+    if (reduceMotion) {
+      return undefined
+    }
+    return { y: [0, -8, 0] }
+  }, [reduceMotion])
 
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-gradient-to-b from-black via-neutral-950 to-neutral-900">
-      {/* soft radial glow behind content */}
-      <div className="absolute inset-0 opacity-40">
-        <div className="pointer-events-none absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-purple-600/40 blur-3xl" />
-        <div className="pointer-events-none absolute top-1/2 left-0 h-80 w-80 -translate-y-1/2 -translate-x-1/3 rounded-full bg-blue-500/30 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 right-0 h-80 w-80 translate-x-1/3 translate-y-1/3 rounded-full bg-emerald-500/25 blur-3xl" />
-      </div>
+    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      {/* Base: clean, neutral */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white via-neutral-50 to-neutral-100 dark:from-neutral-950 dark:via-neutral-950 dark:to-neutral-900" />
 
-      {/* stars */}
-      <div className="absolute inset-0">
-        {stars.map((star) => {
-          const translateY = -(scrollY * star.speed) * 0.03
-          return (
-            <div
-              key={star.id}
-              className="absolute rounded-full bg-white"
-              style={{
-                top: `${star.top}vh`,
-                left: `${star.left}vw`,
-                width: star.size,
-                height: star.size,
-                opacity: star.opacity,
-                transform: `translateY(${translateY}px)`,
-              }}
-            />
-          )
-        })}
-      </div>
+      {/* Soft mesh highlights (subtle, not neon) */}
+      <motion.div
+        className="absolute inset-0 opacity-80 dark:opacity-70"
+        style={{ translateY: y1 }}
+        animate={floatAnim}
+        transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_18%_12%,rgba(0,122,255,0.10),transparent_60%)] dark:bg-[radial-gradient(900px_circle_at_18%_12%,rgba(0,122,255,0.12),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_78%_22%,rgba(175,82,222,0.08),transparent_60%)] dark:bg-[radial-gradient(800px_circle_at_78%_22%,rgba(175,82,222,0.10),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_55%_85%,rgba(52,199,89,0.06),transparent_65%)] dark:bg-[radial-gradient(900px_circle_at_55%_85%,rgba(52,199,89,0.08),transparent_65%)]" />
+      </motion.div>
+
+      {/* Gentle top sheen */}
+      <motion.div
+        className="absolute -top-40 left-1/2 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-white/40 blur-3xl dark:bg-white/10"
+        style={{ translateY: y2 }}
+        animate={reduceMotion ? undefined : { opacity: [0.55, 0.7, 0.55] }}
+        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
+      {/* Subtle vignette for readability */}
+      <div className="absolute inset-0 bg-[radial-gradient(1200px_circle_at_50%_40%,transparent_35%,rgba(0,0,0,0.05)_100%)] dark:bg-[radial-gradient(1200px_circle_at_50%_40%,transparent_35%,rgba(0,0,0,0.40)_100%)]" />
     </div>
   )
 }

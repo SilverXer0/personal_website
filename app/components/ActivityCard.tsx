@@ -18,20 +18,20 @@ export default function ActivityCard() {
 
   return (
     <div className="pointer-events-auto fixed bottom-6 right-4 sm:right-8 z-40">
-      <div className="rounded-2xl border border-white/10 bg-black/60 px-4 py-3 text-xs sm:text-sm text-neutral-100 shadow-lg backdrop-blur-xl">
+      <div className="rounded-3xl border border-black/10 bg-white/70 px-4 py-3 text-xs sm:text-sm text-neutral-900 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl dark:border-white/10 dark:bg-black/40 dark:text-neutral-100">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <div className="text-[10px] uppercase tracking-wide text-emerald-300/80">Now</div>
+            <div className="text-[10px] uppercase tracking-wide text-emerald-600/90 dark:text-emerald-300/80">Now</div>
             <div className="font-medium text-sm">Sharan is Working</div>
           </div>
-          <div className="text-right text-[11px] text-neutral-300">
+          <div className="text-right text-[11px] text-neutral-600 dark:text-neutral-300">
             <div className="flex items-center gap-1 justify-end">
               <MapPin className="h-3 w-3" /> Bay Area, CA
             </div>
             <div className="mt-0.5 font-mono">{timeString}</div>
           </div>
         </div>
-        <div className="mt-2 flex items-center gap-2 text-[11px] text-neutral-300">
+        <div className="mt-2 flex items-center gap-2 text-[11px] text-neutral-600 dark:text-neutral-300">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
           <span>Working on: Reading Papers</span>
         </div>
@@ -40,7 +40,7 @@ export default function ActivityCard() {
             href="https://github.com/SilverXer0"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-[11px] text-neutral-200 hover:text-white"
+            className="inline-flex items-center gap-1 text-[11px] text-neutral-700 hover:text-neutral-900 dark:text-neutral-200 dark:hover:text-white"
           >
             <Github className="h-3 w-3" /> GitHub
           </a>
@@ -48,7 +48,7 @@ export default function ActivityCard() {
             href="https://www.linkedin.com/in/sharankrishna14/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-[11px] text-neutral-200 hover:text-white"
+            className="inline-flex items-center gap-1 text-[11px] text-neutral-700 hover:text-neutral-900 dark:text-neutral-200 dark:hover:text-white"
           >
             <Linkedin className="h-3 w-3" /> LinkedIn
           </a>
