@@ -31,19 +31,16 @@ export default function Page() {
   const [carouselPaused, setCarouselPaused] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
 
-  // Experience carousel state
   const experienceCarouselRef = useRef<HTMLDivElement | null>(null);
   const experienceResumeTimerRef = useRef<number | null>(null);
   const [experiencePaused, setExperiencePaused] = useState(false);
   const [experienceIndex, setExperienceIndex] = useState(0);
 
-  // Papers carousel state
   const papersCarouselRef = useRef<HTMLDivElement | null>(null);
   const papersResumeTimerRef = useRef<number | null>(null);
   const [papersPaused, setPapersPaused] = useState(false);
   const [papersIndex, setPapersIndex] = useState(0);
 
-  // About media (video/image) carousel state
   const [aboutMediaIndex, setAboutMediaIndex] = useState(0);
 
   function pauseCarouselTemporarily(ms: number) {
@@ -171,7 +168,6 @@ export default function Page() {
           return;
         }
 
-        // If we're at the very end, force last dot active
         if (isAtScrollEnd(el)) {
           const last = items.length - 1;
           if (last !== papersIndex) {
@@ -287,7 +283,6 @@ export default function Page() {
           return;
         }
 
-        // If we're at the very end, force last dot active
         if (isAtScrollEnd(el)) {
           const last = items.length - 1;
           if (last !== carouselIndex) {
@@ -309,7 +304,6 @@ export default function Page() {
 
     el.addEventListener("scroll", onScroll, { passive: true });
 
-    // Initialize once in case we land mid-scroll on load.
     onScroll();
 
     return () => {
@@ -345,7 +339,6 @@ export default function Page() {
           return;
         }
 
-        // If we're at the very end, force last dot active
         if (isAtScrollEnd(el)) {
           const last = items.length - 1;
           if (last !== experienceIndex) {
@@ -367,7 +360,6 @@ export default function Page() {
 
     el.addEventListener("scroll", onScroll, { passive: true });
 
-    // Initialize once in case we land mid-scroll on load.
     onScroll();
 
     return () => {
@@ -565,7 +557,6 @@ export default function Page() {
     >
       <SpaceBackground />
       <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
-        {/* Navbar */}
         <nav className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-black/35">
           <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 font-medium">
@@ -606,7 +597,6 @@ export default function Page() {
           </div>
         </nav>
 
-        {/* Hero */}
         <header className="mx-auto max-w-6xl px-4 pt-24 pb-28 min-h-[100svh] flex flex-col justify-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -766,7 +756,6 @@ export default function Page() {
 
         <Section id="about" titleIcon={<Code2 className="h-5 w-5" />} title="About">
           <div className="mt-10 space-y-8">
-            {/* Big, airy about statement */}
             <div className="rounded-3xl border border-black/10 bg-white/70 p-8 sm:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
               <div className="mx-auto max-w-3xl text-center">
                 <p className="text-lg sm:text-xl leading-relaxed text-neutral-800 dark:text-neutral-200">
@@ -782,7 +771,6 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Details + media, spaced out like the hero */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
               <div className="lg:col-span-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -811,7 +799,6 @@ export default function Page() {
                 <div className="h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
                   <div className="mt-2 flex h-full flex-col gap-4">
                     <div className="relative flex-1 overflow-hidden rounded-2xl border border-black/10 bg-black/5 dark:border-white/10 dark:bg-black">
-                      {/* Apple-style prev/next controls */}
                       <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex items-center justify-between px-3">
                         <button
                           type="button"
@@ -859,7 +846,6 @@ export default function Page() {
                       {aboutMediaItems[aboutMediaIndex].caption}
                     </div>
 
-                    {/* Dots */}
                     <div className="-mt-1 flex items-center justify-center gap-2">
                       {aboutMediaItems.map((_, i) => (
                         <button
@@ -1356,7 +1342,6 @@ function Card({ children, href }: { children: React.ReactNode; href?: string }) 
   );
 }
 
-// MarqueeRow helper component
 function MarqueeRow<T extends { key: string; kind?: string }>({
   ariaLabel,
   items,
@@ -1432,11 +1417,9 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
         return;
       }
 
-      // Speed is derived from duration: traverse one duplicated set (half the width) per durationSec.
       const pxPerSec = half / Math.max(8, durationSec);
       el.scrollLeft += pxPerSec * dt;
 
-      // Loop seamlessly.
       if (el.scrollLeft >= half) {
         el.scrollLeft -= half;
       }
@@ -1454,7 +1437,6 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
       aria-label={ariaLabel}
       role="region"
     >
-      {/* Edge fades */}
       <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-white/85 to-transparent dark:from-black/55" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white/85 to-transparent dark:from-black/55" />
 
