@@ -419,7 +419,7 @@ export default function Page() {
         bullets: [
           "Created a Drag and Drop application with Swift and SwiftUI to easily design upsell sheets for first-party applications in the App Store",
           "Implemented a type-safe JSON serialization system for components using Swift’s Codable protocols, enabling seamless import and export of sheet designs and reducing designer handoff time by 25%",
-          "Engineered a centralized state management architecture using SwiftUI’s Observable framework, synchronizing real-time property editing across 15+ component types and improving editor responsiveness by 40%",
+          "Engineered a centralized state management system using SwiftUI’s Observable framework and Swift Concurrency, enabling thread-safe and real-time editing across 15+ components and improving responsiveness by 40%",
           "Integrated send to device and decreased final display time by 32% by routing through Apple Media Services JavaScript controllers and presenting the created sheet on the connected device",
         ],
       },
@@ -454,7 +454,7 @@ export default function Page() {
         bullets: [
           "Worked with Wilshire Health and Community to create a dynamic donation-tracking website with Full Stack Development, AWS Amplify, and GraphQL to increase tracking capabilities by 35%",
           "Built a web scraper for EcoLogistics using AWS Chalice and Beautiful Soup, reducing manual data entry by 50% and saving 10 hours weekly by automating the scraping of untracked data from SLO county websites",
-          "Working with LCSLO Octogan Barn to track events and form uploads with S3 to reduce management time by 45%",
+          "Developed an Event Tracker with LCSLO Octogan Barn to track events and manage form uploads with AWS S3 to reduce management time by 45% and allow for real time",
         ],
       },
     ],
