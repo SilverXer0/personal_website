@@ -390,10 +390,11 @@ export default function Page() {
       {
         group: "Frameworks & Tools",
         items: [
-          "React/Next.js",
+          "React",
           "Tailwind CSS",
           "Node.js",
-          "Express",
+          "Next.js",
+          "Express.js",
           "Android Studio",
           "Xcode",
           "Unity",
