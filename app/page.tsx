@@ -685,11 +685,11 @@ export default function Page() {
   ];
   return (
     <div
-      className={(mounted && theme === "dark" ? "dark" : "") + " overflow-x-hidden"}
+      className={(mounted && theme === "dark" ? "dark" : "")}
       suppressHydrationWarning
     >
       <SpaceBackground />
-      <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300 overflow-x-hidden">
+      <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
         <nav className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-black/35">
           <div className="mx-auto max-w-[80rem] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 font-medium">
@@ -1290,7 +1290,7 @@ export default function Page() {
               <>
                 <div className="flex items-end justify-between gap-4">
                   <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
-                    Writing and long-form work. Swipe or scroll horizontally to explore.
+                    Writing and long-form work.
                   </p>
 
                   <div className="hidden sm:flex items-center gap-2">
@@ -1639,22 +1639,27 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
     };
   }, []);
 
+  // --- Windows marquee fix: new auto-scroll effect using ResizeObserver ---
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) {
       return;
     }
 
-    const mq =
-      typeof window !== "undefined" &&
-      window.matchMedia
-        ? window.matchMedia("(prefers-reduced-motion: reduce)")
-        : null;
-
-    const getReduced = () => !!mq?.matches;
-
     let rafId = 0;
     let lastTs = 0;
+    let half = 0;
+
+    const ro = new window.ResizeObserver(() => {
+      const total = el.scrollWidth;
+      half = total / 2;
+
+      if (half > el.clientWidth + 1 && el.scrollLeft === 0) {
+        el.scrollLeft = 1;
+      }
+    });
+
+    ro.observe(el);
 
     const tick = (ts: number) => {
       rafId = window.requestAnimationFrame(tick);
@@ -1669,34 +1674,29 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
         return;
       }
 
-      const dt = (ts - lastTs) / 1000;
-      lastTs = ts;
-
-      const total = el.scrollWidth;
-      const half = total / 2;
-
       if (half <= el.clientWidth + 1) {
+        lastTs = ts;
         return;
       }
 
+      const dt = (ts - lastTs) / 1000;
+      lastTs = ts;
+
       const dur = Math.max(8, durationRef.current);
-      const pxPerSec = (half / dur) * (getReduced() ? 0.55 : 1);
+      const pxPerSec = half / dur;
 
-      const next = el.scrollLeft + pxPerSec * dt;
-      el.scrollLeft = next >= half ? next - half : next;
-    };
-
-    // Kick once after layout/fonts to avoid Windows cases where scrollWidth is 0 on first paint
-    const kick = window.setTimeout(() => {
-      if (el.scrollLeft === 0) {
-        el.scrollLeft = 1;
+      let next = el.scrollLeft + pxPerSec * dt;
+      if (next >= half) {
+        next -= half;
       }
-    }, 50);
+
+      el.scrollLeft = next;
+    };
 
     rafId = window.requestAnimationFrame(tick);
 
     return () => {
-      window.clearTimeout(kick);
+      ro.disconnect();
       window.cancelAnimationFrame(rafId);
     };
   }, []);
@@ -1707,11 +1707,10 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
     if (!el) {
       return;
     }
-    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    if (delta === 0) {
-      return;
-    }
-    e.preventDefault();
+
+    const delta =
+      Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+
     el.scrollLeft += delta;
     pauseTemporarily(1800);
   }
@@ -1733,7 +1732,11 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
         onWheel={onWheelHorizontal}
         onTouchStart={() => pauseTemporarily(1800)}
         onPointerDown={() => pauseTemporarily(1800)}
-        style={{ overscrollBehaviorX: "contain", WebkitOverflowScrolling: "touch" }}
+        style={{
+          overscrollBehaviorX: "contain",
+          WebkitOverflowScrolling: "touch",
+          willChange: "scroll-position",
+        }}
       >
         <div className="flex w-max gap-4 py-1 pr-4">
           {items.map((item, idx) => (
