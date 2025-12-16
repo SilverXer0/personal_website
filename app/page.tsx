@@ -119,6 +119,7 @@ export default function Page() {
 
   const [theme, setTheme] = useState<"dark" | "light">("light");
   const [mounted, setMounted] = useState(false);
+  const [hasThemeOverride, setHasThemeOverride] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -126,18 +127,56 @@ export default function Page() {
     const saved = window.localStorage.getItem("theme");
     if (saved === "dark" || saved === "light") {
       setTheme(saved);
+      setHasThemeOverride(true);
       return;
     }
 
-    setTheme("light");
+    const prefersDark =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    setTheme(prefersDark ? "dark" : "light");
+    setHasThemeOverride(false);
   }, []);
 
   useEffect(() => {
     if (!mounted) {
       return;
     }
+    if (hasThemeOverride) {
+      return;
+    }
+    if (typeof window === "undefined" || !window.matchMedia) {
+      return;
+    }
+
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = (e: MediaQueryListEvent) => {
+      setTheme(e.matches ? "dark" : "light");
+    };
+
+    if (mq.addEventListener) {
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    }
+
+    mq.addListener(onChange);
+    return () => mq.removeListener(onChange);
+  }, [mounted, hasThemeOverride]);
+
+  useEffect(() => {
+    if (!mounted) {
+      return;
+    }
+
+    if (!hasThemeOverride) {
+      window.localStorage.removeItem("theme");
+      return;
+    }
+
     window.localStorage.setItem("theme", theme);
-  }, [theme, mounted]);
+  }, [theme, mounted, hasThemeOverride]);
 
   useEffect(() => {
     if (!mounted) {
@@ -630,7 +669,10 @@ export default function Page() {
               <button
                 type="button"
                 aria-label="Toggle theme"
-                onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+                onClick={() => {
+                  setHasThemeOverride(true);
+                  setTheme((t) => (t === "dark" ? "light" : "dark"));
+                }}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:bg-white/80 hover:-translate-y-0.5 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
               >
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
