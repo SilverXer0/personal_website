@@ -691,7 +691,7 @@ export default function Page() {
       <SpaceBackground />
       <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300 overflow-x-hidden">
         <nav className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-black/35">
-          <div className="mx-auto max-w-[92rem] px-4 py-3 flex items-center justify-between">
+          <div className="mx-auto max-w-[80rem] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 font-medium">
               <Cpu className="h-5 w-5" />
               <span>Sharan Krishna</span>
@@ -733,7 +733,7 @@ export default function Page() {
           </div>
         </nav>
 
-        <header className="mx-auto max-w-[92rem] px-4 pt-24 pb-28 min-h-[100svh] flex flex-col justify-center">
+        <header className="mx-auto max-w-[80rem] px-4 pt-24 pb-28 min-h-[100svh] flex flex-col justify-center">
           <motion.div
             variants={heroStagger}
             initial={reducedMotion ? false : "hidden"}
@@ -781,7 +781,7 @@ export default function Page() {
             initial={reducedMotion ? false : { opacity: 0, y: 16, filter: "blur(10px)" }}
             animate={reducedMotion ? false : { opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.8, delay: 0.12, ease: APPLE_EASE }}
-            className="mx-auto mt-10 max-w-[92rem]"
+            className="mx-auto mt-10 max-w-[80rem]"
           >
             <MarqueeRow
               ariaLabel="Highlights"
@@ -1052,7 +1052,7 @@ export default function Page() {
             </div>
 
             <div
-              className="relative mt-6 -mx-4"
+              className="relative mt-6 -mx-2"
               onMouseMove={(e) => {
                 edgeHoverScroll(
                   e,
@@ -1072,7 +1072,7 @@ export default function Page() {
             >
               <div
                 ref={experienceCarouselRef}
-                className="no-scrollbar px-4 flex gap-6 overflow-x-auto pb-4"
+                className="no-scrollbar px-2 flex gap-6 overflow-x-auto pb-4"
                 style={{ scrollSnapType: "x mandatory" }}
                 onMouseEnter={() => setExperiencePaused(true)}
                 onMouseLeave={() => setExperiencePaused(false)}
@@ -1174,7 +1174,7 @@ export default function Page() {
             </div>
 
             <div
-              className="relative mt-6 -mx-4"
+              className="relative mt-6 -mx-2"
               onMouseMove={(e) => {
                 edgeHoverScroll(e, projectsCarouselRef, projectsHoverCooldownRef, "left", pauseCarouselTemporarily);
                 edgeHoverScroll(e, projectsCarouselRef, projectsHoverCooldownRef, "right", pauseCarouselTemporarily);
@@ -1182,7 +1182,7 @@ export default function Page() {
             >
               <div
                 ref={projectsCarouselRef}
-                className="no-scrollbar px-4 flex gap-6 overflow-x-auto pb-4"
+                className="no-scrollbar px-2 flex gap-6 overflow-x-auto pb-4"
                 style={{ scrollSnapType: "x mandatory" }}
                 onMouseEnter={() => setCarouselPaused(true)}
                 onMouseLeave={() => setCarouselPaused(false)}
@@ -1332,7 +1332,7 @@ export default function Page() {
                 </div>
 
                 <div
-                  className="relative mt-6 -mx-4"
+                  className="relative mt-6 -mx-2"
                   onMouseMove={(e) => {
                     edgeHoverScroll(e, papersCarouselRef, papersHoverCooldownRef, "left", pausePapersTemporarily);
                     edgeHoverScroll(e, papersCarouselRef, papersHoverCooldownRef, "right", pausePapersTemporarily);
@@ -1340,7 +1340,7 @@ export default function Page() {
                 >
                   <div
                     ref={papersCarouselRef}
-                    className="no-scrollbar px-4 flex gap-6 overflow-x-auto pb-4"
+                    className="no-scrollbar px-2 flex gap-6 overflow-x-auto pb-4"
                     style={{ scrollSnapType: "x mandatory" }}
                     onMouseEnter={() => setPapersPaused(true)}
                     onMouseLeave={() => setPapersPaused(false)}
@@ -1466,7 +1466,7 @@ function Section({
   return (
     <motion.section
       id={id}
-      className="mx-auto max-w-[92rem] px-4 sm:px-6 py-20 scroll-mt-28"
+      className="mx-auto max-w-[80rem] px-4 sm:px-6 py-20 scroll-mt-28"
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.18 }}
@@ -1609,6 +1609,16 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [paused, setPaused] = useState(false);
   const resumeTimerRef = useRef<number | null>(null);
+  const pausedRef = useRef(false);
+  const durationRef = useRef(durationSec);
+
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
+
+  useEffect(() => {
+    durationRef.current = durationSec;
+  }, [durationSec]);
 
   function pauseTemporarily(ms: number) {
     setPaused(true);
@@ -1635,17 +1645,21 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
       return;
     }
 
-    const prefersReduced =
+    const mq =
       typeof window !== "undefined" &&
-      window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.matchMedia
+        ? window.matchMedia("(prefers-reduced-motion: reduce)")
+        : null;
+
+    const getReduced = () => !!mq?.matches;
 
     let rafId = 0;
     let lastTs = 0;
 
     const tick = (ts: number) => {
       rafId = window.requestAnimationFrame(tick);
-      if (paused) {
+
+      if (pausedRef.current) {
         lastTs = ts;
         return;
       }
@@ -1660,23 +1674,32 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
 
       const total = el.scrollWidth;
       const half = total / 2;
-      if (half <= 0) {
+
+      if (half <= el.clientWidth + 1) {
         return;
       }
 
-      const pxPerSec = (half / Math.max(8, durationSec)) * (prefersReduced ? 0.55 : 1);
-      el.scrollLeft += pxPerSec * dt;
+      const dur = Math.max(8, durationRef.current);
+      const pxPerSec = (half / dur) * (getReduced() ? 0.55 : 1);
 
-      if (el.scrollLeft >= half) {
-        el.scrollLeft -= half;
-      }
+      const next = el.scrollLeft + pxPerSec * dt;
+      el.scrollLeft = next >= half ? next - half : next;
     };
+
+    // Kick once after layout/fonts to avoid Windows cases where scrollWidth is 0 on first paint
+    const kick = window.setTimeout(() => {
+      if (el.scrollLeft === 0) {
+        el.scrollLeft = 1;
+      }
+    }, 50);
 
     rafId = window.requestAnimationFrame(tick);
+
     return () => {
+      window.clearTimeout(kick);
       window.cancelAnimationFrame(rafId);
     };
-  }, [paused, durationSec]);
+  }, []);
 
   // Handler to convert vertical wheel into horizontal scroll for better UX on Windows
   function onWheelHorizontal(e: React.WheelEvent<HTMLDivElement>) {
@@ -1710,7 +1733,7 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
         onWheel={onWheelHorizontal}
         onTouchStart={() => pauseTemporarily(1800)}
         onPointerDown={() => pauseTemporarily(1800)}
-        style={{ overscrollBehaviorX: "contain" }}
+        style={{ overscrollBehaviorX: "contain", WebkitOverflowScrolling: "touch" }}
       >
         <div className="flex w-max gap-4 py-1 pr-4">
           {items.map((item, idx) => (

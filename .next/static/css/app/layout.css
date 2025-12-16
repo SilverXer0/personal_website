@@ -575,6 +575,10 @@ video {
   margin-left: auto;
   margin-right: auto;
 }
+.-mx-2 {
+  margin-left: -0.5rem;
+  margin-right: -0.5rem;
+}
 .-mt-1 {
   margin-top: -0.25rem;
 }
@@ -716,6 +720,9 @@ video {
 }
 .max-w-\[92rem\] {
   max-width: 92rem;
+}
+.max-w-\[80rem\] {
+  max-width: 80rem;
 }
 .flex-1 {
   flex: 1 1 0%;
@@ -1003,6 +1010,10 @@ video {
 .py-3 {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
+}
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 .pb-28 {
   padding-bottom: 7rem;
