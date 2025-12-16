@@ -23,7 +23,19 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+
 const APPLE_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+// Section child reveal variant for fade/slide-in when section comes into view
+const SECTION_CHILD: any = {
+  hidden: { opacity: 0, y: 14, filter: "blur(8px)" },
+  show: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.65, ease: APPLE_EASE },
+  },
+};
 
 export default function Page() {
   const projectsCarouselRef = useRef<HTMLDivElement | null>(null);
@@ -671,16 +683,15 @@ export default function Page() {
     { title: "Presidential Award", org: "Cal Poly, SLO", year: "All Years 2022 - 2025" },
     { title: "ACT", org: "36/36", year: "April 2021" },
   ];
-
   return (
     <div
-      className={mounted && theme === "dark" ? "dark" : ""}
+      className={(mounted && theme === "dark" ? "dark" : "") + " overflow-x-hidden"}
       suppressHydrationWarning
     >
       <SpaceBackground />
-      <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
+      <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300 overflow-x-hidden">
         <nav className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-black/35">
-          <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+          <div className="mx-auto max-w-[92rem] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 font-medium">
               <Cpu className="h-5 w-5" />
               <span>Sharan Krishna</span>
@@ -722,7 +733,7 @@ export default function Page() {
           </div>
         </nav>
 
-        <header className="mx-auto max-w-6xl px-4 pt-24 pb-28 min-h-[100svh] flex flex-col justify-center">
+        <header className="mx-auto max-w-[92rem] px-4 pt-24 pb-28 min-h-[100svh] flex flex-col justify-center">
           <motion.div
             variants={heroStagger}
             initial={reducedMotion ? false : "hidden"}
@@ -770,7 +781,7 @@ export default function Page() {
             initial={reducedMotion ? false : { opacity: 0, y: 16, filter: "blur(10px)" }}
             animate={reducedMotion ? false : { opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.8, delay: 0.12, ease: APPLE_EASE }}
-            className="mx-auto mt-10 max-w-6xl"
+            className="mx-auto mt-10 max-w-[92rem]"
           >
             <MarqueeRow
               ariaLabel="Highlights"
@@ -1073,10 +1084,7 @@ export default function Page() {
                   <motion.div
                     key={job.title + job.org}
                     data-experience-item
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.55, ease: APPLE_EASE }}
+                    variants={SECTION_CHILD}
                     className="min-w-[92%] sm:min-w-[78%] lg:min-w-[62%] scroll-ml-4 snap-center rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
                     style={{ scrollSnapAlign: "center" }}
                   >
@@ -1189,10 +1197,7 @@ export default function Page() {
                     href={p.links?.[0]?.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.55, ease: APPLE_EASE }}
+                    variants={SECTION_CHILD}
                     className="min-w-[88%] sm:min-w-[70%] lg:min-w-[56%] scroll-ml-4 snap-center rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
                     style={{ scrollSnapAlign: "center" }}
                   >
@@ -1355,10 +1360,7 @@ export default function Page() {
                         href={w.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, amount: 0.3 }}
-                        transition={{ duration: 0.55, ease: APPLE_EASE }}
+                        variants={SECTION_CHILD}
                         className="min-w-[88%] sm:min-w-[70%] lg:min-w-[56%] scroll-ml-4 snap-center rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
                         style={{ scrollSnapAlign: "center" }}
                       >
@@ -1464,7 +1466,7 @@ function Section({
   return (
     <motion.section
       id={id}
-      className="mx-auto max-w-6xl px-4 py-20 scroll-mt-28"
+      className="mx-auto max-w-[92rem] px-4 sm:px-6 py-20 scroll-mt-28"
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.18 }}
@@ -1638,10 +1640,6 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
       window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (prefersReduced) {
-      return;
-    }
-
     let rafId = 0;
     let lastTs = 0;
 
@@ -1666,7 +1664,7 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
         return;
       }
 
-      const pxPerSec = half / Math.max(8, durationSec);
+      const pxPerSec = (half / Math.max(8, durationSec)) * (prefersReduced ? 0.55 : 1);
       el.scrollLeft += pxPerSec * dt;
 
       if (el.scrollLeft >= half) {
@@ -1680,6 +1678,21 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
     };
   }, [paused, durationSec]);
 
+  // Handler to convert vertical wheel into horizontal scroll for better UX on Windows
+  function onWheelHorizontal(e: React.WheelEvent<HTMLDivElement>) {
+    const el = scrollerRef.current;
+    if (!el) {
+      return;
+    }
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (delta === 0) {
+      return;
+    }
+    e.preventDefault();
+    el.scrollLeft += delta;
+    pauseTemporarily(1800);
+  }
+
   return (
     <div
       className={"relative " + className}
@@ -1691,12 +1704,13 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
 
       <div
         ref={scrollerRef}
-        className="no-scrollbar overflow-x-auto overflow-y-hidden"
+        className="no-scrollbar overflow-x-auto overflow-y-hidden touch-pan-x"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
-        onWheel={() => pauseTemporarily(1800)}
+        onWheel={onWheelHorizontal}
         onTouchStart={() => pauseTemporarily(1800)}
         onPointerDown={() => pauseTemporarily(1800)}
+        style={{ overscrollBehaviorX: "contain" }}
       >
         <div className="flex w-max gap-4 py-1 pr-4">
           {items.map((item, idx) => (
