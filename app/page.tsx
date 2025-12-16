@@ -43,6 +43,47 @@ export default function Page() {
 
   const [aboutMediaIndex, setAboutMediaIndex] = useState(0);
 
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const set = () => setReducedMotion(!!mq.matches);
+    set();
+    if (mq.addEventListener) {
+      mq.addEventListener("change", set);
+      return () => mq.removeEventListener("change", set);
+    }
+    mq.addListener(set);
+    return () => mq.removeListener(set);
+  }, []);
+
+  const heroStagger = useMemo(
+    () => ({
+      hidden: { opacity: 1 },
+      show: {
+        opacity: 1,
+        transition: { staggerChildren: 0.08, delayChildren: 0.05 },
+      },
+    }),
+    []
+  );
+
+  const heroItem = useMemo(
+    () => ({
+      hidden: { opacity: 0, y: 16, filter: "blur(10px)" },
+      show: {
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        transition: { duration: 0.75, ease: APPLE_EASE },
+      },
+    }),
+    []
+  );
+
   function pauseCarouselTemporarily(ms: number) {
     setCarouselPaused(true);
     if (carouselResumeTimerRef.current) {
@@ -600,12 +641,14 @@ export default function Page() {
 
         <header className="mx-auto max-w-6xl px-4 pt-24 pb-28 min-h-[100svh] flex flex-col justify-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: APPLE_EASE }}
-            className="mx-auto -mt-12 sm:-mt-16 flex max-w-3xl flex-col items-center text-center"
+            variants={heroStagger}
+            initial={reducedMotion ? false : "hidden"}
+            animate={reducedMotion ? false : "show"}
+            className="relative mx-auto -mt-12 sm:-mt-16 flex max-w-3xl flex-col items-center text-center"
           >
-            <h1
+            {!reducedMotion ? <PixelRevealOverlay /> : null}
+            <motion.h1
+              variants={heroItem}
               className="mt-0 text-5xl sm:text-6xl font-semibold tracking-tight leading-[1.05]"
               style={{
                 fontFamily:
@@ -613,14 +656,18 @@ export default function Page() {
               }}
             >
               Hi, I'm Sharan.
-            </h1>
-
-            <p className="mt-6 text-lg sm:text-xl text-neutral-700 dark:text-neutral-300 max-w-2xl">
+            </motion.h1>
+            <motion.p
+              variants={heroItem}
+              className="mt-6 text-lg sm:text-xl text-neutral-700 dark:text-neutral-300 max-w-2xl"
+            >
               I'm a Software Engineer that works across many different tech spaces, such as Distributed Systems,
-              Full Stack Development, and Mobile App Development, and Machine Learning. 
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+              Full Stack Development, and Mobile App Development, and Machine Learning.
+            </motion.p>
+            <motion.div
+              variants={heroItem}
+              className="mt-9 flex flex-wrap items-center justify-center gap-3"
+            >
               <a
                 href="#experience"
                 className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.22)] hover:ring-1 hover:ring-black/10 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/15"
@@ -633,13 +680,13 @@ export default function Page() {
               >
                 Get in touch <Mail className="h-4 w-4" />
               </a>
-            </div>
+            </motion.div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.06, ease: APPLE_EASE }}
+            initial={reducedMotion ? false : { opacity: 0, y: 16, filter: "blur(10px)" }}
+            animate={reducedMotion ? false : { opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.8, delay: 0.12, ease: APPLE_EASE }}
             className="mx-auto mt-10 max-w-6xl"
           >
             <MarqueeRow
@@ -1296,15 +1343,97 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="mx-auto max-w-6xl px-4 py-20 scroll-mt-28">
-      <div className="flex items-center gap-2">
+    <motion.section
+      id={id}
+      className="mx-auto max-w-6xl px-4 py-20 scroll-mt-28"
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, amount: 0.18 }}
+      variants={{
+        hidden: { opacity: 0, y: 18 },
+        show: {
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.7, ease: APPLE_EASE, staggerChildren: 0.08 },
+        },
+      }}
+    >
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 10, filter: "blur(8px)" },
+          show: {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            transition: { duration: 0.65, ease: APPLE_EASE },
+          },
+        }}
+        className="flex items-center gap-2"
+      >
         <div className="rounded-2xl border border-black/10 dark:border-white/10 px-2.5 py-1 text-xs inline-flex items-center gap-1">
           {titleIcon}
         </div>
         <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">{title}</h2>
+      </motion.div>
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 14 },
+          show: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.65, ease: APPLE_EASE },
+          },
+        }}
+      >
+        {children}
+      </motion.div>
+    </motion.section>
+  );
+}
+function PixelRevealOverlay() {
+  const cells = useMemo(() => {
+    const cols = 18;
+    const rows = 10;
+    const out: { key: string; delay: number }[] = [];
+    for (let i = 0; i < cols * rows; i++) {
+      out.push({ key: String(i), delay: Math.random() * 0.55 });
+    }
+    out.sort((a, b) => a.delay - b.delay);
+    return { cols, rows, out };
+  }, []);
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10">
+      <div
+        className="absolute inset-0"
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${cells.cols}, minmax(0, 1fr))`,
+          gridTemplateRows: `repeat(${cells.rows}, minmax(0, 1fr))`,
+          gap: "6px",
+          padding: "8px",
+        }}
+        aria-hidden
+      >
+        {cells.out.map((c) => (
+          <motion.span
+            key={c.key}
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: 0.55, delay: c.delay, ease: APPLE_EASE }}
+            className="rounded-md bg-white/65 dark:bg-black/55"
+          />
+        ))}
       </div>
-      {children}
-    </section>
+
+      <motion.div
+        initial={{ opacity: 0.9 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 0.75, delay: 0.25, ease: APPLE_EASE }}
+        className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent dark:from-black/40"
+        aria-hidden
+      />
+    </div>
   );
 }
 
