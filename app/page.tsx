@@ -1,7 +1,7 @@
 "use client";
 
 import SpaceBackground from "./components/SpaceBackground";
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -27,16 +27,19 @@ const APPLE_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export default function Page() {
   const projectsCarouselRef = useRef<HTMLDivElement | null>(null);
+  const projectsHoverCooldownRef = useRef(0);
   const carouselResumeTimerRef = useRef<number | null>(null);
   const [carouselPaused, setCarouselPaused] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
 
   const experienceCarouselRef = useRef<HTMLDivElement | null>(null);
+  const experienceHoverCooldownRef = useRef(0);
   const experienceResumeTimerRef = useRef<number | null>(null);
   const [experiencePaused, setExperiencePaused] = useState(false);
   const [experienceIndex, setExperienceIndex] = useState(0);
 
   const papersCarouselRef = useRef<HTMLDivElement | null>(null);
+  const papersHoverCooldownRef = useRef(0);
   const papersResumeTimerRef = useRef<number | null>(null);
   const [papersPaused, setPapersPaused] = useState(false);
   const [papersIndex, setPapersIndex] = useState(0);
@@ -93,6 +96,44 @@ export default function Page() {
       setCarouselPaused(false);
       carouselResumeTimerRef.current = null;
     }, ms);
+  }
+
+  function edgeHoverScroll(
+    e: React.MouseEvent<HTMLDivElement>,
+    elRef: React.RefObject<HTMLDivElement>,
+    cooldownRef: React.MutableRefObject<number>,
+    direction: "left" | "right",
+    pauseFn?: (ms: number) => void
+  ) {
+    const el = elRef.current;
+    if (!el) {
+      return;
+    }
+
+    const now = Date.now();
+    if (now - cooldownRef.current < 450) {
+      return;
+    }
+
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+
+    const edge = 92;
+    const shouldScrollLeft = direction === "left" && x <= edge;
+    const shouldScrollRight = direction === "right" && x >= rect.width - edge;
+
+    if (!shouldScrollLeft && !shouldScrollRight) {
+      return;
+    }
+
+    cooldownRef.current = now;
+
+    if (pauseFn) {
+      pauseFn(2200);
+    }
+
+    const delta = Math.max(280, Math.floor(rect.width * 0.65));
+    el.scrollBy({ left: direction === "left" ? -delta : delta, behavior: "smooth" });
   }
 
   function pauseExperienceTemporarily(ms: number) {
@@ -1000,56 +1041,76 @@ export default function Page() {
             </div>
 
             <div
-              ref={experienceCarouselRef}
-              className="no-scrollbar mt-6 flex gap-6 overflow-x-auto pb-4"
-              style={{ scrollSnapType: "x mandatory" }}
-              onMouseEnter={() => setExperiencePaused(true)}
-              onMouseLeave={() => setExperiencePaused(false)}
-              onWheel={() => pauseExperienceTemporarily(4500)}
-              onTouchStart={() => pauseExperienceTemporarily(4500)}
-              onPointerDown={() => pauseExperienceTemporarily(4500)}
+              className="relative mt-6 -mx-4"
+              onMouseMove={(e) => {
+                edgeHoverScroll(
+                  e,
+                  experienceCarouselRef,
+                  experienceHoverCooldownRef,
+                  "left",
+                  pauseExperienceTemporarily
+                );
+                edgeHoverScroll(
+                  e,
+                  experienceCarouselRef,
+                  experienceHoverCooldownRef,
+                  "right",
+                  pauseExperienceTemporarily
+                );
+              }}
             >
-              {experience.map((job) => (
-                <motion.div
-                  key={job.title + job.org}
-                  data-experience-item
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.55, ease: APPLE_EASE }}
-                  className="min-w-[92%] sm:min-w-[78%] lg:min-w-[62%] scroll-ml-4 snap-center rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
-                  style={{ scrollSnapAlign: "center" }}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                    <div>
-                      <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                        {job.title}
-                      </h3>
-                      <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                        {job.org}
+              <div
+                ref={experienceCarouselRef}
+                className="no-scrollbar px-4 flex gap-6 overflow-x-auto pb-4"
+                style={{ scrollSnapType: "x mandatory" }}
+                onMouseEnter={() => setExperiencePaused(true)}
+                onMouseLeave={() => setExperiencePaused(false)}
+                onWheel={() => pauseExperienceTemporarily(4500)}
+                onTouchStart={() => pauseExperienceTemporarily(4500)}
+                onPointerDown={() => pauseExperienceTemporarily(4500)}
+              >
+                {experience.map((job) => (
+                  <motion.div
+                    key={job.title + job.org}
+                    data-experience-item
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.55, ease: APPLE_EASE }}
+                    className="min-w-[92%] sm:min-w-[78%] lg:min-w-[62%] scroll-ml-4 snap-center rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
+                    style={{ scrollSnapAlign: "center" }}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <div>
+                        <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                          {job.title}
+                        </h3>
+                        <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                          {job.org}
+                        </div>
+                      </div>
+
+                      <div className="text-xs text-neutral-500 dark:text-neutral-400 text-left sm:text-right">
+                        <div>{job.period}</div>
+                        <div className="flex items-center gap-1 sm:justify-end mt-1">
+                          <MapPin className="h-3.5 w-3.5" /> {job.location}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="text-xs text-neutral-500 dark:text-neutral-400 text-left sm:text-right">
-                      <div>{job.period}</div>
-                      <div className="flex items-center gap-1 sm:justify-end mt-1">
-                        <MapPin className="h-3.5 w-3.5" /> {job.location}
-                      </div>
-                    </div>
-                  </div>
-
-                  {job.bullets?.length ? (
-                    <ul className="mt-5 space-y-2 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
-                      {job.bullets.map((b) => (
-                        <li key={b} className="flex gap-2">
-                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-400 dark:bg-neutral-500" />
-                          <span>{b}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </motion.div>
-              ))}
+                    {job.bullets?.length ? (
+                      <ul className="mt-5 space-y-2 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
+                        {job.bullets.map((b) => (
+                          <li key={b} className="flex gap-2">
+                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-400 dark:bg-neutral-500" />
+                            <span>{b}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </motion.div>
+                ))}
+              </div>
             </div>
 
             <style jsx>{`
@@ -1105,60 +1166,68 @@ export default function Page() {
             </div>
 
             <div
-              ref={projectsCarouselRef}
-              className="no-scrollbar mt-6 flex gap-6 overflow-x-auto pb-4"
-              style={{ scrollSnapType: "x mandatory" }}
-              onMouseEnter={() => setCarouselPaused(true)}
-              onMouseLeave={() => setCarouselPaused(false)}
-              onWheel={() => pauseCarouselTemporarily(4500)}
-              onTouchStart={() => pauseCarouselTemporarily(4500)}
-              onPointerDown={() => pauseCarouselTemporarily(4500)}
+              className="relative mt-6 -mx-4"
+              onMouseMove={(e) => {
+                edgeHoverScroll(e, projectsCarouselRef, projectsHoverCooldownRef, "left", pauseCarouselTemporarily);
+                edgeHoverScroll(e, projectsCarouselRef, projectsHoverCooldownRef, "right", pauseCarouselTemporarily);
+              }}
             >
-              {projects.map((p) => (
-                <motion.a
-                  key={p.name}
-                  data-carousel-item
-                  href={p.links?.[0]?.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.55, ease: APPLE_EASE }}
-                  className="min-w-[88%] sm:min-w-[70%] lg:min-w-[56%] scroll-ml-4 snap-center rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
-                  style={{ scrollSnapAlign: "center" }}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                        {p.name}
-                      </h3>
-                      <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                        {p.tagline}
+              <div
+                ref={projectsCarouselRef}
+                className="no-scrollbar px-4 flex gap-6 overflow-x-auto pb-4"
+                style={{ scrollSnapType: "x mandatory" }}
+                onMouseEnter={() => setCarouselPaused(true)}
+                onMouseLeave={() => setCarouselPaused(false)}
+                onWheel={() => pauseCarouselTemporarily(4500)}
+                onTouchStart={() => pauseCarouselTemporarily(4500)}
+                onPointerDown={() => pauseCarouselTemporarily(4500)}
+              >
+                {projects.map((p) => (
+                  <motion.a
+                    key={p.name}
+                    data-carousel-item
+                    href={p.links?.[0]?.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.55, ease: APPLE_EASE }}
+                    className="min-w-[88%] sm:min-w-[70%] lg:min-w-[56%] scroll-ml-4 snap-center rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
+                    style={{ scrollSnapAlign: "center" }}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                          {p.name}
+                        </h3>
+                        <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                          {p.tagline}
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 inline-flex items-center gap-1 rounded-full border border-black/10 bg-white/60 px-3 py-1 text-xs text-neutral-800 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-neutral-200">
+                        View repo <ExternalLink className="h-3.5 w-3.5" />
                       </div>
                     </div>
 
-                    <div className="shrink-0 inline-flex items-center gap-1 rounded-full border border-black/10 bg-white/60 px-3 py-1 text-xs text-neutral-800 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-neutral-200">
-                      View repo <ExternalLink className="h-3.5 w-3.5" />
+                    <p className="mt-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
+                      {p.desc}
+                    </p>
+
+                    <div className="mt-5 flex flex-wrap gap-2 text-xs text-neutral-700 dark:text-neutral-300">
+                      {p.tech.map((t) => (
+                        <span
+                          key={t}
+                          className="rounded-full border border-black/10 bg-white/60 px-2.5 py-1 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
+                        >
+                          {t}
+                        </span>
+                      ))}
                     </div>
-                  </div>
-
-                  <p className="mt-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
-                    {p.desc}
-                  </p>
-
-                  <div className="mt-5 flex flex-wrap gap-2 text-xs text-neutral-700 dark:text-neutral-300">
-                    {p.tech.map((t) => (
-                      <span
-                        key={t}
-                        className="rounded-full border border-black/10 bg-white/60 px-2.5 py-1 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </motion.a>
-              ))}
+                  </motion.a>
+                ))}
+              </div>
             </div>
 
             <style jsx>{`
@@ -1258,45 +1327,53 @@ export default function Page() {
                 </div>
 
                 <div
-                  ref={papersCarouselRef}
-                  className="no-scrollbar mt-6 flex gap-6 overflow-x-auto pb-4"
-                  style={{ scrollSnapType: "x mandatory" }}
-                  onMouseEnter={() => setPapersPaused(true)}
-                  onMouseLeave={() => setPapersPaused(false)}
-                  onWheel={() => pausePapersTemporarily(4500)}
-                  onTouchStart={() => pausePapersTemporarily(4500)}
-                  onPointerDown={() => pausePapersTemporarily(4500)}
+                  className="relative mt-6 -mx-4"
+                  onMouseMove={(e) => {
+                    edgeHoverScroll(e, papersCarouselRef, papersHoverCooldownRef, "left", pausePapersTemporarily);
+                    edgeHoverScroll(e, papersCarouselRef, papersHoverCooldownRef, "right", pausePapersTemporarily);
+                  }}
                 >
-                  {[{
-                    title:
-                      "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
-                    desc: "Survey Paper on the history of Load Balancing in Distributed Systems.",
-                    href: "/papers/load-balancing.pdf",
-                  }].map((w) => (
-                    <motion.a
-                      key={w.title}
-                      data-paper-item
-                      href={w.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, amount: 0.3 }}
-                      transition={{ duration: 0.55, ease: APPLE_EASE }}
-                      className="min-w-[88%] sm:min-w-[70%] lg:min-w-[56%] scroll-ml-4 snap-center rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
-                      style={{ scrollSnapAlign: "center" }}
-                    >
-                      <div className="font-semibold text-lg text-neutral-900 dark:text-neutral-100">
-                        {w.title}
-                      </div>
-                      <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-2">
-                        {w.desc}
-                      </p>
-                      <div className="mt-4 inline-flex items-center gap-1 text-sm text-neutral-700 dark:text-neutral-200">
-                        Read <ExternalLink className="h-4 w-4" />
-                      </div>
-                    </motion.a>
-                  ))}
+                  <div
+                    ref={papersCarouselRef}
+                    className="no-scrollbar px-4 flex gap-6 overflow-x-auto pb-4"
+                    style={{ scrollSnapType: "x mandatory" }}
+                    onMouseEnter={() => setPapersPaused(true)}
+                    onMouseLeave={() => setPapersPaused(false)}
+                    onWheel={() => pausePapersTemporarily(4500)}
+                    onTouchStart={() => pausePapersTemporarily(4500)}
+                    onPointerDown={() => pausePapersTemporarily(4500)}
+                  >
+                    {[{
+                      title:
+                        "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
+                      desc: "Survey Paper on the history of Load Balancing in Distributed Systems.",
+                      href: "/papers/load-balancing.pdf",
+                    }].map((w) => (
+                      <motion.a
+                        key={w.title}
+                        data-paper-item
+                        href={w.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.3 }}
+                        transition={{ duration: 0.55, ease: APPLE_EASE }}
+                        className="min-w-[88%] sm:min-w-[70%] lg:min-w-[56%] scroll-ml-4 snap-center rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
+                        style={{ scrollSnapAlign: "center" }}
+                      >
+                        <div className="font-semibold text-lg text-neutral-900 dark:text-neutral-100">
+                          {w.title}
+                        </div>
+                        <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-2">
+                          {w.desc}
+                        </p>
+                        <div className="mt-4 inline-flex items-center gap-1 text-sm text-neutral-700 dark:text-neutral-200">
+                          Read <ExternalLink className="h-4 w-4" />
+                        </div>
+                      </motion.a>
+                    ))}
+                  </div>
                 </div>
 
                 <style jsx>{`
