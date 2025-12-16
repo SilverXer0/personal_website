@@ -1611,6 +1611,7 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
   const resumeTimerRef = useRef<number | null>(null);
   const pausedRef = useRef(false);
   const durationRef = useRef(durationSec);
+  const hoverResumeTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     pausedRef.current = paused;
@@ -1635,6 +1636,9 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
     return () => {
       if (resumeTimerRef.current) {
         window.clearTimeout(resumeTimerRef.current);
+      }
+      if (hoverResumeTimerRef.current) {
+        window.clearTimeout(hoverResumeTimerRef.current);
       }
     };
   }, []);
@@ -1715,6 +1719,25 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
     pauseTemporarily(1800);
   }
 
+  function onActiveHoverMove() {
+    setPaused(true);
+    if (hoverResumeTimerRef.current) {
+      window.clearTimeout(hoverResumeTimerRef.current);
+    }
+    hoverResumeTimerRef.current = window.setTimeout(() => {
+      setPaused(false);
+      hoverResumeTimerRef.current = null;
+    }, 850);
+  }
+
+  function onHoverLeave() {
+    if (hoverResumeTimerRef.current) {
+      window.clearTimeout(hoverResumeTimerRef.current);
+      hoverResumeTimerRef.current = null;
+    }
+    setPaused(false);
+  }
+
   return (
     <div
       className={"relative " + className}
@@ -1727,8 +1750,8 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
       <div
         ref={scrollerRef}
         className="no-scrollbar overflow-x-auto overflow-y-hidden touch-pan-x"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
+        onMouseMove={onActiveHoverMove}
+        onMouseLeave={onHoverLeave}
         onWheel={onWheelHorizontal}
         onTouchStart={() => pauseTemporarily(1800)}
         onPointerDown={() => pauseTemporarily(1800)}
