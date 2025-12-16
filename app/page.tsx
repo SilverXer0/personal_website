@@ -743,11 +743,7 @@ export default function Page() {
             {!reducedMotion ? <PixelRevealOverlay /> : null}
             <motion.h1
               variants={heroItem}
-              className="mt-0 text-5xl sm:text-6xl font-semibold tracking-tight leading-[1.05]"
-              style={{
-                fontFamily:
-                  "Snell Roundhand, Apple Chancery, Brush Script MT, cursive",
-              }}
+              className="mt-0 text-5xl sm:text-6xl font-semibold tracking-tight font-sans"
             >
               Hi, I'm Sharan.
             </motion.h1>
@@ -1607,154 +1603,251 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
   className?: string;
 }) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const [paused, setPaused] = useState(false);
-  const resumeTimerRef = useRef<number | null>(null);
-  const pausedRef = useRef(false);
-  const durationRef = useRef(durationSec);
-  const hoverResumeTimerRef = useRef<number | null>(null);
+  const halfRef = useRef(0);
+  const demoTimersRef = useRef<number[]>([]);
+  const hoverCooldownRef = useRef(0);
+  const userInteractedRef = useRef(false);
 
-  useEffect(() => {
-    pausedRef.current = paused;
-  }, [paused]);
-
-  useEffect(() => {
-    durationRef.current = durationSec;
-  }, [durationSec]);
-
-  function pauseTemporarily(ms: number) {
-    setPaused(true);
-    if (resumeTimerRef.current) {
-      window.clearTimeout(resumeTimerRef.current);
+  const clearDemoTimers = () => {
+    if (demoTimersRef.current.length) {
+      demoTimersRef.current.forEach((t) => window.clearTimeout(t));
+      demoTimersRef.current = [];
     }
-    resumeTimerRef.current = window.setTimeout(() => {
-      setPaused(false);
-      resumeTimerRef.current = null;
-    }, ms);
-  }
+  };
 
-  useEffect(() => {
-    return () => {
-      if (resumeTimerRef.current) {
-        window.clearTimeout(resumeTimerRef.current);
+  const computeHalf = () => {
+    const el = scrollerRef.current;
+    if (!el) {
+      halfRef.current = 0;
+      return 0;
+    }
+    const total = el.scrollWidth;
+    const half = Math.floor(total / 2);
+    halfRef.current = half;
+    return half;
+  };
+
+  const normalize = () => {
+    const el = scrollerRef.current;
+    if (!el) {
+      return;
+    }
+    const half = halfRef.current || computeHalf();
+    if (half <= 0) {
+      return;
+    }
+    if (el.scrollLeft >= half) {
+      el.scrollLeft = el.scrollLeft - half;
+    }
+  };
+
+  const safePrepForDirection = (direction: "left" | "right") => {
+    const el = scrollerRef.current;
+    if (!el) {
+      return;
+    }
+    const half = halfRef.current || computeHalf();
+    if (half <= 0) {
+      return;
+    }
+    const epsilon = 2;
+    if (direction === "left" && el.scrollLeft <= epsilon) {
+      el.scrollLeft = el.scrollLeft + half;
+    }
+    if (direction === "right" && el.scrollLeft >= half - epsilon) {
+      el.scrollLeft = el.scrollLeft - half;
+    }
+  };
+
+  const scrollStep = (direction: "left" | "right") => {
+    const el = scrollerRef.current;
+    if (!el) {
+      return;
+    }
+    safePrepForDirection(direction);
+
+    const rect = el.getBoundingClientRect();
+    const delta = Math.max(260, Math.floor(rect.width * 0.62));
+    el.scrollBy({ left: direction === "left" ? -delta : delta, behavior: "smooth" });
+
+    const t = window.setTimeout(() => {
+      normalize();
+    }, 450);
+    demoTimersRef.current.push(t);
+  };
+
+  const animateTo = (targetLeft: number, durationMs: number) => {
+    const el = scrollerRef.current;
+    if (!el) {
+      return;
+    }
+
+    const startLeft = el.scrollLeft;
+    const delta = targetLeft - startLeft;
+    if (Math.abs(delta) < 1) {
+      return;
+    }
+
+    const start = performance.now();
+
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+    const step = (now: number) => {
+      if (userInteractedRef.current) {
+        return;
       }
-      if (hoverResumeTimerRef.current) {
-        window.clearTimeout(hoverResumeTimerRef.current);
+
+      const t = Math.min(1, (now - start) / durationMs);
+      el.scrollLeft = startLeft + delta * easeOutCubic(t);
+
+      if (t < 1) {
+        window.requestAnimationFrame(step);
+      } else {
+        normalize();
       }
     };
-  }, []);
 
-  // --- Windows marquee fix: new auto-scroll effect using ResizeObserver ---
+    window.requestAnimationFrame(step);
+  };
+
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) {
       return;
     }
 
-    let rafId = 0;
-    let lastTs = 0;
-    let half = 0;
+    computeHalf();
 
     const ro = new window.ResizeObserver(() => {
-      const total = el.scrollWidth;
-      half = total / 2;
-
-      if (half > el.clientWidth + 1 && el.scrollLeft === 0) {
-        el.scrollLeft = 1;
-      }
+      computeHalf();
+      normalize();
     });
-
     ro.observe(el);
 
-    const tick = (ts: number) => {
-      rafId = window.requestAnimationFrame(tick);
-
-      if (pausedRef.current) {
-        lastTs = ts;
-        return;
-      }
-
-      if (!lastTs) {
-        lastTs = ts;
-        return;
-      }
-
-      if (half <= el.clientWidth + 1) {
-        lastTs = ts;
-        return;
-      }
-
-      const dt = (ts - lastTs) / 1000;
-      lastTs = ts;
-
-      const dur = Math.max(8, durationRef.current);
-      const pxPerSec = half / dur;
-
-      let next = el.scrollLeft + pxPerSec * dt;
-      if (next >= half) {
-        next -= half;
-      }
-
-      el.scrollLeft = next;
+    const onScroll = () => {
+      normalize();
     };
 
-    rafId = window.requestAnimationFrame(tick);
+    el.addEventListener("scroll", onScroll, { passive: true });
 
     return () => {
       ro.disconnect();
-      window.cancelAnimationFrame(rafId);
+      el.removeEventListener("scroll", onScroll);
     };
   }, []);
 
-  // Handler to convert vertical wheel into horizontal scroll for better UX on Windows
-  function onWheelHorizontal(e: React.WheelEvent<HTMLDivElement>) {
+  useEffect(() => {
     const el = scrollerRef.current;
     if (!el) {
       return;
     }
 
-    const delta =
-      Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    clearDemoTimers();
+    userInteractedRef.current = false;
 
+    const kickoff = window.setTimeout(() => {
+      if (userInteractedRef.current) {
+        return;
+      }
+
+      const half = halfRef.current || computeHalf();
+      if (half <= 0) {
+        return;
+      }
+
+      el.scrollLeft = 0;
+
+      const target = Math.max(0, half - 2);
+      const fast = 1200;
+      animateTo(target, fast);
+
+      const endTimer = window.setTimeout(() => {
+        normalize();
+      }, fast + 80);
+
+      demoTimersRef.current.push(endTimer);
+    }, 450);
+
+    demoTimersRef.current.push(kickoff);
+
+    return () => {
+      clearDemoTimers();
+    };
+  }, [durationSec]);
+
+  const markInteracted = () => {
+    if (!userInteractedRef.current) {
+      userInteractedRef.current = true;
+      clearDemoTimers();
+    }
+  };
+
+  function onWheelHorizontal(e: React.WheelEvent<HTMLDivElement>) {
+    markInteracted();
+    const el = scrollerRef.current;
+    if (!el) {
+      return;
+    }
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (delta < 0) {
+      safePrepForDirection("left");
+    } else if (delta > 0) {
+      safePrepForDirection("right");
+    }
     el.scrollLeft += delta;
-    pauseTemporarily(1800);
+    normalize();
   }
 
-  function onActiveHoverMove() {
-    setPaused(true);
-    if (hoverResumeTimerRef.current) {
-      window.clearTimeout(hoverResumeTimerRef.current);
+  function onEdgeHoverMove(e: React.MouseEvent<HTMLDivElement>) {
+    markInteracted();
+
+    const el = scrollerRef.current;
+    if (!el) {
+      return;
     }
-    hoverResumeTimerRef.current = window.setTimeout(() => {
-      setPaused(false);
-      hoverResumeTimerRef.current = null;
-    }, 850);
+
+    const now = Date.now();
+    if (now - hoverCooldownRef.current < 420) {
+      return;
+    }
+
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const edge = 96;
+
+    if (x <= edge) {
+      hoverCooldownRef.current = now;
+      scrollStep("left");
+      return;
+    }
+
+    if (x >= rect.width - edge) {
+      hoverCooldownRef.current = now;
+      scrollStep("right");
+      return;
+    }
   }
 
-  function onHoverLeave() {
-    if (hoverResumeTimerRef.current) {
-      window.clearTimeout(hoverResumeTimerRef.current);
-      hoverResumeTimerRef.current = null;
-    }
-    setPaused(false);
+  function onPointerDown() {
+    markInteracted();
+  }
+
+  function onTouchStart() {
+    markInteracted();
   }
 
   return (
-    <div
-      className={"relative " + className}
-      aria-label={ariaLabel}
-      role="region"
-    >
+    <div className={"relative " + className} aria-label={ariaLabel} role="region">
       <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-white/85 to-transparent dark:from-black/55" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white/85 to-transparent dark:from-black/55" />
 
       <div
         ref={scrollerRef}
         className="no-scrollbar overflow-x-auto overflow-y-hidden touch-pan-x"
-        onMouseMove={onActiveHoverMove}
-        onMouseLeave={onHoverLeave}
+        onMouseMove={onEdgeHoverMove}
         onWheel={onWheelHorizontal}
-        onTouchStart={() => pauseTemporarily(1800)}
-        onPointerDown={() => pauseTemporarily(1800)}
+        onPointerDown={onPointerDown}
+        onTouchStart={onTouchStart}
         style={{
           overscrollBehaviorX: "contain",
           WebkitOverflowScrolling: "touch",
