@@ -26,7 +26,6 @@ import {
 
 const APPLE_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-// Section child reveal variant for fade/slide-in when section comes into view
 const SECTION_CHILD: any = {
   hidden: { opacity: 0, y: 14, filter: "blur(8px)" },
   show: {
