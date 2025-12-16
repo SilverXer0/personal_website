@@ -1285,7 +1285,7 @@ export default function Page() {
               <>
                 <div className="flex items-end justify-between gap-4">
                   <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
-                    Writing and long-form work.
+                    Writing and long-form work from my research and studies.
                   </p>
 
                   <div className="hidden sm:flex items-center gap-2">
