@@ -1281,6 +1281,12 @@ export default function Page() {
                 desc: "Survey Paper on the history of load balancing in Distributed Systems.",
                 href: "/papers/load-balancing.pdf",
               },
+              {
+                title:
+                  "Exploring the Role of Compiler Optimizations in Modern Systems",
+                desc: "Senior project paper published through Cal Poly Digital Commons.",
+                href: "https://digitalcommons.calpoly.edu/cscsp/182/",
+              },
             ].length ? (
               <>
                 <div className="flex items-end justify-between gap-4">
@@ -1289,12 +1295,20 @@ export default function Page() {
                   </p>
 
                   <div className="hidden sm:flex items-center gap-2">
-                    {[{
-                      title:
-                        "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
-                      desc: "Survey Paper on the history of load balancing in Distributed Systems.",
-                      href: "/papers/load-balancing.pdf",
-                    }].map((_, i) => (
+                    {[
+                      {
+                        title:
+                          "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
+                        desc: "Survey Paper on the history of load balancing in Distributed Systems.",
+                        href: "/papers/load-balancing.pdf",
+                      },
+                      {
+                        title:
+                          "Exploring the Role of Compiler Optimizations in Modern Systems",
+                        desc: "Senior project paper published through Cal Poly Digital Commons.",
+                        href: "https://digitalcommons.calpoly.edu/cscsp/182/",
+                      },
+                    ].map((_, i) => (
                       <button
                         key={i}
                         type="button"
@@ -1343,12 +1357,20 @@ export default function Page() {
                     onTouchStart={() => pausePapersTemporarily(4500)}
                     onPointerDown={() => pausePapersTemporarily(4500)}
                   >
-                    {[{
-                      title:
-                        "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
-                      desc: "Survey Paper on the history of Load Balancing in Distributed Systems.",
-                      href: "/papers/load-balancing.pdf",
-                    }].map((w) => (
+                    {[
+                      {
+                        title:
+                          "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
+                        desc: "Survey Paper on the history of load balancing in Distributed Systems.",
+                        href: "/papers/load-balancing.pdf",
+                      },
+                      {
+                        title:
+                          "Integrating Machine Learning with an FPS Aim Trainer for Optimal Sensitivity Finding",
+                        desc: "Senior project paper published through Cal Poly Digital Commons.",
+                        href: "https://digitalcommons.calpoly.edu/cscsp/182/",
+                      },
+                    ].map((w) => (
                       <motion.a
                         key={w.title}
                         data-paper-item
