@@ -751,7 +751,7 @@ export default function Page() {
               className="mt-6 text-lg sm:text-xl text-neutral-700 dark:text-neutral-300 max-w-2xl"
             >
               I'm a Software Engineer that works across many different tech spaces, such as Distributed Systems,
-              Full Stack Development, and Mobile App Development, and Machine Learning.
+              Full Stack Development, Mobile App Development, and Machine Learning.
             </motion.p>
             <motion.div
               variants={heroItem}
