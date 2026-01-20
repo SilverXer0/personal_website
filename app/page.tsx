@@ -23,7 +23,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-
 const APPLE_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const SECTION_CHILD: any = {
@@ -144,7 +143,10 @@ export default function Page() {
     }
 
     const delta = Math.max(280, Math.floor(rect.width * 0.65));
-    el.scrollBy({ left: direction === "left" ? -delta : delta, behavior: "smooth" });
+    el.scrollBy({
+      left: direction === "left" ? -delta : delta,
+      behavior: "smooth",
+    });
   }
 
   function pauseExperienceTemporarily(ms: number) {
@@ -308,7 +310,11 @@ export default function Page() {
           return;
         }
 
-        const next = getNearestIndexFromScroll(el, "[data-paper-item]", papersIndex);
+        const next = getNearestIndexFromScroll(
+          el,
+          "[data-paper-item]",
+          papersIndex
+        );
         if (next !== papersIndex) {
           setPapersIndex(next);
         }
@@ -328,7 +334,9 @@ export default function Page() {
 
   function isAtScrollEnd(el: HTMLDivElement, epsilonPx = 2) {
     const maxScrollLeft = el.scrollWidth - el.clientWidth;
-    return maxScrollLeft <= 0 ? true : el.scrollLeft >= maxScrollLeft - epsilonPx;
+    return maxScrollLeft <= 0
+      ? true
+      : el.scrollLeft >= maxScrollLeft - epsilonPx;
   }
 
   function getNearestIndexFromScroll(
@@ -551,9 +559,9 @@ export default function Page() {
         location: "Cupertino, CA",
         bullets: [
           "Created a Drag and Drop application with Swift and SwiftUI to easily design upsell sheets for first-party applications in the App Store",
-          "Implemented a type-safe JSON serialization system for components using Swift’s Codable protocols, enabling seamless import and export of sheet designs and reducing designer handoff time by 25%",
-          "Engineered a centralized state management system using SwiftUI’s Observable framework and Swift Concurrency, enabling thread-safe and real-time editing across 15+ components and improving responsiveness by 40%",
-          "Integrated send to device and decreased final display time by 32% by routing through Apple Media Services JavaScript controllers and presenting the created sheet on the connected device",
+          "Implemented a type-safe serialization layer using Swift Codable, allowing for seamless import/export of sheetdesigns and improving designer handoff time by 25%",
+          "Engineered a centralized state management system using Swift Observable and Concurrency, enabling thread-safe and real-time editing across 14+ components and improving UI responsiveness by 40%",
+          "Integrated a send-to-device pipeline by routing through Apple Media Services JavaScript controllers to render sheets on different Operating Systems, accelerating cross-platform preview cycles by 32%",
         ],
       },
       {
@@ -563,8 +571,8 @@ export default function Page() {
         location: "Houston, TX",
         bullets: [
           "Built an automated testing app using JavaScript and React to automate code generation and streamline code reviews for code repositories and APIs",
-          "Integrated OpenAI with retrieval-augmented generation (RAG) in Python and Flask, boosting test efficiency by 15% and generating over 500 test cases per use",
-          "Automated GitHub API calls to update branches, reduce code versioning errors by 30%, and cut total integration time by 15 hours weekly",
+          "Integrated a retrieval-augmented generation (RAG) service using Python and Flask to dynamically generate tests, improving coverage by 15% and scaling test generation to 500+ cases per use",
+          "Automated GitHub workflows and branch management through custom API calls, reducing versioning conflicts by 30% and improving CI throughput by cutting 15 engineering hours per week",
         ],
       },
       {
@@ -573,9 +581,9 @@ export default function Page() {
         period: "June - September 2023",
         location: "Berkeley, CA",
         bullets: [
-          "Engineered augmented reality simulations in C# and Unity for creating and placing buildings in real locations around the world",
-          "Enhanced visualization accuracy in simulations and improved review efficiency for stakeholders by 25% by altering design metrics and customization features for custom-made buildings",
-          "Reworked the IOS app in Swift by fixing bugs and improving the user interface, leading to a 20% increase in user retention and a 17% improvement in overall app performance",
+          "Engineered real-time augmented reality simulations in C# and Unity for creating and placing buildings in real locations around the world",
+          "Enhanced visualization accuracy and rendering performance in simulations by refining spatial metrics and customization pipelines, increasing stakeholder review efficiency by 25%",
+          "Refactored and stabilized the iOS application in Swift, resolving performance bottlenecks and reliability issues that improved user retention by 20% and overall app performance by 17%",
           "Created a minimum viable product TAGS for 3D tagging and note features in custom augmented reality creations, increasing designer interaction by 30%",
         ],
       },
@@ -601,21 +609,27 @@ export default function Page() {
         tagline: "Find your next binge",
         desc: "Anime recommender with GCP and locally trained machine learning models",
         tech: ["GCP", "Cloud SQL", "VPC", "Python", "Kubernetes", "Apache"],
-        links: [{ label: "Repo", href: "https://github.com/SilverXer0/AniSense" }],
+        links: [
+          { label: "Repo", href: "https://github.com/SilverXer0/AniSense" },
+        ],
       },
       {
         name: "Aurora",
         tagline: "High-throughput telemetry backend",
         desc: "C++ backend that ingests real-time telemetry, stores data in cache, and exposes low-latency aggregate queries",
         tech: ["C++", "gRPC", "Protobuf", "RocksDB", "OpenTelemetry"],
-        links: [{ label: "Repo", href: "https://github.com/SilverXer0/Aurora" }],
+        links: [
+          { label: "Repo", href: "https://github.com/SilverXer0/Aurora" },
+        ],
       },
       {
         name: "MoodMuse",
         tagline: "Emotion-aware journaling",
         desc: "Captures images and entries, performs on-device analysis, and surfaces trends privately.",
         tech: ["Swift", "SwiftUI", "VisionKit"],
-        links: [{ label: "Repo", href: "https://github.com/SilverXer0/MoodMuse" }],
+        links: [
+          { label: "Repo", href: "https://github.com/SilverXer0/MoodMuse" },
+        ],
       },
       {
         name: "Aim Trainer / Sensitivity Finder",
@@ -631,17 +645,22 @@ export default function Page() {
       },
       {
         name: "MintMatch",
-        tagline: "Win real tokens on the blockchain and save them to your crypto wallet",
+        tagline:
+          "Win real tokens on the blockchain and save them to your crypto wallet",
         desc: "Blockchain token matching game",
         tech: ["Solidity", "Javascript", "Smart Contracts"],
-        links: [{ label: "Repo", href: "https://github.com/SilverXer0/MintMatch" }],
+        links: [
+          { label: "Repo", href: "https://github.com/SilverXer0/MintMatch" },
+        ],
       },
       {
         name: "Chatter",
         tagline: "Talk with simple AI and learn more about it",
         desc: "Self Learning Chatbot",
         tech: ["Python", "NLTK", "NLP"],
-        links: [{ label: "Repo", href: "https://github.com/SilverXer0/Chatbot" }],
+        links: [
+          { label: "Repo", href: "https://github.com/SilverXer0/Chatbot" },
+        ],
       },
     ],
     []
@@ -651,15 +670,15 @@ export default function Page() {
     () => [
       {
         kind: "video" as const,
-        title: "Valorant Montage",
+        title: "Golden (Valorant Highlights)",
         caption: "Check out this Valorant Montage I edited!",
-        src: "https://www.youtube.com/embed/j34JIwGZIKE",
+        src: "https://www.youtube.com/embed/XHPkHmX0EUk",
       },
       {
         kind: "video" as const,
-        title: "Valorant Montage (New)",
+        title: "How it's Done (Valorant Highlights)",
         caption: "Check out this Valorant Montage I edited!",
-        src: "https://www.youtube.com/embed/nHwBTzHRkQk",
+        src: "https://www.youtube.com/embed/HRPBnYFUHVs",
       },
       {
         kind: "image" as const,
@@ -678,13 +697,21 @@ export default function Page() {
   );
 
   const awards = [
-    { title: "Dean's List", org: "Cal Poly, SLO", year: "All Terms Sept 2022 - Dec 2025" },
-    { title: "Presidential Award", org: "Cal Poly, SLO", year: "All Years 2022 - 2025" },
+    {
+      title: "Dean's List",
+      org: "Cal Poly, SLO",
+      year: "All Terms Sept 2022 - Dec 2025",
+    },
+    {
+      title: "Presidential Award",
+      org: "Cal Poly, SLO",
+      year: "All Years 2022 - 2025",
+    },
     { title: "ACT", org: "36/36", year: "April 2021" },
   ];
   return (
     <div
-      className={(mounted && theme === "dark" ? "dark" : "")}
+      className={mounted && theme === "dark" ? "dark" : ""}
       suppressHydrationWarning
     >
       <SpaceBackground />
@@ -697,13 +724,27 @@ export default function Page() {
             </div>
 
             <div className="hidden md:flex items-center gap-6 text-sm">
-              <a href="#about" className="hover:opacity-80">About</a>
-              <a href="#experience" className="hover:opacity-80">Experience</a>
-              <a href="#projects" className="hover:opacity-80">Projects</a>
-              <a href="#skills" className="hover:opacity-80">Skills</a>
-              <a href="#papers" className="hover:opacity-80">Papers</a>
-              <a href="#awards" className="hover:opacity-80">Awards</a>
-              <a href="#contact" className="hover:opacity-80">Contact</a>
+              <a href="#about" className="hover:opacity-80">
+                About
+              </a>
+              <a href="#experience" className="hover:opacity-80">
+                Experience
+              </a>
+              <a href="#projects" className="hover:opacity-80">
+                Projects
+              </a>
+              <a href="#skills" className="hover:opacity-80">
+                Skills
+              </a>
+              <a href="#papers" className="hover:opacity-80">
+                Papers
+              </a>
+              <a href="#awards" className="hover:opacity-80">
+                Awards
+              </a>
+              <a href="#contact" className="hover:opacity-80">
+                Contact
+              </a>
             </div>
 
             <div className="flex items-center gap-2">
@@ -726,7 +767,11 @@ export default function Page() {
                 }}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:bg-white/80 hover:-translate-y-0.5 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
               >
-                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
               </button>
             </div>
           </div>
@@ -750,8 +795,9 @@ export default function Page() {
               variants={heroItem}
               className="mt-6 text-lg sm:text-xl text-neutral-700 dark:text-neutral-300 max-w-2xl"
             >
-              I'm a Software Engineer that works across many different tech spaces, such as Distributed Systems,
-              Full Stack Development, Mobile App Development, and Machine Learning.
+              I'm a Software Engineer that works across many different tech
+              spaces, such as Distributed Systems, Full Stack Development,
+              Mobile App Development, and Machine Learning.
             </motion.p>
             <motion.div
               variants={heroItem}
@@ -773,8 +819,14 @@ export default function Page() {
           </motion.div>
 
           <motion.div
-            initial={reducedMotion ? false : { opacity: 0, y: 16, filter: "blur(10px)" }}
-            animate={reducedMotion ? false : { opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={
+              reducedMotion
+                ? false
+                : { opacity: 0, y: 16, filter: "blur(10px)" }
+            }
+            animate={
+              reducedMotion ? false : { opacity: 1, y: 0, filter: "blur(0px)" }
+            }
             transition={{ duration: 0.8, delay: 0.12, ease: APPLE_EASE }}
             className="mx-auto mt-10 max-w-[80rem]"
           >
@@ -783,9 +835,7 @@ export default function Page() {
               durationSec={18}
               className="mt-0"
               renderItem={(item) => (
-                <div
-                  className="h-[220px] w-[320px] flex flex-col justify-center rounded-3xl border border-black/10 bg-white/70 p-7 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
-                >
+                <div className="h-[220px] w-[320px] flex flex-col justify-center rounded-3xl border border-black/10 bg-white/70 p-7 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
                   <div className="text-sm font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
                     {item.label}
                   </div>
@@ -890,20 +940,31 @@ export default function Page() {
           </motion.div>
         </header>
 
-
-        <Section id="about" titleIcon={<Code2 className="h-5 w-5" />} title="About">
+        <Section
+          id="about"
+          titleIcon={<Code2 className="h-5 w-5" />}
+          title="About"
+        >
           <div className="mt-10 space-y-8">
             <div className="rounded-3xl border border-black/10 bg-white/70 p-8 sm:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
               <div className="mx-auto max-w-3xl text-center">
                 <p className="text-lg sm:text-xl leading-relaxed text-neutral-800 dark:text-neutral-200">
-                  I build software with an emphasis on scalability, reliability, and thoughtful product polish, regardless of the tech stack.
-                  Lately I have been focused on <strong>distributed systems</strong>, learning from papers and research,
-                  and applying those ideas to projects like <strong>Aurora</strong>, a high-throughput telemetry backend.
+                  I build software with an emphasis on scalability, reliability,
+                  and thoughtful product polish, regardless of the tech stack.
+                  Lately I have been focused on{" "}
+                  <strong>distributed systems</strong>, learning from papers and
+                  research, and applying those ideas to projects like{" "}
+                  <strong>Aurora</strong>, a high-throughput telemetry backend.
                 </p>
                 <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
-                  In my most recent internship at Apple, I worked heavily with <strong>Swift Concurrency</strong> to keep real-time editing experiences
-                  responsive and correct, along with building out the drag-and-drop application with <strong>SwiftUI</strong>. Outside of work, I have been improving my <strong>AWS</strong> skills 
-                  to obtain  multiple certifications and building end-to-end projects that combine performance, observability, and a clean User Interface.
+                  In my most recent internship at Apple, I worked heavily with{" "}
+                  <strong>Swift Concurrency</strong> to keep real-time editing
+                  experiences responsive and correct, along with building out
+                  the drag-and-drop application with <strong>SwiftUI</strong>.
+                  Outside of work, I have been improving my <strong>AWS</strong>{" "}
+                  skills to obtain multiple certifications and building
+                  end-to-end projects that combine performance, observability,
+                  and a clean User Interface.
                 </p>
               </div>
             </div>
@@ -912,10 +973,22 @@ export default function Page() {
               <div className="lg:col-span-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {[
-                    { k: "Seeking", v: "Connections, collaborations, and impactful SWE roles" },
-                    { k: "Interests", v: "Software Development, Distributed Systems, Cloud, and Machine Learning" },
-                    { k: "Currently", v: "Reading papers on Distributed Systems and Researching" },
-                    { k: "Outside", v: "PC Games like Valorant and Counter Strike, Basketball, F1, and PC Tinkering" },
+                    {
+                      k: "Seeking",
+                      v: "Connections, collaborations, and impactful SWE roles",
+                    },
+                    {
+                      k: "Interests",
+                      v: "Software Development, Distributed Systems, Cloud, and Machine Learning",
+                    },
+                    {
+                      k: "Currently",
+                      v: "Reading papers on Distributed Systems and Researching",
+                    },
+                    {
+                      k: "Outside",
+                      v: "PC Games like Valorant and Counter Strike, Basketball, F1, and PC Tinkering",
+                    },
                   ].map((item) => (
                     <div
                       key={item.k}
@@ -942,8 +1015,10 @@ export default function Page() {
                           aria-label="Previous media"
                           className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/80 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
                           onClick={() => {
-                            setAboutMediaIndex((i) =>
-                              (i - 1 + aboutMediaItems.length) % aboutMediaItems.length
+                            setAboutMediaIndex(
+                              (i) =>
+                                (i - 1 + aboutMediaItems.length) %
+                                aboutMediaItems.length
                             );
                           }}
                         >
@@ -955,7 +1030,9 @@ export default function Page() {
                           aria-label="Next media"
                           className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/80 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
                           onClick={() => {
-                            setAboutMediaIndex((i) => (i + 1) % aboutMediaItems.length);
+                            setAboutMediaIndex(
+                              (i) => (i + 1) % aboutMediaItems.length
+                            );
                           }}
                         >
                           <ChevronRight className="h-5 w-5" />
@@ -1006,7 +1083,11 @@ export default function Page() {
           </div>
         </Section>
 
-        <Section id="experience" titleIcon={<Rocket className="h-5 w-5" />} title="Experience">
+        <Section
+          id="experience"
+          titleIcon={<Rocket className="h-5 w-5" />}
+          title="Experience"
+        >
           <div className="mt-8">
             <div className="flex items-end justify-between gap-4">
               <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
@@ -1025,14 +1106,19 @@ export default function Page() {
                         return;
                       }
                       const children = Array.from(
-                        el.querySelectorAll<HTMLElement>("[data-experience-item]")
+                        el.querySelectorAll<HTMLElement>(
+                          "[data-experience-item]"
+                        )
                       );
                       const target = children[i];
                       if (!target) {
                         return;
                       }
                       pauseExperienceTemporarily(4500);
-                      el.scrollTo({ left: target.offsetLeft - 16, behavior: "smooth" });
+                      el.scrollTo({
+                        left: target.offsetLeft - 16,
+                        behavior: "smooth",
+                      });
                       setExperienceIndex(i);
                     }}
                     className={
@@ -1128,7 +1214,11 @@ export default function Page() {
           </div>
         </Section>
 
-        <Section id="projects" titleIcon={<Code2 className="h-5 w-5" />} title="Projects">
+        <Section
+          id="projects"
+          titleIcon={<Code2 className="h-5 w-5" />}
+          title="Projects"
+        >
           <div className="mt-8">
             <div className="flex items-end justify-between gap-4">
               <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
@@ -1154,7 +1244,10 @@ export default function Page() {
                         return;
                       }
                       pauseCarouselTemporarily(4500);
-                      el.scrollTo({ left: target.offsetLeft - 16, behavior: "smooth" });
+                      el.scrollTo({
+                        left: target.offsetLeft - 16,
+                        behavior: "smooth",
+                      });
                       setCarouselIndex(i);
                     }}
                     className={
@@ -1171,8 +1264,20 @@ export default function Page() {
             <div
               className="relative mt-6 -mx-2"
               onMouseMove={(e) => {
-                edgeHoverScroll(e, projectsCarouselRef, projectsHoverCooldownRef, "left", pauseCarouselTemporarily);
-                edgeHoverScroll(e, projectsCarouselRef, projectsHoverCooldownRef, "right", pauseCarouselTemporarily);
+                edgeHoverScroll(
+                  e,
+                  projectsCarouselRef,
+                  projectsHoverCooldownRef,
+                  "left",
+                  pauseCarouselTemporarily
+                );
+                edgeHoverScroll(
+                  e,
+                  projectsCarouselRef,
+                  projectsHoverCooldownRef,
+                  "right",
+                  pauseCarouselTemporarily
+                );
               }}
             >
               <div
@@ -1242,12 +1347,19 @@ export default function Page() {
           </div>
         </Section>
 
-        <Section id="skills" titleIcon={<Code2 className="h-5 w-5" />} title="Skills">
+        <Section
+          id="skills"
+          titleIcon={<Code2 className="h-5 w-5" />}
+          title="Skills"
+        >
           <div className="mt-8">
             <Card>
               <div className="space-y-6">
                 {skills.map((s) => (
-                  <div key={s.group} className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-6">
+                  <div
+                    key={s.group}
+                    className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-6"
+                  >
                     <div className="md:col-span-1">
                       <div className="text-[11px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
                         {s.group}
@@ -1319,14 +1431,19 @@ export default function Page() {
                             return;
                           }
                           const children = Array.from(
-                            el.querySelectorAll<HTMLElement>("[data-paper-item]")
+                            el.querySelectorAll<HTMLElement>(
+                              "[data-paper-item]"
+                            )
                           );
                           const target = children[i];
                           if (!target) {
                             return;
                           }
                           pausePapersTemporarily(4500);
-                          el.scrollTo({ left: target.offsetLeft - 16, behavior: "smooth" });
+                          el.scrollTo({
+                            left: target.offsetLeft - 16,
+                            behavior: "smooth",
+                          });
                           setPapersIndex(i);
                         }}
                         className={
@@ -1343,8 +1460,20 @@ export default function Page() {
                 <div
                   className="relative mt-6 -mx-2"
                   onMouseMove={(e) => {
-                    edgeHoverScroll(e, papersCarouselRef, papersHoverCooldownRef, "left", pausePapersTemporarily);
-                    edgeHoverScroll(e, papersCarouselRef, papersHoverCooldownRef, "right", pausePapersTemporarily);
+                    edgeHoverScroll(
+                      e,
+                      papersCarouselRef,
+                      papersHoverCooldownRef,
+                      "left",
+                      pausePapersTemporarily
+                    );
+                    edgeHoverScroll(
+                      e,
+                      papersCarouselRef,
+                      papersHoverCooldownRef,
+                      "right",
+                      pausePapersTemporarily
+                    );
                   }}
                 >
                   <div
@@ -1409,7 +1538,11 @@ export default function Page() {
           </div>
         </Section>
 
-        <Section id="awards" titleIcon={<Trophy className="h-5 w-5" />} title="Awards & Highlights">
+        <Section
+          id="awards"
+          titleIcon={<Trophy className="h-5 w-5" />}
+          title="Awards & Highlights"
+        >
           <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {awards.map((a) => (
               <Card key={a.title}>
@@ -1421,12 +1554,17 @@ export default function Page() {
           </div>
         </Section>
 
-        <Section id="contact" titleIcon={<Mail className="h-5 w-5" />} title="Get in touch">
+        <Section
+          id="contact"
+          titleIcon={<Mail className="h-5 w-5" />}
+          title="Get in touch"
+        >
           <div className="mt-8">
             <Card>
               <p className="text-neutral-700 dark:text-neutral-300">
-                I’m always down to chat about job opportunites, research, or fun side projects. Feel
-                free to email me or connect with me on LinkedIn!
+                I’m always down to chat about job opportunites, research, or fun
+                side projects. Feel free to email me or connect with me on
+                LinkedIn!
               </p>
 
               <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -1461,7 +1599,8 @@ export default function Page() {
           </div>
 
           <footer className="py-10 text-center text-xs text-neutral-500">
-            © {new Date().getFullYear()} Sharan Krishna - built with Next.js & Tailwind.
+            © {new Date().getFullYear()} Sharan Krishna - built with Next.js &
+            Tailwind.
           </footer>
         </Section>
       </div>
@@ -1492,7 +1631,11 @@ function Section({
         show: {
           opacity: 1,
           y: 0,
-          transition: { duration: 0.7, ease: APPLE_EASE, staggerChildren: 0.08 },
+          transition: {
+            duration: 0.7,
+            ease: APPLE_EASE,
+            staggerChildren: 0.08,
+          },
         },
       }}
     >
@@ -1511,7 +1654,9 @@ function Section({
         <div className="rounded-2xl border border-black/10 dark:border-white/10 px-2.5 py-1 text-xs inline-flex items-center gap-1">
           {titleIcon}
         </div>
-        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">{title}</h2>
+        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+          {title}
+        </h2>
       </motion.div>
       <motion.div
         variants={{
@@ -1575,8 +1720,13 @@ function PixelRevealOverlay() {
   );
 }
 
-
-function Card({ children, href }: { children: React.ReactNode; href?: string }) {
+function Card({
+  children,
+  href,
+}: {
+  children: React.ReactNode;
+  href?: string;
+}) {
   const className =
     "rounded-3xl border border-black/10 bg-white/70 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15";
 
@@ -1689,7 +1839,10 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
 
     const rect = el.getBoundingClientRect();
     const delta = Math.max(260, Math.floor(rect.width * 0.62));
-    el.scrollBy({ left: direction === "left" ? -delta : delta, behavior: "smooth" });
+    el.scrollBy({
+      left: direction === "left" ? -delta : delta,
+      behavior: "smooth",
+    });
 
     const t = window.setTimeout(() => {
       normalize();
@@ -1858,7 +2011,11 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
   }
 
   return (
-    <div className={"relative " + className} aria-label={ariaLabel} role="region">
+    <div
+      className={"relative " + className}
+      aria-label={ariaLabel}
+      role="region"
+    >
       <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-white/85 to-transparent dark:from-black/55" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white/85 to-transparent dark:from-black/55" />
 
