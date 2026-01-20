@@ -670,6 +670,12 @@ export default function Page() {
     () => [
       {
         kind: "video" as const,
+        title: "Distance (Valorant Highlights)",
+        caption: "Check out my newest Valorant Montage!",
+        src: "https://www.youtube.com/embed/G9GzH6RNCsc",
+      },
+      {
+        kind: "video" as const,
         title: "Golden (Valorant Highlights)",
         caption: "Check out this Valorant Montage I edited!",
         src: "https://www.youtube.com/embed/XHPkHmX0EUk",
@@ -679,12 +685,6 @@ export default function Page() {
         title: "How it's Done (Valorant Highlights)",
         caption: "Check out this Valorant Montage I edited!",
         src: "https://www.youtube.com/embed/HRPBnYFUHVs",
-      },
-      {
-        kind: "image" as const,
-        title: "Cal Poly",
-        caption: "A snapshot of Cal Poly.",
-        src: "/photos/Cal-Poly-SLO.jpg",
       },
       {
         kind: "image" as const,
