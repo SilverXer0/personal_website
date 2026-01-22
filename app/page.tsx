@@ -903,7 +903,7 @@ export default function Page() {
                 {
                   key: "grad",
                   kind: "grad",
-                  label: "Expected grad",
+                  label: "Gradudation Date",
                   primary: "Dec 2025",
                   secondary: "San Luis Obispo, CA",
                 },
