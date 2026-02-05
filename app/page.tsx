@@ -1520,14 +1520,12 @@ export default function Page() {
           title="Awards & Highlights"
         >
           {(() => {
-            // Carousel state/refs for awards
             const [awardsPaused, setAwardsPaused] = React.useState(false);
             const [awardsIndex, setAwardsIndex] = React.useState(0);
             const awardsCarouselRef = React.useRef<HTMLDivElement | null>(null);
             const awardsHoverCooldownRef = React.useRef(0);
             const awardsResumeTimerRef = React.useRef<number | null>(null);
 
-            // Pause awards carousel temporarily
             function pauseAwardsTemporarily(ms: number) {
               setAwardsPaused(true);
               if (awardsResumeTimerRef.current) {
@@ -1539,7 +1537,6 @@ export default function Page() {
               }, ms);
             }
 
-            // Scroll awards carousel on interval (autoplay)
             React.useEffect(() => {
               if (awardsPaused) return;
               const el = awardsCarouselRef.current;
@@ -1559,7 +1556,6 @@ export default function Page() {
               return () => window.clearInterval(id);
             }, [awardsPaused, awardsIndex]);
 
-            // Cleanup timer on unmount
             React.useEffect(() => {
               return () => {
                 if (awardsResumeTimerRef.current) {
@@ -1568,7 +1564,6 @@ export default function Page() {
               };
             }, []);
 
-            // Update awardsIndex on scroll
             React.useEffect(() => {
               const el = awardsCarouselRef.current;
               if (!el) return;
@@ -1582,7 +1577,6 @@ export default function Page() {
                     el.querySelectorAll<HTMLElement>("[data-award-item]")
                   );
                   if (items.length === 0) return;
-                  // at end?
                   const maxScrollLeft = el.scrollWidth - el.clientWidth;
                   if (maxScrollLeft <= 0
                     ? true
@@ -1592,7 +1586,6 @@ export default function Page() {
                     if (last !== awardsIndex) setAwardsIndex(last);
                     return;
                   }
-                  // nearest index
                   const viewportCenter = el.scrollLeft + el.clientWidth / 2;
                   let bestIndex = awardsIndex;
                   let bestDist = Number.POSITIVE_INFINITY;
@@ -1616,7 +1609,6 @@ export default function Page() {
               };
             }, [awardsIndex]);
 
-            // Render carousel
             return (
               <div className="mt-8">
                 <div className="flex items-end justify-between gap-4">
@@ -1996,7 +1988,6 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
   const hoverCooldownRef = useRef(0);
   const userInteractedRef = useRef(false);
 
-  // --- ARROW BUTTON SCROLL HELPERS ---
   const scrollByCard = (direction: "left" | "right") => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -2005,7 +1996,7 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
     if (!children.length) return;
 
     const cardWidth = (children[0] as HTMLElement).offsetWidth;
-    const gap = 24; // matches your gap-6 / gap-4 spacing
+    const gap = 24; 
     const delta = cardWidth + gap;
 
     el.scrollBy({
