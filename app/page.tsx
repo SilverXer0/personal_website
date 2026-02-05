@@ -81,7 +81,7 @@ export default function Page() {
         transition: { staggerChildren: 0.08, delayChildren: 0.05 },
       },
     }),
-    []
+    [],
   );
 
   const heroItem = useMemo(
@@ -94,7 +94,7 @@ export default function Page() {
         transition: { duration: 0.75, ease: APPLE_EASE },
       },
     }),
-    []
+    [],
   );
 
   function pauseCarouselTemporarily(ms: number) {
@@ -113,7 +113,7 @@ export default function Page() {
     elRef: React.RefObject<HTMLDivElement>,
     cooldownRef: React.MutableRefObject<number>,
     direction: "left" | "right",
-    pauseFn?: (ms: number) => void
+    pauseFn?: (ms: number) => void,
   ) {
     const el = elRef.current;
     if (!el) {
@@ -247,7 +247,7 @@ export default function Page() {
       }
 
       const children = Array.from(
-        el.querySelectorAll<HTMLElement>("[data-carousel-item]")
+        el.querySelectorAll<HTMLElement>("[data-carousel-item]"),
       );
       if (children.length === 0) {
         return;
@@ -296,7 +296,7 @@ export default function Page() {
       rafId = window.requestAnimationFrame(() => {
         rafId = null;
         const items = Array.from(
-          el.querySelectorAll<HTMLElement>("[data-paper-item]")
+          el.querySelectorAll<HTMLElement>("[data-paper-item]"),
         );
         if (items.length === 0) {
           return;
@@ -313,7 +313,7 @@ export default function Page() {
         const next = getNearestIndexFromScroll(
           el,
           "[data-paper-item]",
-          papersIndex
+          papersIndex,
         );
         if (next !== papersIndex) {
           setPapersIndex(next);
@@ -342,7 +342,7 @@ export default function Page() {
   function getNearestIndexFromScroll(
     el: HTMLDivElement,
     itemSelector: string,
-    currentIndex: number
+    currentIndex: number,
   ) {
     const items = Array.from(el.querySelectorAll<HTMLElement>(itemSelector));
     if (items.length === 0) {
@@ -381,7 +381,7 @@ export default function Page() {
       }
 
       const children = Array.from(
-        el.querySelectorAll<HTMLElement>("[data-experience-item]")
+        el.querySelectorAll<HTMLElement>("[data-experience-item]"),
       );
       if (children.length === 0) {
         return;
@@ -417,7 +417,7 @@ export default function Page() {
       rafId = window.requestAnimationFrame(() => {
         rafId = null;
         const items = Array.from(
-          el.querySelectorAll<HTMLElement>("[data-carousel-item]")
+          el.querySelectorAll<HTMLElement>("[data-carousel-item]"),
         );
         if (items.length === 0) {
           return;
@@ -434,7 +434,7 @@ export default function Page() {
         const next = getNearestIndexFromScroll(
           el,
           "[data-carousel-item]",
-          carouselIndex
+          carouselIndex,
         );
         if (next !== carouselIndex) {
           setCarouselIndex(next);
@@ -473,7 +473,7 @@ export default function Page() {
       rafId = window.requestAnimationFrame(() => {
         rafId = null;
         const items = Array.from(
-          el.querySelectorAll<HTMLElement>("[data-experience-item]")
+          el.querySelectorAll<HTMLElement>("[data-experience-item]"),
         );
         if (items.length === 0) {
           return;
@@ -490,7 +490,7 @@ export default function Page() {
         const next = getNearestIndexFromScroll(
           el,
           "[data-experience-item]",
-          experienceIndex
+          experienceIndex,
         );
         if (next !== experienceIndex) {
           setExperienceIndex(next);
@@ -547,7 +547,7 @@ export default function Page() {
         items: ["AWS", "GCP", "MySQL", "PostgreSQL", "Redis", "Docker"],
       },
     ],
-    []
+    [],
   );
 
   const experience = useMemo(
@@ -599,7 +599,7 @@ export default function Page() {
         ],
       },
     ],
-    []
+    [],
   );
 
   const projects = useMemo(
@@ -663,7 +663,7 @@ export default function Page() {
         ],
       },
     ],
-    []
+    [],
   );
 
   const aboutMediaItems = useMemo(
@@ -672,28 +672,22 @@ export default function Page() {
         kind: "video" as const,
         title: "Distance (Valorant Highlights)",
         caption: "Check out my newest Valorant Montage!",
-        src: "https://www.youtube.com/embed/G9GzH6RNCsc",
-      },
-      {
-        kind: "video" as const,
-        title: "Golden (Valorant Highlights)",
-        caption: "Check out this Valorant Montage I edited!",
-        src: "https://www.youtube.com/embed/XHPkHmX0EUk",
-      },
-      {
-        kind: "video" as const,
-        title: "How it's Done (Valorant Highlights)",
-        caption: "Check out this Valorant Montage I edited!",
-        src: "https://www.youtube.com/embed/HRPBnYFUHVs",
+        src: "https://www.youtube.com/embed/39FokPrcl44",
       },
       {
         kind: "image" as const,
         title: "Coding",
-        caption: "A snapshot of my VSCode.",
+        caption: "A pictue of the Cal Poly Campus",
+        src: "/photos/Cal-Poly-SLO.jpg",
+      },
+      {
+        kind: "image" as const,
+        title: "Coding",
+        caption: "A snapshot of my VSCode",
         src: "/photos/code.png",
       },
     ],
-    []
+    [],
   );
 
   const awards = [
@@ -1018,7 +1012,7 @@ export default function Page() {
                             setAboutMediaIndex(
                               (i) =>
                                 (i - 1 + aboutMediaItems.length) %
-                                aboutMediaItems.length
+                                aboutMediaItems.length,
                             );
                           }}
                         >
@@ -1031,7 +1025,7 @@ export default function Page() {
                           className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/80 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
                           onClick={() => {
                             setAboutMediaIndex(
-                              (i) => (i + 1) % aboutMediaItems.length
+                              (i) => (i + 1) % aboutMediaItems.length,
                             );
                           }}
                         >
@@ -1107,8 +1101,8 @@ export default function Page() {
                       }
                       const children = Array.from(
                         el.querySelectorAll<HTMLElement>(
-                          "[data-experience-item]"
-                        )
+                          "[data-experience-item]",
+                        ),
                       );
                       const target = children[i];
                       if (!target) {
@@ -1140,14 +1134,14 @@ export default function Page() {
                   experienceCarouselRef,
                   experienceHoverCooldownRef,
                   "left",
-                  pauseExperienceTemporarily
+                  pauseExperienceTemporarily,
                 );
                 edgeHoverScroll(
                   e,
                   experienceCarouselRef,
                   experienceHoverCooldownRef,
                   "right",
-                  pauseExperienceTemporarily
+                  pauseExperienceTemporarily,
                 );
               }}
             >
@@ -1237,7 +1231,9 @@ export default function Page() {
                         return;
                       }
                       const children = Array.from(
-                        el.querySelectorAll<HTMLElement>("[data-carousel-item]")
+                        el.querySelectorAll<HTMLElement>(
+                          "[data-carousel-item]",
+                        ),
                       );
                       const target = children[i];
                       if (!target) {
@@ -1269,14 +1265,14 @@ export default function Page() {
                   projectsCarouselRef,
                   projectsHoverCooldownRef,
                   "left",
-                  pauseCarouselTemporarily
+                  pauseCarouselTemporarily,
                 );
                 edgeHoverScroll(
                   e,
                   projectsCarouselRef,
                   projectsHoverCooldownRef,
                   "right",
-                  pauseCarouselTemporarily
+                  pauseCarouselTemporarily,
                 );
               }}
             >
@@ -1432,8 +1428,8 @@ export default function Page() {
                           }
                           const children = Array.from(
                             el.querySelectorAll<HTMLElement>(
-                              "[data-paper-item]"
-                            )
+                              "[data-paper-item]",
+                            ),
                           );
                           const target = children[i];
                           if (!target) {
@@ -1465,14 +1461,14 @@ export default function Page() {
                       papersCarouselRef,
                       papersHoverCooldownRef,
                       "left",
-                      pausePapersTemporarily
+                      pausePapersTemporarily,
                     );
                     edgeHoverScroll(
                       e,
                       papersCarouselRef,
                       papersHoverCooldownRef,
                       "right",
-                      pausePapersTemporarily
+                      pausePapersTemporarily,
                     );
                   }}
                 >
