@@ -4,6 +4,7 @@ import SpaceBackground from "./components/SpaceBackground";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
+  ArrowLeft,
   ArrowRight,
   Download,
   Github,
@@ -143,6 +144,26 @@ export default function Page() {
     }
 
     const delta = Math.max(280, Math.floor(rect.width * 0.65));
+    el.scrollBy({
+      left: direction === "left" ? -delta : delta,
+      behavior: "smooth",
+    });
+  }
+
+  // Helper for arrow scroll (same effect as edgeHoverScroll, but not using mouse events)
+  function scrollCarouselByEdge(
+    elRef: React.RefObject<HTMLDivElement>,
+    direction: "left" | "right",
+    pauseFn?: (ms: number) => void,
+  ) {
+    const el = elRef.current;
+    if (!el) return;
+
+    if (pauseFn) {
+      pauseFn(2200);
+    }
+
+    const delta = Math.max(280, Math.floor(el.clientWidth * 0.65));
     el.scrollBy({
       left: direction === "left" ? -delta : delta,
       behavior: "smooth",
@@ -692,6 +713,11 @@ export default function Page() {
 
   const awards = [
     {
+      title: "Summa Cum Laude",
+      org: "Cal Poly, SLO",
+      year: "Dec 2025",
+    },
+    {
       title: "Dean's List",
       org: "Cal Poly, SLO",
       year: "All Terms Sept 2022 - Dec 2025",
@@ -781,157 +807,60 @@ export default function Page() {
             {!reducedMotion ? <PixelRevealOverlay /> : null}
             <motion.h1
               variants={heroItem}
-              className="mt-0 text-5xl sm:text-6xl font-semibold tracking-tight font-sans"
+              className="mt-2 text-7xl sm:text-8xl font-semibold tracking-tight font-sans"
             >
               Hi, I'm Sharan.
             </motion.h1>
-            <motion.p
-              variants={heroItem}
-              className="mt-6 text-lg sm:text-xl text-neutral-700 dark:text-neutral-300 max-w-2xl"
-            >
-              I'm a Software Engineer that works across many different tech
-              spaces, such as Distributed Systems, Full Stack Development,
-              Mobile App Development, and Machine Learning.
-            </motion.p>
             <motion.div
               variants={heroItem}
-              className="mt-9 flex flex-wrap items-center justify-center gap-3"
+              className="mt-10 flex flex-col items-center text-center"
             >
-              <a
-                href="#experience"
-                className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.22)] hover:ring-1 hover:ring-black/10 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/15"
-              >
-                See Experience <ArrowRight className="h-4 w-4" />
-              </a>
-              <a
-                href="#contact"
-                className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-5 py-2.5 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/75 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/10 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
-              >
-                Get in touch <Mail className="h-4 w-4" />
-              </a>
+              <div className="text-4xl sm:text-5xl font-semibold text-neutral-800 dark:text-neutral-300">
+                Software Engineer
+              </div>
+              <div className="mt-4 text-lg sm:text-xl text-neutral-600 dark:text-neutral-400">
+                Distributed Systems, Infrastructure, Machine Learning
+              </div>
+            </motion.div>
+            <motion.div
+              variants={heroItem}
+              className="mt-9 flex flex-wrap items-center gap-4"
+            >
+              <div className="flex gap-3">
+                <a
+                  href="#experience"
+                  className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.22)] hover:ring-1 hover:ring-black/10 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/15"
+                >
+                  See Experience <ArrowRight className="h-4 w-4" />
+                </a>
+                <a
+                  href="#contact"
+                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-5 py-2.5 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/75 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/10 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
+                >
+                  Get in touch <Mail className="h-4 w-4" />
+                </a>
+              </div>
+              {/* <div className="ml-auto">
+                <CarouselArrows
+                  onPrev={() =>
+                    scrollCarouselByEdge(
+                      projectsCarouselRef,
+                      "left",
+                      pauseCarouselTemporarily,
+                    )
+                  }
+                  onNext={() =>
+                    scrollCarouselByEdge(
+                      projectsCarouselRef,
+                      "right",
+                      pauseCarouselTemporarily,
+                    )
+                  }
+                />
+              </div> */}
             </motion.div>
           </motion.div>
 
-          <motion.div
-            initial={
-              reducedMotion
-                ? false
-                : { opacity: 0, y: 16, filter: "blur(10px)" }
-            }
-            animate={
-              reducedMotion ? false : { opacity: 1, y: 0, filter: "blur(0px)" }
-            }
-            transition={{ duration: 0.8, delay: 0.12, ease: APPLE_EASE }}
-            className="mx-auto mt-10 max-w-[80rem]"
-          >
-            <MarqueeRow
-              ariaLabel="Highlights"
-              durationSec={18}
-              className="mt-0"
-              renderItem={(item) => (
-                <div className="h-[220px] w-[320px] flex flex-col justify-center rounded-3xl border border-black/10 bg-white/70 p-7 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
-                  <div className="text-sm font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
-                    {item.label}
-                  </div>
-
-                  {item.kind === "edu" ? (
-                    <>
-                      <div className="mt-3 flex items-center gap-2 text-lg text-neutral-800 dark:text-neutral-200">
-                        <GraduationCap className="h-4 w-4" />
-                        <span className="font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                          {item.primary}
-                        </span>
-                      </div>
-                      <div className="mt-2 text-base leading-snug text-neutral-600 dark:text-neutral-300">
-                        {item.secondary}
-                      </div>
-                    </>
-                  ) : item.kind === "gpa" ? (
-                    <>
-                      <div className="mt-3 text-4xl sm:text-5xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                        {item.primary}
-                      </div>
-                      <div className="mt-2 text-base leading-snug text-neutral-600 dark:text-neutral-300">
-                        {item.secondary}
-                      </div>
-                    </>
-                  ) : item.kind === "grad" ? (
-                    <>
-                      <div className="mt-3 flex items-center gap-2 text-lg text-neutral-800 dark:text-neutral-200">
-                        <MapPin className="h-4 w-4" />
-                        <span className="font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                          {item.primary}
-                        </span>
-                      </div>
-                      <div className="mt-2 text-base leading-snug text-neutral-600 dark:text-neutral-300">
-                        {item.secondary}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="mt-3 text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                        {item.primary}
-                      </div>
-                      <div className="mt-2 text-base leading-snug text-neutral-600 dark:text-neutral-300">
-                        {item.secondary}
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-              items={[
-                {
-                  key: "edu",
-                  kind: "edu",
-                  label: "Education",
-                  primary: "Cal Poly, SLO",
-                  secondary: "BS, Computer Science",
-                },
-                {
-                  key: "gpa",
-                  kind: "gpa",
-                  label: "GPA",
-                  primary: "3.95",
-                  secondary: "out of 4.0",
-                },
-                {
-                  key: "grad",
-                  kind: "grad",
-                  label: "Gradudation Date",
-                  primary: "Dec 2025",
-                  secondary: "San Luis Obispo, CA",
-                },
-                {
-                  key: "now",
-                  kind: "mini",
-                  label: "Now",
-                  primary: "Full-time SWE search",
-                  secondary: "Open to roles",
-                },
-                {
-                  key: "focus",
-                  kind: "mini",
-                  label: "Focus",
-                  primary: "Distributed Systems",
-                  secondary: "Reliability + Scalability",
-                },
-                {
-                  key: "recent",
-                  kind: "mini",
-                  label: "Recent",
-                  primary: "Apple",
-                  secondary: "Software Engineering Intern",
-                },
-                {
-                  key: "build",
-                  kind: "mini",
-                  label: "Building",
-                  primary: "Research",
-                  secondary: "Distributed Systems and Cloud",
-                },
-              ]}
-            />
-          </motion.div>
         </header>
 
         <Section
@@ -966,36 +895,33 @@ export default function Page() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
               <div className="lg:col-span-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  {[
-                    {
-                      k: "Seeking",
-                      v: "Connections, collaborations, and impactful SWE roles",
-                    },
-                    {
-                      k: "Interests",
-                      v: "Software Development, Distributed Systems, Cloud, and Machine Learning",
-                    },
-                    {
-                      k: "Currently",
-                      v: "Reading papers on Distributed Systems and Researching",
-                    },
-                    {
-                      k: "Outside",
-                      v: "PC Games like Valorant and Counter Strike, Basketball, F1, and PC Tinkering",
-                    },
-                  ].map((item) => (
-                    <div
-                      key={item.k}
-                      className="h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
-                    >
-                      <div className="text-xs font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
-                        {item.k}
-                      </div>
-                      <div className="mt-2 text-base leading-relaxed text-neutral-800 dark:text-neutral-200">
-                        {item.v}
-                      </div>
+                  <div className="row-span-2 h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15 flex flex-col justify-center">
+                    <div className="text-xs font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
+                      Education
                     </div>
-                  ))}
+                    <div className="mt-2 text-base leading-relaxed text-neutral-800 dark:text-neutral-200 space-y-1">
+                      <div>School: <strong>California Polytechnic State University, San Luis Obispo</strong></div>
+                      <div>Graduation Date: <strong>December 2025</strong></div>
+                      <div>Degree: <strong>B.S. Computer Science</strong></div>
+                      <div>GPA: <strong>3.95</strong></div>
+                    </div>
+                  </div>
+                  <div className="h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
+                    <div className="text-xs font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
+                      Interests
+                    </div>
+                    <div className="mt-2 text-base leading-relaxed text-neutral-800 dark:text-neutral-200">
+                      Software Development, Distributed Systems, Cloud, and Machine Learning
+                    </div>
+                  </div>
+                  <div className="h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
+                    <div className="text-xs font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
+                      Outside
+                    </div>
+                    <div className="mt-2 text-base leading-relaxed text-neutral-800 dark:text-neutral-200">
+                      PC Games like Valorant and Counter Strike, Basketball, F1, and PC Tinkering
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1085,44 +1011,62 @@ export default function Page() {
           <div className="mt-8">
             <div className="flex items-end justify-between gap-4">
               <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
-                My past Roles and Work.
+                My past roles and professional experience.
               </p>
 
-              <div className="hidden sm:flex items-center gap-2">
-                {experience.map((job, i) => (
-                  <button
-                    key={job.title + String(i)}
-                    type="button"
-                    aria-label={`Go to experience ${i + 1}`}
-                    onClick={() => {
-                      const el = experienceCarouselRef.current;
-                      if (!el) {
-                        return;
+              <div className="flex items-center gap-4">
+                <div className="hidden sm:flex items-center gap-2">
+                  {experience.map((job, i) => (
+                    <button
+                      key={job.title + String(i)}
+                      type="button"
+                      aria-label={`Go to experience ${i + 1}`}
+                      onClick={() => {
+                        const el = experienceCarouselRef.current;
+                        if (!el) {
+                          return;
+                        }
+                        const children = Array.from(
+                          el.querySelectorAll<HTMLElement>(
+                            "[data-experience-item]",
+                          ),
+                        );
+                        const target = children[i];
+                        if (!target) {
+                          return;
+                        }
+                        pauseExperienceTemporarily(4500);
+                        el.scrollTo({
+                          left: target.offsetLeft - 16,
+                          behavior: "smooth",
+                        });
+                        setExperienceIndex(i);
+                      }}
+                      className={
+                        "h-2.5 w-2.5 rounded-full transition " +
+                        (i === experienceIndex
+                          ? "bg-neutral-900 dark:bg-white"
+                          : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
                       }
-                      const children = Array.from(
-                        el.querySelectorAll<HTMLElement>(
-                          "[data-experience-item]",
-                        ),
-                      );
-                      const target = children[i];
-                      if (!target) {
-                        return;
-                      }
-                      pauseExperienceTemporarily(4500);
-                      el.scrollTo({
-                        left: target.offsetLeft - 16,
-                        behavior: "smooth",
-                      });
-                      setExperienceIndex(i);
-                    }}
-                    className={
-                      "h-2.5 w-2.5 rounded-full transition " +
-                      (i === experienceIndex
-                        ? "bg-neutral-900 dark:bg-white"
-                        : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
-                    }
-                  />
-                ))}
+                    />
+                  ))}
+                </div>
+                <CarouselArrows
+                  onPrev={() =>
+                    scrollCarouselByEdge(
+                      experienceCarouselRef,
+                      "left",
+                      pauseExperienceTemporarily,
+                    )
+                  }
+                  onNext={() =>
+                    scrollCarouselByEdge(
+                      experienceCarouselRef,
+                      "right",
+                      pauseExperienceTemporarily,
+                    )
+                  }
+                />
               </div>
             </div>
 
@@ -1216,44 +1160,62 @@ export default function Page() {
           <div className="mt-8">
             <div className="flex items-end justify-between gap-4">
               <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
-                A few things I’ve built recently.
+                Selected projects and things I’ve built.
               </p>
 
-              <div className="hidden sm:flex items-center gap-2">
-                {projects.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    aria-label={`Go to project ${i + 1}`}
-                    onClick={() => {
-                      const el = projectsCarouselRef.current;
-                      if (!el) {
-                        return;
+              <div className="flex items-center gap-4">
+                <div className="hidden sm:flex items-center gap-2">
+                  {projects.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      aria-label={`Go to project ${i + 1}`}
+                      onClick={() => {
+                        const el = projectsCarouselRef.current;
+                        if (!el) {
+                          return;
+                        }
+                        const children = Array.from(
+                          el.querySelectorAll<HTMLElement>(
+                            "[data-carousel-item]",
+                          ),
+                        );
+                        const target = children[i];
+                        if (!target) {
+                          return;
+                        }
+                        pauseCarouselTemporarily(4500);
+                        el.scrollTo({
+                          left: target.offsetLeft - 16,
+                          behavior: "smooth",
+                        });
+                        setCarouselIndex(i);
+                      }}
+                      className={
+                        "h-2.5 w-2.5 rounded-full transition " +
+                        (i === carouselIndex
+                          ? "bg-neutral-900 dark:bg-white"
+                          : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
                       }
-                      const children = Array.from(
-                        el.querySelectorAll<HTMLElement>(
-                          "[data-carousel-item]",
-                        ),
-                      );
-                      const target = children[i];
-                      if (!target) {
-                        return;
-                      }
-                      pauseCarouselTemporarily(4500);
-                      el.scrollTo({
-                        left: target.offsetLeft - 16,
-                        behavior: "smooth",
-                      });
-                      setCarouselIndex(i);
-                    }}
-                    className={
-                      "h-2.5 w-2.5 rounded-full transition " +
-                      (i === carouselIndex
-                        ? "bg-neutral-900 dark:bg-white"
-                        : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
-                    }
-                  />
-                ))}
+                    />
+                  ))}
+                </div>
+                <CarouselArrows
+                  onPrev={() =>
+                    scrollCarouselByEdge(
+                      projectsCarouselRef,
+                      "left",
+                      pauseCarouselTemporarily,
+                    )
+                  }
+                  onNext={() =>
+                    scrollCarouselByEdge(
+                      projectsCarouselRef,
+                      "right",
+                      pauseCarouselTemporarily,
+                    )
+                  }
+                />
               </div>
             </div>
 
@@ -1399,57 +1361,75 @@ export default function Page() {
               <>
                 <div className="flex items-end justify-between gap-4">
                   <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
-                    Writing and long-form work from my research and studies.
+                    Writing and research papers.
                   </p>
 
-                  <div className="hidden sm:flex items-center gap-2">
-                    {[
-                      {
-                        title:
-                          "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
-                        desc: "Survey Paper on the history of load balancing in Distributed Systems.",
-                        href: "/papers/load-balancing.pdf",
-                      },
-                      {
-                        title:
-                          "Exploring the Role of Compiler Optimizations in Modern Systems",
-                        desc: "Senior project paper published through Cal Poly Digital Commons.",
-                        href: "https://digitalcommons.calpoly.edu/cscsp/182/",
-                      },
-                    ].map((_, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        aria-label={`Go to paper ${i + 1}`}
-                        onClick={() => {
-                          const el = papersCarouselRef.current;
-                          if (!el) {
-                            return;
+                  <div className="flex items-center gap-4">
+                    <div className="hidden sm:flex items-center gap-2">
+                      {[
+                        {
+                          title:
+                            "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
+                          desc: "Survey Paper on the history of load balancing in Distributed Systems.",
+                          href: "/papers/load-balancing.pdf",
+                        },
+                        {
+                          title:
+                            "Exploring the Role of Compiler Optimizations in Modern Systems",
+                          desc: "Senior project paper published through Cal Poly Digital Commons.",
+                          href: "https://digitalcommons.calpoly.edu/cscsp/182/",
+                        },
+                      ].map((_, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          aria-label={`Go to paper ${i + 1}`}
+                          onClick={() => {
+                            const el = papersCarouselRef.current;
+                            if (!el) {
+                              return;
+                            }
+                            const children = Array.from(
+                              el.querySelectorAll<HTMLElement>(
+                                "[data-paper-item]",
+                              ),
+                            );
+                            const target = children[i];
+                            if (!target) {
+                              return;
+                            }
+                            pausePapersTemporarily(4500);
+                            el.scrollTo({
+                              left: target.offsetLeft - 16,
+                              behavior: "smooth",
+                            });
+                            setPapersIndex(i);
+                          }}
+                          className={
+                            "h-2.5 w-2.5 rounded-full transition " +
+                            (i === papersIndex
+                              ? "bg-neutral-900 dark:bg-white"
+                              : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
                           }
-                          const children = Array.from(
-                            el.querySelectorAll<HTMLElement>(
-                              "[data-paper-item]",
-                            ),
-                          );
-                          const target = children[i];
-                          if (!target) {
-                            return;
-                          }
-                          pausePapersTemporarily(4500);
-                          el.scrollTo({
-                            left: target.offsetLeft - 16,
-                            behavior: "smooth",
-                          });
-                          setPapersIndex(i);
-                        }}
-                        className={
-                          "h-2.5 w-2.5 rounded-full transition " +
-                          (i === papersIndex
-                            ? "bg-neutral-900 dark:bg-white"
-                            : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
-                        }
-                      />
-                    ))}
+                        />
+                      ))}
+                    </div>
+                    <CarouselArrows
+                      onPrev={() =>
+                        scrollCarouselByEdge(
+                          papersCarouselRef,
+                          "left",
+                          pausePapersTemporarily,
+                        )
+                      }
+                      onNext={() =>
+                        scrollCarouselByEdge(
+                          papersCarouselRef,
+                          "right",
+                          pausePapersTemporarily,
+                        )
+                      }
+                    />
                   </div>
                 </div>
 
@@ -1539,15 +1519,216 @@ export default function Page() {
           titleIcon={<Trophy className="h-5 w-5" />}
           title="Awards & Highlights"
         >
-          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {awards.map((a) => (
-              <Card key={a.title}>
-                <div className="font-medium">{a.title}</div>
-                <div className="text-neutral-500">{a.org}</div>
-                <div className="text-neutral-500 text-xs">{a.year}</div>
-              </Card>
-            ))}
-          </div>
+          {(() => {
+            // Carousel state/refs for awards
+            const [awardsPaused, setAwardsPaused] = React.useState(false);
+            const [awardsIndex, setAwardsIndex] = React.useState(0);
+            const awardsCarouselRef = React.useRef<HTMLDivElement | null>(null);
+            const awardsHoverCooldownRef = React.useRef(0);
+            const awardsResumeTimerRef = React.useRef<number | null>(null);
+
+            // Pause awards carousel temporarily
+            function pauseAwardsTemporarily(ms: number) {
+              setAwardsPaused(true);
+              if (awardsResumeTimerRef.current) {
+                window.clearTimeout(awardsResumeTimerRef.current);
+              }
+              awardsResumeTimerRef.current = window.setTimeout(() => {
+                setAwardsPaused(false);
+                awardsResumeTimerRef.current = null;
+              }, ms);
+            }
+
+            // Scroll awards carousel on interval (autoplay)
+            React.useEffect(() => {
+              if (awardsPaused) return;
+              const el = awardsCarouselRef.current;
+              if (!el) return;
+
+              const children = Array.from(
+                el.querySelectorAll<HTMLElement>("[data-award-item]")
+              );
+              if (children.length === 0) return;
+
+              const id = window.setInterval(() => {
+                const next = (awardsIndex + 1) % children.length;
+                const target = children[next];
+                el.scrollTo({ left: target.offsetLeft - 16, behavior: "smooth" });
+                setAwardsIndex(next);
+              }, 4200);
+              return () => window.clearInterval(id);
+            }, [awardsPaused, awardsIndex]);
+
+            // Cleanup timer on unmount
+            React.useEffect(() => {
+              return () => {
+                if (awardsResumeTimerRef.current) {
+                  window.clearTimeout(awardsResumeTimerRef.current);
+                }
+              };
+            }, []);
+
+            // Update awardsIndex on scroll
+            React.useEffect(() => {
+              const el = awardsCarouselRef.current;
+              if (!el) return;
+
+              let rafId: number | null = null;
+              const onScroll = () => {
+                if (rafId !== null) return;
+                rafId = window.requestAnimationFrame(() => {
+                  rafId = null;
+                  const items = Array.from(
+                    el.querySelectorAll<HTMLElement>("[data-award-item]")
+                  );
+                  if (items.length === 0) return;
+                  // at end?
+                  const maxScrollLeft = el.scrollWidth - el.clientWidth;
+                  if (maxScrollLeft <= 0
+                    ? true
+                    : el.scrollLeft >= maxScrollLeft - 2
+                  ) {
+                    const last = items.length - 1;
+                    if (last !== awardsIndex) setAwardsIndex(last);
+                    return;
+                  }
+                  // nearest index
+                  const viewportCenter = el.scrollLeft + el.clientWidth / 2;
+                  let bestIndex = awardsIndex;
+                  let bestDist = Number.POSITIVE_INFINITY;
+                  for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    const itemCenter = item.offsetLeft + item.offsetWidth / 2;
+                    const dist = Math.abs(itemCenter - viewportCenter);
+                    if (dist < bestDist) {
+                      bestDist = dist;
+                      bestIndex = i;
+                    }
+                  }
+                  if (bestIndex !== awardsIndex) setAwardsIndex(bestIndex);
+                });
+              };
+              el.addEventListener("scroll", onScroll, { passive: true });
+              onScroll();
+              return () => {
+                el.removeEventListener("scroll", onScroll);
+                if (rafId !== null) window.cancelAnimationFrame(rafId);
+              };
+            }, [awardsIndex]);
+
+            // Render carousel
+            return (
+              <div className="mt-8">
+                <div className="flex items-end justify-between gap-4">
+                  <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
+                    Awards and academic highlights.
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <div className="hidden sm:flex items-center gap-2">
+                      {awards.map((_, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          aria-label={`Go to award ${i + 1}`}
+                          onClick={() => {
+                            const el = awardsCarouselRef.current;
+                            if (!el) return;
+                            const children = Array.from(
+                              el.querySelectorAll<HTMLElement>("[data-award-item]")
+                            );
+                            const target = children[i];
+                            if (!target) return;
+                            pauseAwardsTemporarily(3500);
+                            el.scrollTo({
+                              left: target.offsetLeft - 16,
+                              behavior: "smooth",
+                            });
+                            setAwardsIndex(i);
+                          }}
+                          className={
+                            "h-2.5 w-2.5 rounded-full transition " +
+                            (i === awardsIndex
+                              ? "bg-neutral-900 dark:bg-white"
+                              : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
+                          }
+                        />
+                      ))}
+                    </div>
+                    <CarouselArrows
+                      onPrev={() =>
+                        scrollCarouselByEdge(
+                          awardsCarouselRef,
+                          "left",
+                          pauseAwardsTemporarily,
+                        )
+                      }
+                      onNext={() =>
+                        scrollCarouselByEdge(
+                          awardsCarouselRef,
+                          "right",
+                          pauseAwardsTemporarily,
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+                <div
+                  className="relative mt-6 -mx-2"
+                  onMouseMove={(e) => {
+                    edgeHoverScroll(
+                      e,
+                      awardsCarouselRef,
+                      awardsHoverCooldownRef,
+                      "left",
+                      pauseAwardsTemporarily,
+                    );
+                    edgeHoverScroll(
+                      e,
+                      awardsCarouselRef,
+                      awardsHoverCooldownRef,
+                      "right",
+                      pauseAwardsTemporarily,
+                    );
+                  }}
+                >
+                  <div
+                    ref={awardsCarouselRef}
+                    className="no-scrollbar px-2 flex gap-6 overflow-x-auto pb-4"
+                    style={{ scrollSnapType: "x mandatory" }}
+                    onMouseEnter={() => setAwardsPaused(true)}
+                    onMouseLeave={() => setAwardsPaused(false)}
+                    onWheel={() => pauseAwardsTemporarily(3500)}
+                    onTouchStart={() => pauseAwardsTemporarily(3500)}
+                    onPointerDown={() => pauseAwardsTemporarily(3500)}
+                  >
+                    {awards.map((a, i) => (
+                      <div
+                        key={a.title}
+                        data-award-item
+                        className="min-w-[88%] sm:min-w-[70%] lg:min-w-[56%] scroll-ml-4 snap-center"
+                        style={{ scrollSnapAlign: "center" }}
+                      >
+                        <Card>
+                          <div className="font-medium">{a.title}</div>
+                          <div className="text-neutral-500">{a.org}</div>
+                          <div className="text-neutral-500 text-xs">{a.year}</div>
+                        </Card>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <style jsx>{`
+                  .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                  }
+                  .no-scrollbar {
+                    scrollbar-width: none;
+                    -ms-overflow-style: none;
+                  }
+                `}</style>
+              </div>
+            );
+          })()}
         </Section>
 
         <Section
@@ -1600,6 +1781,46 @@ export default function Page() {
           </footer>
         </Section>
       </div>
+    </div>
+  );
+}
+
+function CarouselArrows({
+  onPrev,
+  onNext,
+}: {
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        aria-label="Previous"
+        onClick={onPrev}
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full
+          border border-black/10 bg-white/70 text-neutral-900 shadow-sm
+          backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/80
+          hover:ring-1 hover:ring-black/10
+          dark:border-white/10 dark:bg-white/10 dark:text-neutral-100
+          dark:hover:bg-white/15 dark:hover:ring-white/15"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+
+      <button
+        type="button"
+        aria-label="Next"
+        onClick={onNext}
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full
+          border border-black/10 bg-white/70 text-neutral-900 shadow-sm
+          backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/80
+          hover:ring-1 hover:ring-black/10
+          dark:border-white/10 dark:bg-white/10 dark:text-neutral-100
+          dark:hover:bg-white/15 dark:hover:ring-white/15"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
     </div>
   );
 }
@@ -1774,6 +1995,24 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
   const demoTimersRef = useRef<number[]>([]);
   const hoverCooldownRef = useRef(0);
   const userInteractedRef = useRef(false);
+
+  // --- ARROW BUTTON SCROLL HELPERS ---
+  const scrollByCard = (direction: "left" | "right") => {
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    const children = el.children;
+    if (!children.length) return;
+
+    const cardWidth = (children[0] as HTMLElement).offsetWidth;
+    const gap = 24; // matches your gap-6 / gap-4 spacing
+    const delta = cardWidth + gap;
+
+    el.scrollBy({
+      left: direction === "left" ? -delta : delta,
+      behavior: "smooth",
+    });
+  };
 
   const clearDemoTimers = () => {
     if (demoTimersRef.current.length) {
