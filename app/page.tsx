@@ -1057,14 +1057,9 @@ export default function Page() {
                     </div>
 
                     {job.bullets?.length ? (
-                      <ul className="mt-5 space-y-2 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
-                        {job.bullets.map((b) => (
-                          <li key={b} className="flex gap-2">
-                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-400 dark:bg-neutral-500" />
-                            <span>{b}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
+                        {job.bullets.join(", ")}
+                      </p>
                     ) : null}
                   </motion.div>
                 ))}
