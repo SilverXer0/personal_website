@@ -38,24 +38,64 @@ const SECTION_CHILD: any = {
 
 export default function Page() {
   const projectsCarouselRef = useRef<HTMLDivElement | null>(null);
-  const projectsHoverCooldownRef = useRef(0);
   const carouselResumeTimerRef = useRef<number | null>(null);
   const [carouselPaused, setCarouselPaused] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
 
   const experienceCarouselRef = useRef<HTMLDivElement | null>(null);
-  const experienceHoverCooldownRef = useRef(0);
   const experienceResumeTimerRef = useRef<number | null>(null);
   const [experiencePaused, setExperiencePaused] = useState(false);
   const [experienceIndex, setExperienceIndex] = useState(0);
 
   const papersCarouselRef = useRef<HTMLDivElement | null>(null);
-  const papersHoverCooldownRef = useRef(0);
   const papersResumeTimerRef = useRef<number | null>(null);
   const [papersPaused, setPapersPaused] = useState(false);
   const [papersIndex, setPapersIndex] = useState(0);
 
   const [aboutMediaIndex, setAboutMediaIndex] = useState(0);
+
+  const [awardsPaused, setAwardsPaused] = useState(false);
+  const [awardsIndex, setAwardsIndex] = useState(0);
+  const awardsCarouselRef = useRef<HTMLDivElement | null>(null);
+  const awardsResumeTimerRef = useRef<number | null>(null);
+
+  function pauseAwardsTemporarily(ms: number) {
+    setAwardsPaused(true);
+    if (awardsResumeTimerRef.current) {
+      window.clearTimeout(awardsResumeTimerRef.current);
+    }
+    awardsResumeTimerRef.current = window.setTimeout(() => {
+      setAwardsPaused(false);
+      awardsResumeTimerRef.current = null;
+    }, ms);
+  }
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let scrollTimeout: number | null = null;
+    let lastScrollY = window.scrollY;
+    const onScroll = () => {
+      if (window.scrollY !== lastScrollY) {
+        lastScrollY = window.scrollY;
+        setCarouselPaused(true);
+        setExperiencePaused(true);
+        setPapersPaused(true);
+        setAwardsPaused(true);
+        if (scrollTimeout) window.clearTimeout(scrollTimeout);
+        scrollTimeout = window.setTimeout(() => {
+          setCarouselPaused(false);
+          setExperiencePaused(false);
+          setPapersPaused(false);
+          setAwardsPaused(false);
+          scrollTimeout = null;
+        }, 1000);
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (scrollTimeout) window.clearTimeout(scrollTimeout);
+    };
+  }, []);
 
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -150,7 +190,6 @@ export default function Page() {
     });
   }
 
-  // Helper for arrow scroll (same effect as edgeHoverScroll, but not using mouse events)
   function scrollCarouselByEdge(
     elRef: React.RefObject<HTMLDivElement>,
     direction: "left" | "right",
@@ -164,6 +203,30 @@ export default function Page() {
     }
 
     const delta = Math.max(280, Math.floor(el.clientWidth * 0.65));
+    el.scrollBy({
+      left: direction === "left" ? -delta : delta,
+      behavior: "smooth",
+    });
+  }
+
+  function scrollCarouselByCard(
+    elRef: React.RefObject<HTMLDivElement>,
+    direction: "left" | "right",
+    pauseFn?: (ms: number) => void,
+    cardSelector: string = "[data-carousel-item]",
+    gap: number = 24,
+  ) {
+    const el = elRef.current;
+    if (!el) return;
+
+    if (pauseFn) {
+      pauseFn(2200);
+    }
+
+    const card = el.querySelector<HTMLElement>(cardSelector);
+    if (!card) return;
+    const cardWidth = card.offsetWidth;
+    const delta = cardWidth + gap;
     el.scrollBy({
       left: direction === "left" ? -delta : delta,
       behavior: "smooth",
@@ -295,6 +358,9 @@ export default function Page() {
       }
       if (papersResumeTimerRef.current) {
         window.clearTimeout(papersResumeTimerRef.current);
+      }
+      if (awardsResumeTimerRef.current) {
+        window.clearTimeout(awardsResumeTimerRef.current);
       }
     };
   }, []);
@@ -843,17 +909,21 @@ export default function Page() {
               {/* <div className="ml-auto">
                 <CarouselArrows
                   onPrev={() =>
-                    scrollCarouselByEdge(
+                    scrollCarouselByCard(
                       projectsCarouselRef,
                       "left",
                       pauseCarouselTemporarily,
+                      "[data-carousel-item]",
+                      24,
                     )
                   }
                   onNext={() =>
-                    scrollCarouselByEdge(
+                    scrollCarouselByCard(
                       projectsCarouselRef,
                       "right",
                       pauseCarouselTemporarily,
+                      "[data-carousel-item]",
+                      24,
                     )
                   }
                 />
@@ -895,18 +965,18 @@ export default function Page() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
               <div className="lg:col-span-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="row-span-2 h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15 flex flex-col justify-center">
+                  <div className="row-span-2 rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15 flex flex-col justify-center">
                     <div className="text-xs font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
                       Education
                     </div>
-                    <div className="mt-2 text-base leading-relaxed text-neutral-800 dark:text-neutral-200 space-y-1">
+                    <div className="mt-2 text-base leading-relaxed space-y-2 text-neutral-800 dark:text-neutral-200">
                       <div>School: <strong>California Polytechnic State University, San Luis Obispo</strong></div>
                       <div>Graduation Date: <strong>December 2025</strong></div>
                       <div>Degree: <strong>B.S. Computer Science</strong></div>
                       <div>GPA: <strong>3.95</strong></div>
                     </div>
                   </div>
-                  <div className="h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
+                  <div className="rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
                     <div className="text-xs font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
                       Interests
                     </div>
@@ -914,7 +984,7 @@ export default function Page() {
                       Software Development, Distributed Systems, Cloud, and Machine Learning
                     </div>
                   </div>
-                  <div className="h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
+                  <div className="rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
                     <div className="text-xs font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
                       Outside
                     </div>
@@ -926,8 +996,8 @@ export default function Page() {
               </div>
 
               <div className="lg:col-span-1">
-                <div className="h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
-                  <div className="mt-2 flex h-full flex-col gap-4">
+                <div className="rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
+                  <div className="mt-2 flex flex-col gap-4">
                     <div className="relative flex-1 overflow-hidden rounded-2xl border border-black/10 bg-black/5 dark:border-white/10 dark:bg-black">
                       <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex items-center justify-between px-3">
                         <button
@@ -961,7 +1031,7 @@ export default function Page() {
 
                       {aboutMediaItems[aboutMediaIndex].kind === "video" ? (
                         <iframe
-                          className="h-full w-full"
+                          className="w-full"
                           src={aboutMediaItems[aboutMediaIndex].src}
                           title={aboutMediaItems[aboutMediaIndex].title}
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -971,12 +1041,12 @@ export default function Page() {
                         <img
                           src={aboutMediaItems[aboutMediaIndex].src}
                           alt={aboutMediaItems[aboutMediaIndex].title}
-                          className="h-full w-full object-cover"
+                          className="w-full object-cover"
                         />
                       )}
                     </div>
 
-                    <div className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-300 text-center">
+                    <div className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300 text-center">
                       {aboutMediaItems[aboutMediaIndex].caption}
                     </div>
 
@@ -1072,22 +1142,6 @@ export default function Page() {
 
             <div
               className="relative mt-6 -mx-2"
-              onMouseMove={(e) => {
-                edgeHoverScroll(
-                  e,
-                  experienceCarouselRef,
-                  experienceHoverCooldownRef,
-                  "left",
-                  pauseExperienceTemporarily,
-                );
-                edgeHoverScroll(
-                  e,
-                  experienceCarouselRef,
-                  experienceHoverCooldownRef,
-                  "right",
-                  pauseExperienceTemporarily,
-                );
-              }}
             >
               <div
                 ref={experienceCarouselRef}
@@ -1221,22 +1275,6 @@ export default function Page() {
 
             <div
               className="relative mt-6 -mx-2"
-              onMouseMove={(e) => {
-                edgeHoverScroll(
-                  e,
-                  projectsCarouselRef,
-                  projectsHoverCooldownRef,
-                  "left",
-                  pauseCarouselTemporarily,
-                );
-                edgeHoverScroll(
-                  e,
-                  projectsCarouselRef,
-                  projectsHoverCooldownRef,
-                  "right",
-                  pauseCarouselTemporarily,
-                );
-              }}
             >
               <div
                 ref={projectsCarouselRef}
@@ -1435,22 +1473,6 @@ export default function Page() {
 
                 <div
                   className="relative mt-6 -mx-2"
-                  onMouseMove={(e) => {
-                    edgeHoverScroll(
-                      e,
-                      papersCarouselRef,
-                      papersHoverCooldownRef,
-                      "left",
-                      pausePapersTemporarily,
-                    );
-                    edgeHoverScroll(
-                      e,
-                      papersCarouselRef,
-                      papersHoverCooldownRef,
-                      "right",
-                      pausePapersTemporarily,
-                    );
-                  }}
                 >
                   <div
                     ref={papersCarouselRef}
@@ -1519,34 +1541,15 @@ export default function Page() {
           titleIcon={<Trophy className="h-5 w-5" />}
           title="Awards & Highlights"
         >
-          {(() => {
-            const [awardsPaused, setAwardsPaused] = React.useState(false);
-            const [awardsIndex, setAwardsIndex] = React.useState(0);
-            const awardsCarouselRef = React.useRef<HTMLDivElement | null>(null);
-            const awardsHoverCooldownRef = React.useRef(0);
-            const awardsResumeTimerRef = React.useRef<number | null>(null);
-
-            function pauseAwardsTemporarily(ms: number) {
-              setAwardsPaused(true);
-              if (awardsResumeTimerRef.current) {
-                window.clearTimeout(awardsResumeTimerRef.current);
-              }
-              awardsResumeTimerRef.current = window.setTimeout(() => {
-                setAwardsPaused(false);
-                awardsResumeTimerRef.current = null;
-              }, ms);
-            }
-
-            React.useEffect(() => {
+          <React.Fragment>
+            {React.useEffect(() => {
               if (awardsPaused) return;
               const el = awardsCarouselRef.current;
               if (!el) return;
-
               const children = Array.from(
                 el.querySelectorAll<HTMLElement>("[data-award-item]")
               );
               if (children.length === 0) return;
-
               const id = window.setInterval(() => {
                 const next = (awardsIndex + 1) % children.length;
                 const target = children[next];
@@ -1554,20 +1557,17 @@ export default function Page() {
                 setAwardsIndex(next);
               }, 4200);
               return () => window.clearInterval(id);
-            }, [awardsPaused, awardsIndex]);
-
-            React.useEffect(() => {
+            }, [awardsPaused, awardsIndex])}
+            {React.useEffect(() => {
               return () => {
                 if (awardsResumeTimerRef.current) {
                   window.clearTimeout(awardsResumeTimerRef.current);
                 }
               };
-            }, []);
-
-            React.useEffect(() => {
+            }, [])}
+            {React.useEffect(() => {
               const el = awardsCarouselRef.current;
               if (!el) return;
-
               let rafId: number | null = null;
               const onScroll = () => {
                 if (rafId !== null) return;
@@ -1578,9 +1578,10 @@ export default function Page() {
                   );
                   if (items.length === 0) return;
                   const maxScrollLeft = el.scrollWidth - el.clientWidth;
-                  if (maxScrollLeft <= 0
-                    ? true
-                    : el.scrollLeft >= maxScrollLeft - 2
+                  if (
+                    maxScrollLeft <= 0
+                      ? true
+                      : el.scrollLeft >= maxScrollLeft - 2
                   ) {
                     const last = items.length - 1;
                     if (last !== awardsIndex) setAwardsIndex(last);
@@ -1607,120 +1608,105 @@ export default function Page() {
                 el.removeEventListener("scroll", onScroll);
                 if (rafId !== null) window.cancelAnimationFrame(rafId);
               };
-            }, [awardsIndex]);
-
-            return (
-              <div className="mt-8">
-                <div className="flex items-end justify-between gap-4">
-                  <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
-                    Awards and academic highlights.
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <div className="hidden sm:flex items-center gap-2">
-                      {awards.map((_, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          aria-label={`Go to award ${i + 1}`}
-                          onClick={() => {
-                            const el = awardsCarouselRef.current;
-                            if (!el) return;
-                            const children = Array.from(
-                              el.querySelectorAll<HTMLElement>("[data-award-item]")
-                            );
-                            const target = children[i];
-                            if (!target) return;
-                            pauseAwardsTemporarily(3500);
-                            el.scrollTo({
-                              left: target.offsetLeft - 16,
-                              behavior: "smooth",
-                            });
-                            setAwardsIndex(i);
-                          }}
-                          className={
-                            "h-2.5 w-2.5 rounded-full transition " +
-                            (i === awardsIndex
-                              ? "bg-neutral-900 dark:bg-white"
-                              : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
-                          }
-                        />
-                      ))}
-                    </div>
-                    <CarouselArrows
-                      onPrev={() =>
-                        scrollCarouselByEdge(
-                          awardsCarouselRef,
-                          "left",
-                          pauseAwardsTemporarily,
-                        )
-                      }
-                      onNext={() =>
-                        scrollCarouselByEdge(
-                          awardsCarouselRef,
-                          "right",
-                          pauseAwardsTemporarily,
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-                <div
-                  className="relative mt-6 -mx-2"
-                  onMouseMove={(e) => {
-                    edgeHoverScroll(
-                      e,
-                      awardsCarouselRef,
-                      awardsHoverCooldownRef,
-                      "left",
-                      pauseAwardsTemporarily,
-                    );
-                    edgeHoverScroll(
-                      e,
-                      awardsCarouselRef,
-                      awardsHoverCooldownRef,
-                      "right",
-                      pauseAwardsTemporarily,
-                    );
-                  }}
-                >
-                  <div
-                    ref={awardsCarouselRef}
-                    className="no-scrollbar px-2 flex gap-6 overflow-x-auto pb-4"
-                    style={{ scrollSnapType: "x mandatory" }}
-                    onMouseEnter={() => setAwardsPaused(true)}
-                    onMouseLeave={() => setAwardsPaused(false)}
-                    onWheel={() => pauseAwardsTemporarily(3500)}
-                    onTouchStart={() => pauseAwardsTemporarily(3500)}
-                    onPointerDown={() => pauseAwardsTemporarily(3500)}
-                  >
-                    {awards.map((a, i) => (
-                      <div
-                        key={a.title}
-                        data-award-item
-                        className="min-w-[88%] sm:min-w-[70%] lg:min-w-[56%] scroll-ml-4 snap-center"
-                        style={{ scrollSnapAlign: "center" }}
-                      >
-                        <Card>
-                          <div className="font-medium">{a.title}</div>
-                          <div className="text-neutral-500">{a.org}</div>
-                          <div className="text-neutral-500 text-xs">{a.year}</div>
-                        </Card>
-                      </div>
+            }, [awardsIndex])}
+            <div className="mt-8">
+              <div className="flex items-end justify-between gap-4">
+                <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
+                  Awards and academic highlights.
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="hidden sm:flex items-center gap-2">
+                    {awards.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        aria-label={`Go to award ${i + 1}`}
+                        onClick={() => {
+                          const el = awardsCarouselRef.current;
+                          if (!el) return;
+                          const children = Array.from(
+                            el.querySelectorAll<HTMLElement>("[data-award-item]")
+                          );
+                          const target = children[i];
+                          if (!target) return;
+                          pauseAwardsTemporarily(3500);
+                          el.scrollTo({
+                            left: target.offsetLeft - 16,
+                            behavior: "smooth",
+                          });
+                          setAwardsIndex(i);
+                        }}
+                        className={
+                          "h-2.5 w-2.5 rounded-full transition " +
+                          (i === awardsIndex
+                            ? "bg-neutral-900 dark:bg-white"
+                            : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
+                        }
+                      />
                     ))}
                   </div>
+                  <CarouselArrows
+                    onPrev={() =>
+                      scrollCarouselByCard(
+                        awardsCarouselRef,
+                        "left",
+                        pauseAwardsTemporarily,
+                        "[data-award-item]",
+                        24,
+                      )
+                    }
+                    onNext={() =>
+                      scrollCarouselByCard(
+                        awardsCarouselRef,
+                        "right",
+                        pauseAwardsTemporarily,
+                        "[data-award-item]",
+                        24,
+                      )
+                    }
+                  />
                 </div>
-                <style jsx>{`
-                  .no-scrollbar::-webkit-scrollbar {
-                    display: none;
-                  }
-                  .no-scrollbar {
-                    scrollbar-width: none;
-                    -ms-overflow-style: none;
-                  }
-                `}</style>
               </div>
-            );
-          })()}
+              <div
+                className="relative mt-6 -mx-2"
+              >
+                <div
+                  ref={awardsCarouselRef}
+                  className="no-scrollbar px-2 flex gap-6 overflow-x-auto pb-4"
+                  style={{ scrollSnapType: "x mandatory" }}
+                  onMouseEnter={() => setAwardsPaused(true)}
+                  onMouseLeave={() => setAwardsPaused(false)}
+                  onWheel={() => pauseAwardsTemporarily(3500)}
+                  onTouchStart={() => pauseAwardsTemporarily(3500)}
+                  onPointerDown={() => pauseAwardsTemporarily(3500)}
+                >
+                  {awards.map((a, i) => (
+                    <div
+                      key={a.title}
+                      data-award-item
+                      className="min-w-[60%] sm:min-w-[40%] lg:min-w-[30%] scroll-ml-4 snap-center"
+                      style={{ scrollSnapAlign: "center" }}
+                    >
+                      <Card>
+                        <div className="font-medium">{a.title}</div>
+                        <div className="text-neutral-500">{a.org}</div>
+                        <div className="text-neutral-500 text-xs">{a.year}</div>
+                      </Card>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <style jsx>{`
+                .no-scrollbar::-webkit-scrollbar {
+                  display: none;
+                }
+                .no-scrollbar {
+                  scrollbar-width: none;
+                  -ms-overflow-style: none;
+                }
+              `}</style>
+            </div>
+          </React.Fragment>
         </Section>
 
         <Section
