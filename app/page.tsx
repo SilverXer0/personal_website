@@ -860,7 +860,7 @@ export default function Page() {
                       <div>School: <strong>California Polytechnic State University, San Luis Obispo</strong></div>
                       <div>Graduation Date: <strong>December 2025</strong></div>
                       <div>Degree: <strong>B.S. Computer Science</strong></div>
-                      <div>GPA: <strong>3.95</strong></div>
+                      <div>GPA: <strong>3.95/4.0</strong></div>
                     </div>
                   </div>
                   <div className="rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
