@@ -554,10 +554,7 @@ export default function Page() {
         period: "June - September 2025",
         location: "Cupertino, CA",
         bullets: [
-          "Created a Drag and Drop application with Swift and SwiftUI to easily design upsell sheets for first-party applications in the App Store",
-          "Implemented a type-safe serialization layer using Swift Codable, allowing for seamless import/export of sheetdesigns and improving designer handoff time by 25%",
-          "Engineered a centralized state management system using Swift Observable and Concurrency, enabling thread-safe and real-time editing across 14+ components and improving UI responsiveness by 40%",
-          "Integrated a send-to-device pipeline by routing through Apple Media Services JavaScript controllers to render sheets on different Operating Systems, accelerating cross-platform preview cycles by 32%",
+          "Apple Media Services"
         ],
       },
       {
@@ -566,9 +563,7 @@ export default function Page() {
         period: "May - August 2024",
         location: "Houston, TX",
         bullets: [
-          "Built an automated testing app using JavaScript and React to automate code generation and streamline code reviews for code repositories and APIs",
-          "Integrated a retrieval-augmented generation (RAG) service using Python and Flask to dynamically generate tests, improving coverage by 15% and scaling test generation to 500+ cases per use",
-          "Automated GitHub workflows and branch management through custom API calls, reducing versioning conflicts by 30% and improving CI throughput by cutting 15 engineering hours per week",
+          "GenAi Test Automation"
         ],
       },
       {
@@ -577,10 +572,7 @@ export default function Page() {
         period: "June - September 2023",
         location: "Berkeley, CA",
         bullets: [
-          "Engineered real-time augmented reality simulations in C# and Unity for creating and placing buildings in real locations around the world",
-          "Enhanced visualization accuracy and rendering performance in simulations by refining spatial metrics and customization pipelines, increasing stakeholder review efficiency by 25%",
-          "Refactored and stabilized the iOS application in Swift, resolving performance bottlenecks and reliability issues that improved user retention by 20% and overall app performance by 17%",
-          "Created a minimum viable product TAGS for 3D tagging and note features in custom augmented reality creations, increasing designer interaction by 30%",
+          "Augmented Reality Simulations & iOS Development",
         ],
       },
       {
@@ -589,9 +581,7 @@ export default function Page() {
         period: "September 2022 — June 2025",
         location: "San Luis Obispo, CA",
         bullets: [
-          "Worked with Wilshire Health and Community to create a dynamic donation-tracking website with Full Stack Development, AWS Amplify, and GraphQL to increase tracking capabilities by 35%",
-          "Built a web scraper for EcoLogistics using AWS Chalice and Beautiful Soup, reducing manual data entry by 50% and saving 10 hours weekly by automating the scraping of untracked data from SLO county websites",
-          "Developed an Event Tracker with LCSLO Octogan Barn to track events and manage form uploads with AWS S3 to reduce management time by 45% and allow for real time",
+          "Full Stack Development"
         ],
       },
     ],
