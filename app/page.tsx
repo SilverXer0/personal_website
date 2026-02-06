@@ -54,49 +54,6 @@ export default function Page() {
 
   const [aboutMediaIndex, setAboutMediaIndex] = useState(0);
 
-  const [awardsPaused, setAwardsPaused] = useState(false);
-  const [awardsIndex, setAwardsIndex] = useState(0);
-  const awardsCarouselRef = useRef<HTMLDivElement | null>(null);
-  const awardsResumeTimerRef = useRef<number | null>(null);
-
-  function pauseAwardsTemporarily(ms: number) {
-    setAwardsPaused(true);
-    if (awardsResumeTimerRef.current) {
-      window.clearTimeout(awardsResumeTimerRef.current);
-    }
-    awardsResumeTimerRef.current = window.setTimeout(() => {
-      setAwardsPaused(false);
-      awardsResumeTimerRef.current = null;
-    }, ms);
-  }
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    let scrollTimeout: number | null = null;
-    let lastScrollY = window.scrollY;
-    const onScroll = () => {
-      if (window.scrollY !== lastScrollY) {
-        lastScrollY = window.scrollY;
-        setCarouselPaused(true);
-        setExperiencePaused(true);
-        setPapersPaused(true);
-        setAwardsPaused(true);
-        if (scrollTimeout) window.clearTimeout(scrollTimeout);
-        scrollTimeout = window.setTimeout(() => {
-          setCarouselPaused(false);
-          setExperiencePaused(false);
-          setPapersPaused(false);
-          setAwardsPaused(false);
-          scrollTimeout = null;
-        }, 1000);
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (scrollTimeout) window.clearTimeout(scrollTimeout);
-    };
-  }, []);
-
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -222,7 +179,6 @@ export default function Page() {
     if (pauseFn) {
       pauseFn(2200);
     }
-
     const card = el.querySelector<HTMLElement>(cardSelector);
     if (!card) return;
     const cardWidth = card.offsetWidth;
@@ -323,29 +279,7 @@ export default function Page() {
     if (carouselPaused) {
       return;
     }
-
-    const id = window.setInterval(() => {
-      const el = projectsCarouselRef.current;
-      if (!el) {
-        return;
-      }
-
-      const children = Array.from(
-        el.querySelectorAll<HTMLElement>("[data-carousel-item]"),
-      );
-      if (children.length === 0) {
-        return;
-      }
-
-      const next = (carouselIndex + 1) % children.length;
-      const target = children[next];
-      el.scrollTo({ left: target.offsetLeft - 16, behavior: "smooth" });
-      setCarouselIndex(next);
-    }, 4800);
-
-    return () => {
-      window.clearInterval(id);
-    };
+   
   }, [mounted, carouselPaused, carouselIndex]);
 
   useEffect(() => {
@@ -358,9 +292,6 @@ export default function Page() {
       }
       if (papersResumeTimerRef.current) {
         window.clearTimeout(papersResumeTimerRef.current);
-      }
-      if (awardsResumeTimerRef.current) {
-        window.clearTimeout(awardsResumeTimerRef.current);
       }
     };
   }, []);
@@ -461,28 +392,6 @@ export default function Page() {
       return;
     }
 
-    const id = window.setInterval(() => {
-      const el = experienceCarouselRef.current;
-      if (!el) {
-        return;
-      }
-
-      const children = Array.from(
-        el.querySelectorAll<HTMLElement>("[data-experience-item]"),
-      );
-      if (children.length === 0) {
-        return;
-      }
-
-      const next = (experienceIndex + 1) % children.length;
-      const target = children[next];
-      el.scrollTo({ left: target.offsetLeft - 16, behavior: "smooth" });
-      setExperienceIndex(next);
-    }, 5200);
-
-    return () => {
-      window.clearInterval(id);
-    };
   }, [mounted, experiencePaused, experienceIndex]);
 
   useEffect(() => {
@@ -906,28 +815,6 @@ export default function Page() {
                   Get in touch <Mail className="h-4 w-4" />
                 </a>
               </div>
-              {/* <div className="ml-auto">
-                <CarouselArrows
-                  onPrev={() =>
-                    scrollCarouselByCard(
-                      projectsCarouselRef,
-                      "left",
-                      pauseCarouselTemporarily,
-                      "[data-carousel-item]",
-                      24,
-                    )
-                  }
-                  onNext={() =>
-                    scrollCarouselByCard(
-                      projectsCarouselRef,
-                      "right",
-                      pauseCarouselTemporarily,
-                      "[data-carousel-item]",
-                      24,
-                    )
-                  }
-                />
-              </div> */}
             </motion.div>
           </motion.div>
 
@@ -1541,33 +1428,47 @@ export default function Page() {
           titleIcon={<Trophy className="h-5 w-5" />}
           title="Awards & Highlights"
         >
-          <React.Fragment>
-            {React.useEffect(() => {
+          {(() => {
+            const [awardsPaused, setAwardsPaused] = React.useState(false);
+            const [awardsIndex, setAwardsIndex] = React.useState(0);
+            const awardsCarouselRef = React.useRef<HTMLDivElement | null>(null);
+            const awardsResumeTimerRef = React.useRef<number | null>(null);
+
+            function pauseAwardsTemporarily(ms: number) {
+              setAwardsPaused(true);
+              if (awardsResumeTimerRef.current) {
+                window.clearTimeout(awardsResumeTimerRef.current);
+              }
+              awardsResumeTimerRef.current = window.setTimeout(() => {
+                setAwardsPaused(false);
+                awardsResumeTimerRef.current = null;
+              }, ms);
+            }
+
+            React.useEffect(() => {
               if (awardsPaused) return;
               const el = awardsCarouselRef.current;
               if (!el) return;
+
               const children = Array.from(
                 el.querySelectorAll<HTMLElement>("[data-award-item]")
               );
               if (children.length === 0) return;
-              const id = window.setInterval(() => {
-                const next = (awardsIndex + 1) % children.length;
-                const target = children[next];
-                el.scrollTo({ left: target.offsetLeft - 16, behavior: "smooth" });
-                setAwardsIndex(next);
-              }, 4200);
-              return () => window.clearInterval(id);
-            }, [awardsPaused, awardsIndex])}
-            {React.useEffect(() => {
+
+            }, [awardsPaused, awardsIndex]);
+
+            React.useEffect(() => {
               return () => {
                 if (awardsResumeTimerRef.current) {
                   window.clearTimeout(awardsResumeTimerRef.current);
                 }
               };
-            }, [])}
-            {React.useEffect(() => {
+            }, []);
+
+            React.useEffect(() => {
               const el = awardsCarouselRef.current;
               if (!el) return;
+
               let rafId: number | null = null;
               const onScroll = () => {
                 if (rafId !== null) return;
@@ -1578,10 +1479,9 @@ export default function Page() {
                   );
                   if (items.length === 0) return;
                   const maxScrollLeft = el.scrollWidth - el.clientWidth;
-                  if (
-                    maxScrollLeft <= 0
-                      ? true
-                      : el.scrollLeft >= maxScrollLeft - 2
+                  if (maxScrollLeft <= 0
+                    ? true
+                    : el.scrollLeft >= maxScrollLeft - 2
                   ) {
                     const last = items.length - 1;
                     if (last !== awardsIndex) setAwardsIndex(last);
@@ -1608,105 +1508,108 @@ export default function Page() {
                 el.removeEventListener("scroll", onScroll);
                 if (rafId !== null) window.cancelAnimationFrame(rafId);
               };
-            }, [awardsIndex])}
-            <div className="mt-8">
-              <div className="flex items-end justify-between gap-4">
-                <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
-                  Awards and academic highlights.
-                </p>
-                <div className="flex items-center gap-4">
-                  <div className="hidden sm:flex items-center gap-2">
-                    {awards.map((_, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        aria-label={`Go to award ${i + 1}`}
-                        onClick={() => {
-                          const el = awardsCarouselRef.current;
-                          if (!el) return;
-                          const children = Array.from(
-                            el.querySelectorAll<HTMLElement>("[data-award-item]")
-                          );
-                          const target = children[i];
-                          if (!target) return;
-                          pauseAwardsTemporarily(3500);
-                          el.scrollTo({
-                            left: target.offsetLeft - 16,
-                            behavior: "smooth",
-                          });
-                          setAwardsIndex(i);
-                        }}
-                        className={
-                          "h-2.5 w-2.5 rounded-full transition " +
-                          (i === awardsIndex
-                            ? "bg-neutral-900 dark:bg-white"
-                            : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
-                        }
-                      />
+            }, [awardsIndex]);
+
+            return (
+              <div className="mt-8">
+                <div className="flex items-end justify-between gap-4">
+                  <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
+                    Awards and academic highlights.
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <div className="hidden sm:flex items-center gap-2">
+                      {awards.map((_, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          aria-label={`Go to award ${i + 1}`}
+                          onClick={() => {
+                            const el = awardsCarouselRef.current;
+                            if (!el) return;
+                            const children = Array.from(
+                              el.querySelectorAll<HTMLElement>("[data-award-item]")
+                            );
+                            const target = children[i];
+                            if (!target) return;
+                            pauseAwardsTemporarily(3500);
+                            el.scrollTo({
+                              left: target.offsetLeft - 16,
+                              behavior: "smooth",
+                            });
+                            setAwardsIndex(i);
+                          }}
+                          className={
+                            "h-2.5 w-2.5 rounded-full transition " +
+                            (i === awardsIndex
+                              ? "bg-neutral-900 dark:bg-white"
+                              : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
+                          }
+                        />
+                      ))}
+                    </div>
+                    <CarouselArrows
+                      onPrev={() =>
+                        scrollCarouselByCard(
+                          awardsCarouselRef,
+                          "left",
+                          pauseAwardsTemporarily,
+                          "[data-award-item]",
+                          24,
+                        )
+                      }
+                      onNext={() =>
+                        scrollCarouselByCard(
+                          awardsCarouselRef,
+                          "right",
+                          pauseAwardsTemporarily,
+                          "[data-award-item]",
+                          24,
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+                <div
+                  className="relative mt-6 -mx-2"
+                >
+                  <div
+                    ref={awardsCarouselRef}
+                    className="no-scrollbar px-2 flex gap-6 overflow-x-auto pb-4"
+                    style={{ scrollSnapType: "x mandatory" }}
+                    onMouseEnter={() => setAwardsPaused(true)}
+                    onMouseLeave={() => setAwardsPaused(false)}
+                    onWheel={() => pauseAwardsTemporarily(3500)}
+                    onTouchStart={() => pauseAwardsTemporarily(3500)}
+                    onPointerDown={() => pauseAwardsTemporarily(3500)}
+                  >
+                    {awards.map((a, i) => (
+                      <div
+                        key={a.title}
+                        data-award-item
+                        className="min-w-[60%] sm:min-w-[40%] lg:min-w-[30%] scroll-ml-4 snap-center"
+                        style={{ scrollSnapAlign: "center" }}
+                      >
+                        <Card>
+                          <div className="font-medium">{a.title}</div>
+                          <div className="text-neutral-500">{a.org}</div>
+                          <div className="text-neutral-500 text-xs">{a.year}</div>
+                        </Card>
+                      </div>
                     ))}
                   </div>
-                  <CarouselArrows
-                    onPrev={() =>
-                      scrollCarouselByCard(
-                        awardsCarouselRef,
-                        "left",
-                        pauseAwardsTemporarily,
-                        "[data-award-item]",
-                        24,
-                      )
-                    }
-                    onNext={() =>
-                      scrollCarouselByCard(
-                        awardsCarouselRef,
-                        "right",
-                        pauseAwardsTemporarily,
-                        "[data-award-item]",
-                        24,
-                      )
-                    }
-                  />
                 </div>
+                <style jsx>{`
+                  .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                  }
+                  .no-scrollbar {
+                    scrollbar-width: none;
+                    -ms-overflow-style: none;
+                  }
+                `}</style>
               </div>
-              <div
-                className="relative mt-6 -mx-2"
-              >
-                <div
-                  ref={awardsCarouselRef}
-                  className="no-scrollbar px-2 flex gap-6 overflow-x-auto pb-4"
-                  style={{ scrollSnapType: "x mandatory" }}
-                  onMouseEnter={() => setAwardsPaused(true)}
-                  onMouseLeave={() => setAwardsPaused(false)}
-                  onWheel={() => pauseAwardsTemporarily(3500)}
-                  onTouchStart={() => pauseAwardsTemporarily(3500)}
-                  onPointerDown={() => pauseAwardsTemporarily(3500)}
-                >
-                  {awards.map((a, i) => (
-                    <div
-                      key={a.title}
-                      data-award-item
-                      className="min-w-[60%] sm:min-w-[40%] lg:min-w-[30%] scroll-ml-4 snap-center"
-                      style={{ scrollSnapAlign: "center" }}
-                    >
-                      <Card>
-                        <div className="font-medium">{a.title}</div>
-                        <div className="text-neutral-500">{a.org}</div>
-                        <div className="text-neutral-500 text-xs">{a.year}</div>
-                      </Card>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <style jsx>{`
-                .no-scrollbar::-webkit-scrollbar {
-                  display: none;
-                }
-                .no-scrollbar {
-                  scrollbar-width: none;
-                  -ms-overflow-style: none;
-                }
-              `}</style>
-            </div>
-          </React.Fragment>
+            );
+          })()}
         </Section>
 
         <Section
