@@ -1,6 +1,4 @@
 "use client";
-
-import SpaceBackground from "./components/SpaceBackground";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -10,8 +8,6 @@ import {
   Github,
   Linkedin,
   Mail,
-  Moon,
-  Sun,
   Globe,
   ExternalLink,
   MapPin,
@@ -22,7 +18,16 @@ import {
   Trophy,
   ChevronLeft,
   ChevronRight,
+  Music,
+  ExternalLink as ExternalLinkIcon,
 } from "lucide-react";
+
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
 
 const APPLE_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -37,21 +42,12 @@ const SECTION_CHILD: any = {
 };
 
 export default function Page() {
-  const projectsCarouselRef = useRef<HTMLDivElement | null>(null);
-  const carouselResumeTimerRef = useRef<number | null>(null);
-  const [carouselPaused, setCarouselPaused] = useState(false);
-  const [carouselIndex, setCarouselIndex] = useState(0);
+
 
   const experienceCarouselRef = useRef<HTMLDivElement | null>(null);
   const experienceResumeTimerRef = useRef<number | null>(null);
   const [experiencePaused, setExperiencePaused] = useState(false);
   const [experienceIndex, setExperienceIndex] = useState(0);
-
-  const papersCarouselRef = useRef<HTMLDivElement | null>(null);
-  const papersResumeTimerRef = useRef<number | null>(null);
-  const [papersPaused, setPapersPaused] = useState(false);
-  const [papersIndex, setPapersIndex] = useState(0);
-
   const [aboutMediaIndex, setAboutMediaIndex] = useState(0);
 
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -95,16 +91,6 @@ export default function Page() {
     [],
   );
 
-  function pauseCarouselTemporarily(ms: number) {
-    setCarouselPaused(true);
-    if (carouselResumeTimerRef.current) {
-      window.clearTimeout(carouselResumeTimerRef.current);
-    }
-    carouselResumeTimerRef.current = window.setTimeout(() => {
-      setCarouselPaused(false);
-      carouselResumeTimerRef.current = null;
-    }, ms);
-  }
 
   function edgeHoverScroll(
     e: React.MouseEvent<HTMLDivElement>,
@@ -200,155 +186,86 @@ export default function Page() {
     }, ms);
   }
 
-  function pausePapersTemporarily(ms: number) {
-    setPapersPaused(true);
-    if (papersResumeTimerRef.current) {
-      window.clearTimeout(papersResumeTimerRef.current);
-    }
-    papersResumeTimerRef.current = window.setTimeout(() => {
-      setPapersPaused(false);
-      papersResumeTimerRef.current = null;
-    }, ms);
-  }
-
-  const [theme, setTheme] = useState<"dark" | "light">("light");
   const [mounted, setMounted] = useState(false);
-  const [hasThemeOverride, setHasThemeOverride] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [showMusicPopup, setShowMusicPopup] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const ytPlayers = useRef<{ [key: string]: any }>({});
 
   useEffect(() => {
     setMounted(true);
 
-    const saved = window.localStorage.getItem("theme");
-    if (saved === "dark" || saved === "light") {
-      setTheme(saved);
-      setHasThemeOverride(true);
-      return;
+    const showTimer = setTimeout(() => setShowMusicPopup(true), 1500);
+    const hideTimer = setTimeout(() => setShowMusicPopup(false), 7000);
+
+    if (!document.getElementById("youtube-iframe-api")) {
+      const tag = document.createElement("script");
+      tag.id = "youtube-iframe-api";
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName("script")[0];
+      if (firstScriptTag && firstScriptTag.parentNode) {
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      } else {
+        document.head.appendChild(tag);
+      }
     }
 
-    const prefersDark =
-      typeof window !== "undefined" &&
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    window.onYouTubeIframeAPIReady = () => {
+    };
 
-    setTheme(prefersDark ? "dark" : "light");
-    setHasThemeOverride(false);
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
   }, []);
 
   useEffect(() => {
-    if (!mounted) {
-      return;
-    }
-    if (hasThemeOverride) {
-      return;
-    }
-    if (typeof window === "undefined" || !window.matchMedia) {
-      return;
-    }
+    if (!audioRef.current) return;
 
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = (e: MediaQueryListEvent) => {
-      setTheme(e.matches ? "dark" : "light");
+    if (isVideoPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch(() => {
+      });
+    }
+  }, [isVideoPlaying]);
+
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      if (audioRef.current && !isVideoPlaying) {
+        audioRef.current.play().catch(() => { });
+      }
+      document.removeEventListener("click", handleFirstInteraction);
+      document.removeEventListener("keydown", handleFirstInteraction);
+      document.removeEventListener("scroll", handleFirstInteraction);
     };
 
-    if (mq.addEventListener) {
-      mq.addEventListener("change", onChange);
-      return () => mq.removeEventListener("change", onChange);
-    }
+    document.addEventListener("click", handleFirstInteraction);
+    document.addEventListener("keydown", handleFirstInteraction);
+    document.addEventListener("scroll", handleFirstInteraction, { once: true });
 
-    mq.addListener(onChange);
-    return () => mq.removeListener(onChange);
-  }, [mounted, hasThemeOverride]);
+    return () => {
+      document.removeEventListener("click", handleFirstInteraction);
+      document.removeEventListener("keydown", handleFirstInteraction);
+      document.removeEventListener("scroll", handleFirstInteraction);
+    };
+  }, [isVideoPlaying]);
 
-  useEffect(() => {
-    if (!mounted) {
-      return;
-    }
-
-    if (!hasThemeOverride) {
-      window.localStorage.removeItem("theme");
-      return;
-    }
-
-    window.localStorage.setItem("theme", theme);
-  }, [theme, mounted, hasThemeOverride]);
 
   useEffect(() => {
     if (!mounted) {
       return;
     }
-    if (carouselPaused) {
-      return;
-    }
-   
-  }, [mounted, carouselPaused, carouselIndex]);
+  }, [mounted]);
 
   useEffect(() => {
     return () => {
-      if (carouselResumeTimerRef.current) {
-        window.clearTimeout(carouselResumeTimerRef.current);
-      }
       if (experienceResumeTimerRef.current) {
         window.clearTimeout(experienceResumeTimerRef.current);
       }
-      if (papersResumeTimerRef.current) {
-        window.clearTimeout(papersResumeTimerRef.current);
-      }
     };
   }, []);
-  useEffect(() => {
-    if (!mounted) {
-      return;
-    }
 
-    const el = papersCarouselRef.current;
-    if (!el) {
-      return;
-    }
-
-    let rafId: number | null = null;
-
-    const onScroll = () => {
-      if (rafId !== null) {
-        return;
-      }
-      rafId = window.requestAnimationFrame(() => {
-        rafId = null;
-        const items = Array.from(
-          el.querySelectorAll<HTMLElement>("[data-paper-item]"),
-        );
-        if (items.length === 0) {
-          return;
-        }
-
-        if (isAtScrollEnd(el)) {
-          const last = items.length - 1;
-          if (last !== papersIndex) {
-            setPapersIndex(last);
-          }
-          return;
-        }
-
-        const next = getNearestIndexFromScroll(
-          el,
-          "[data-paper-item]",
-          papersIndex,
-        );
-        if (next !== papersIndex) {
-          setPapersIndex(next);
-        }
-      });
-    };
-
-    el.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-
-    return () => {
-      el.removeEventListener("scroll", onScroll);
-      if (rafId !== null) {
-        window.cancelAnimationFrame(rafId);
-      }
-    };
-  }, [mounted, papersIndex]);
 
   function isAtScrollEnd(el: HTMLDivElement, epsilonPx = 2) {
     const maxScrollLeft = el.scrollWidth - el.clientWidth;
@@ -394,61 +311,7 @@ export default function Page() {
 
   }, [mounted, experiencePaused, experienceIndex]);
 
-  useEffect(() => {
-    if (!mounted) {
-      return;
-    }
 
-    const el = projectsCarouselRef.current;
-    if (!el) {
-      return;
-    }
-
-    let rafId: number | null = null;
-
-    const onScroll = () => {
-      if (rafId !== null) {
-        return;
-      }
-      rafId = window.requestAnimationFrame(() => {
-        rafId = null;
-        const items = Array.from(
-          el.querySelectorAll<HTMLElement>("[data-carousel-item]"),
-        );
-        if (items.length === 0) {
-          return;
-        }
-
-        if (isAtScrollEnd(el)) {
-          const last = items.length - 1;
-          if (last !== carouselIndex) {
-            setCarouselIndex(last);
-          }
-          return;
-        }
-
-        const next = getNearestIndexFromScroll(
-          el,
-          "[data-carousel-item]",
-          carouselIndex,
-        );
-        if (next !== carouselIndex) {
-          setCarouselIndex(next);
-        }
-      });
-    };
-
-    el.addEventListener("scroll", onScroll, { passive: true });
-
-    onScroll();
-
-    return () => {
-      el.removeEventListener("scroll", onScroll);
-      if (rafId !== null) {
-        window.cancelAnimationFrame(rafId);
-      }
-    };
-  }, [mounted, carouselIndex]);
 
   useEffect(() => {
     if (!mounted) {
@@ -506,41 +369,39 @@ export default function Page() {
     };
   }, [mounted, experienceIndex]);
 
-  const skills = useMemo(
+  const hobbies = useMemo(
     () => [
       {
-        group: "Languages",
-        items: [
-          "Python",
-          "Java",
-          "Swift",
-          "C",
-          "C++",
-          "C#",
-          "TypeScript",
-          "JavaScript",
-          "Kotlin",
-          "Racket",
-        ],
+        name: "Competitive FPS",
+        img: "/photos/360_static.jpg",
+        hoverImg: "/photos/360.gif",
+        caption: "I'm tuff at Valorant, but my CS2 inventory costs too much to not play",
       },
       {
-        group: "Frameworks & Tools",
-        items: [
-          "React",
-          "Tailwind CSS",
-          "Node.js",
-          "Next.js",
-          "Express.js",
-          "Android Studio",
-          "Xcode",
-          "Unity",
-          "Unreal",
-          "Git/GitHub",
-        ],
+        name: "PCs and (mostly) peripherals",
+        img: "/photos/setup.jpg",
+        caption: "My glorious desk setup with hidden cables (lot of work) and my million mice, keyboards, and other expensive stuff.",
       },
       {
-        group: "Data & Systems",
-        items: ["AWS", "GCP", "MySQL", "PostgreSQL", "Redis", "Docker"],
+        name: "Video Editing",
+        img: "/photos/editing.jpg",
+        caption: "Creating montages and edits of gameplay highlights. I win the fight above btw, watch Distance on my YT for proof.",
+      },
+      {
+        name: "Formula 1",
+        img: "/photos/redbull.jpg",
+        caption: "Following the twists and turns of the global F1 calendar. Go Redbull tho, Du Du Du Du.",
+      },
+      {
+        name: "Basketball",
+        img: "/photos/basketball.jpg",
+        imgClass: "object-cover object-bottom",
+        caption: "Watching the NBA and playing pickup games whenever I get the chance. Go Warriors! (They beat the suns in this game)",
+      },
+      {
+        name: "Anime",
+        img: "/photos/anime.jpg",
+        caption: "Watching anime (and reading manga). Got a massive collection of the media, but my favorite will always be this scene.",
       },
     ],
     [],
@@ -549,12 +410,23 @@ export default function Page() {
   const experience = useMemo(
     () => [
       {
+        title: "Plaid",
+        org: "Software Engineer",
+        period: "March 2026 - Present",
+        location: "San Francisco, CA",
+        bullets: [
+          "Focusing on Infrastructure to maintain scalability, reliability, and low latency",
+        ],
+      },
+      {
         title: "Apple",
         org: "Software Engineering Intern",
         period: "June - September 2025",
         location: "Cupertino, CA",
         bullets: [
-          "Apple Media Services"
+          "Built Drag and Drop Application with Swift and SwiftUi for easily creating upsell sheets for first-party Apple Services",
+          "Focused on Swift Codable and Concurrency to support real time component editing and low-latency sheet-to-JSON conversions",
+          "Built a Send-to-Device Pipeline to route through Apple Media Services Javascript Controllers and display sheets on connected Devices to visualize component differences across other operating systems"
         ],
       },
       {
@@ -563,7 +435,9 @@ export default function Page() {
         period: "May - August 2024",
         location: "Houston, TX",
         bullets: [
-          "GenAi Test Automation"
+          "Developed an Automated Testing App using JavaScript and React to automate code generation and streamline code reviews for code repositories and APIs",
+          "Integrated a retrieval-augmented generation (RAG) service using Python and Flask to dynamically generate tests, improve coverage, and scale test generation",
+          "Automated GitHub workflows and branch management through custom API calls, reducing versioning conflicts and CI throughput"
         ],
       },
       {
@@ -572,7 +446,10 @@ export default function Page() {
         period: "June - September 2023",
         location: "Berkeley, CA",
         bullets: [
-          "Augmented Reality Simulations & iOS Development",
+          "Engineered real-time augmented reality simulations in C# and Unity for creating and placing buildings in real locations around the world",
+          "Enhanced visualization accuracy and rendering performance in simulations by refining spatial metrics and customization pipelines to increase stakeholder review efficiency",
+          "Created a minimum viable product TAGS in the iOS App for 3D tagging and note features in custom augmented reality creations to increase user and designer interactionM"
+
         ],
       },
       {
@@ -581,7 +458,9 @@ export default function Page() {
         period: "September 2022 — June 2025",
         location: "San Luis Obispo, CA",
         bullets: [
-          "Full Stack Development"
+          "Worked with Wilshire Health and Community to create a dynamic donation-tracking website with Full Stack, Development, AWS Amplify, and GraphQL",
+          "Built a web scraper for EcoLogistics using AWS Chalice and Beautiful Soup to automate the scraping of untracked data from SLO county websites",
+          "Worked with LCSLO Octogan Barn to track events and form uploads with S3 to total reduce management time and event tracking difficulties"
         ],
       },
     ],
@@ -593,8 +472,10 @@ export default function Page() {
       {
         name: "AniSense",
         tagline: "Find your next binge",
+        img: "/photos/anisense.jpg",
+        imgClass: "object-top",
         desc: "Anime recommender with GCP and locally trained machine learning models",
-        tech: ["GCP", "Cloud SQL", "VPC", "Python", "Kubernetes", "Apache"],
+        tech: ["GCP", "Typescript", "Python", "React", "Flask", "Apache", "Kubernetes"],
         links: [
           { label: "Repo", href: "https://github.com/SilverXer0/AniSense" },
         ],
@@ -602,6 +483,8 @@ export default function Page() {
       {
         name: "Aurora",
         tagline: "High-throughput telemetry backend",
+        img: "/photos/aurora.jpg",
+        imgClass: "",
         desc: "C++ backend that ingests real-time telemetry, stores data in cache, and exposes low-latency aggregate queries",
         tech: ["C++", "gRPC", "Protobuf", "RocksDB", "OpenTelemetry"],
         links: [
@@ -611,8 +494,10 @@ export default function Page() {
       {
         name: "MoodMuse",
         tagline: "Emotion-aware journaling",
+        img: "/photos/moodmuse.jpg",
+        imgClass: "",
         desc: "Captures images and entries, performs on-device analysis, and surfaces trends privately.",
-        tech: ["Swift", "SwiftUI", "VisionKit"],
+        tech: ["Swift", "SwiftUI", "VisionKit", "Spotify Web API"],
         links: [
           { label: "Repo", href: "https://github.com/SilverXer0/MoodMuse" },
         ],
@@ -620,6 +505,8 @@ export default function Page() {
       {
         name: "Aim Trainer / Sensitivity Finder",
         tagline: "FPS tasks with AI-driven sensitivity suggestions",
+        img: "/photos/aimtrainer.jpg",
+        imgClass: "",
         desc: "Procedural drills, crosshair UI, and analytics to estimate optimal sensitivity across maps.",
         tech: ["Unity", "C#"],
         links: [
@@ -632,7 +519,9 @@ export default function Page() {
       {
         name: "MintMatch",
         tagline:
-          "Win real tokens on the blockchain and save them to your crypto wallet",
+          "Win real tokens on the blockchain and save them to your wallet",
+        img: "/photos/mintmatch.jpg",
+        imgClass: "",
         desc: "Blockchain token matching game",
         tech: ["Solidity", "Javascript", "Smart Contracts"],
         links: [
@@ -642,6 +531,8 @@ export default function Page() {
       {
         name: "Chatter",
         tagline: "Talk with simple AI and learn more about it",
+        img: "/photos/chatter.jpg",
+        imgClass: "",
         desc: "Self Learning Chatbot",
         tech: ["Python", "NLTK", "NLP"],
         links: [
@@ -657,20 +548,14 @@ export default function Page() {
       {
         kind: "video" as const,
         title: "Distance (Valorant Highlights)",
-        caption: "Check out my newest Valorant Montage!",
-        src: "https://www.youtube.com/embed/39FokPrcl44",
+        caption: "My first (and best) Valorant Montage",
+        src: "https://www.youtube.com/embed/39FokPrcl44?enablejsapi=1",
       },
       {
-        kind: "image" as const,
-        title: "Coding",
-        caption: "A pictue of the Cal Poly Campus",
-        src: "/photos/Cal-Poly-SLO.jpg",
-      },
-      {
-        kind: "image" as const,
-        title: "Coding",
-        caption: "A snapshot of my VSCode",
-        src: "/photos/code.png",
+        kind: "video" as const,
+        title: "whyy (Valorant Highlights)",
+        caption: "My most recent Montage",
+        src: "https://www.youtube.com/embed/smKGpHc3RAs?enablejsapi=1",
       },
     ],
     [],
@@ -696,15 +581,15 @@ export default function Page() {
   ];
   return (
     <div
-      className={mounted && theme === "dark" ? "dark" : ""}
+      className={mounted ? "dark" : "dark"}
       suppressHydrationWarning
     >
-      <SpaceBackground />
+      <div className="fixed inset-0 z-[-1] bg-[url('/photos/bg.jpg')] bg-cover bg-center" />
       <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
         <nav className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-black/35">
           <div className="mx-auto max-w-[80rem] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 font-medium">
-              <Cpu className="h-5 w-5" />
+              <img src="/photos/karina-logo.png" alt="Logo" className="h-6 w-6 rounded-full object-cover" />
               <span>Sharan Krishna</span>
             </div>
 
@@ -718,11 +603,11 @@ export default function Page() {
               <a href="#projects" className="hover:opacity-80">
                 Projects
               </a>
-              <a href="#skills" className="hover:opacity-80">
-                Skills
-              </a>
               <a href="#papers" className="hover:opacity-80">
                 Papers
+              </a>
+              <a href="#hobbies" className="hover:opacity-80">
+                Hobbies
               </a>
               <a href="#awards" className="hover:opacity-80">
                 Awards
@@ -737,27 +622,12 @@ export default function Page() {
                 href="/resume/Sharan_K_Resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-sm text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:bg-white/80 hover:-translate-y-0.5 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
+                className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-sm text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
                 title="Open resume (PDF)"
               >
                 <Download className="h-4 w-4" /> Résumé
               </a>
 
-              <button
-                type="button"
-                aria-label="Toggle theme"
-                onClick={() => {
-                  setHasThemeOverride(true);
-                  setTheme((t) => (t === "dark" ? "light" : "dark"));
-                }}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:bg-white/80 hover:-translate-y-0.5 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
-              >
-                {theme === "dark" ? (
-                  <Sun className="h-4 w-4" />
-                ) : (
-                  <Moon className="h-4 w-4" />
-                )}
-              </button>
             </div>
           </div>
         </nav>
@@ -794,13 +664,13 @@ export default function Page() {
               <div className="flex gap-3">
                 <a
                   href="#experience"
-                  className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.22)] hover:ring-1 hover:ring-black/10 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/15"
+                  className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-black/20 active:scale-95 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/30"
                 >
                   See Experience <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
                   href="#contact"
-                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-5 py-2.5 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/75 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/10 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
+                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-5 py-2.5 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
                 >
                   Get in touch <Mail className="h-4 w-4" />
                 </a>
@@ -815,72 +685,38 @@ export default function Page() {
           titleIcon={<Code2 className="h-5 w-5" />}
           title="About"
         >
-          <div className="mt-10 space-y-8">
-            <div className="rounded-3xl border border-black/10 bg-white/70 p-8 sm:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
-              <div className="mx-auto max-w-3xl text-center">
-                <p className="text-lg sm:text-xl leading-relaxed text-neutral-800 dark:text-neutral-200">
-                  I build software with an emphasis on scalability, reliability,
-                  and thoughtful product polish, regardless of the tech stack.
-                  Lately I have been focused on{" "}
-                  <strong>distributed systems</strong>, learning from papers and
-                  research, and applying those ideas to projects like{" "}
-                  <strong>Aurora</strong>, a high-throughput telemetry backend.
-                </p>
-                <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
-                  In my most recent internship at Apple, I worked heavily with{" "}
-                  <strong>Swift Concurrency</strong> to keep real-time editing
-                  experiences responsive and correct, along with building out
-                  the drag-and-drop application with <strong>SwiftUI</strong>.
-                  Outside of work, I have been improving my <strong>AWS</strong>{" "}
-                  skills to obtain multiple certifications and building
-                  end-to-end projects that combine performance, observability,
-                  and a clean User Interface.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
-              <div className="lg:col-span-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="row-span-2 rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15 flex flex-col justify-center">
-                    <div className="text-xs font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
-                      Education
-                    </div>
-                    <div className="mt-2 text-base leading-relaxed space-y-2 text-neutral-800 dark:text-neutral-200">
-                      <div>School: <strong>California Polytechnic State University, San Luis Obispo</strong></div>
-                      <div>Graduation Date: <strong>December 2025</strong></div>
-                      <div>Degree: <strong>B.S. Computer Science</strong></div>
-                      <div>GPA: <strong>3.95/4.0</strong></div>
-                    </div>
-                  </div>
-                  <div className="rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
-                    <div className="text-xs font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
-                      Interests
-                    </div>
-                    <div className="mt-2 text-base leading-relaxed text-neutral-800 dark:text-neutral-200">
-                      Software Development, Distributed Systems, Cloud, and Machine Learning
-                    </div>
-                  </div>
-                  <div className="rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
-                    <div className="text-xs font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
-                      Outside
-                    </div>
-                    <div className="mt-2 text-base leading-relaxed text-neutral-800 dark:text-neutral-200">
-                      PC Games like Valorant and Counter Strike, Basketball, F1, and PC Tinkering
-                    </div>
+          <div className="mt-10">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-center">
+              <div className="lg:col-span-2 h-full">
+                <div className="h-full flex flex-col justify-center rounded-3xl border border-black/10 bg-white/70 p-10 sm:p-14 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
+                  <div className="w-full text-left">
+                    <p className="text-lg sm:text-lg leading-relaxed text-neutral-800 dark:text-neutral-200">
+                      I have a BS in Computer Science from <strong>Cal Poly SLO</strong> and am currently {" "}
+                      working at <strong>Plaid</strong>, working on infrastructure for the developer dashboard with {" "}
+                      a focus on scalability and low latency.
+                    </p>
+                    <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
+                      I work across multiple domains within technology, including Distributed Systems, {" "}
+                      Infrastructure, and Low Latency. This has taken me across different tech stacks, {" "}
+                      from Python and Go to Swift and Typescript.
+                    </p>
+                    <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
+                      In my personal time, I love watching sports like Basketball and F1, and I enjoy playing competitive first-person shooters {" "}
+                      like Valorant and Counter Strike 2. I&apos;ve created some youtube montages of my gameplay, check them out on the right!
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <div className="lg:col-span-1">
-                <div className="rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15">
-                  <div className="mt-2 flex flex-col gap-4">
-                    <div className="relative flex-1 overflow-hidden rounded-2xl border border-black/10 bg-black/5 dark:border-white/10 dark:bg-black">
+              <div className="lg:col-span-1 h-full">
+                <div className="h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
+                  <div className="h-full flex flex-col justify-center gap-4">
+                    <div className="relative flex-1 overflow-hidden rounded-2xl border border-black/10 bg-black/5 dark:border-white/10 dark:bg-black min-h-[250px]">
                       <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex items-center justify-between px-3">
                         <button
                           type="button"
                           aria-label="Previous media"
-                          className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/80 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
+                          className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
                           onClick={() => {
                             setAboutMediaIndex(
                               (i) =>
@@ -895,7 +731,7 @@ export default function Page() {
                         <button
                           type="button"
                           aria-label="Next media"
-                          className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/80 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
+                          className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
                           onClick={() => {
                             setAboutMediaIndex(
                               (i) => (i + 1) % aboutMediaItems.length,
@@ -908,26 +744,46 @@ export default function Page() {
 
                       {aboutMediaItems[aboutMediaIndex].kind === "video" ? (
                         <iframe
-                          className="w-full"
+                          id={`yt-player-${aboutMediaIndex}`}
+                          className="w-full h-full absolute inset-0"
                           src={aboutMediaItems[aboutMediaIndex].src}
                           title={aboutMediaItems[aboutMediaIndex].title}
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                           allowFullScreen
+                          onLoad={(e) => {
+                            if (window.YT && window.YT.Player) {
+                              const iframeId = `yt-player-${aboutMediaIndex}`;
+                              if (!ytPlayers.current[iframeId]) {
+                                ytPlayers.current[iframeId] = new window.YT.Player(iframeId, {
+                                  events: {
+                                    onStateChange: (event: any) => {
+                                      if (event.data === 1) {
+                                        setIsVideoPlaying(true);
+                                      }
+                                      else if (event.data === 2 || event.data === 0) {
+                                        setIsVideoPlaying(false);
+                                      }
+                                    }
+                                  }
+                                });
+                              }
+                            }
+                          }}
                         />
                       ) : (
                         <img
                           src={aboutMediaItems[aboutMediaIndex].src}
                           alt={aboutMediaItems[aboutMediaIndex].title}
-                          className="w-full object-cover"
+                          className="w-full h-full absolute inset-0 object-cover"
                         />
                       )}
                     </div>
 
-                    <div className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300 text-center">
+                    <div className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300 text-center shrink-0">
                       {aboutMediaItems[aboutMediaIndex].caption}
                     </div>
 
-                    <div className="-mt-1 flex items-center justify-center gap-2">
+                    <div className="-mt-1 flex items-center justify-center gap-2 shrink-0">
                       {aboutMediaItems.map((_, i) => (
                         <button
                           key={i}
@@ -958,7 +814,7 @@ export default function Page() {
           <div className="mt-8">
             <div className="flex items-end justify-between gap-4">
               <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
-                My past roles and professional experience.
+                My roles and professional experience, past and present.
               </p>
 
               <div className="flex items-center gap-4">
@@ -1022,7 +878,7 @@ export default function Page() {
             >
               <div
                 ref={experienceCarouselRef}
-                className="no-scrollbar px-2 flex gap-6 overflow-x-auto pb-4"
+                className="no-scrollbar px-4 pt-4 flex gap-6 overflow-x-auto pb-8 -mt-4 items-stretch"
                 style={{ scrollSnapType: "x mandatory" }}
                 onMouseEnter={() => setExperiencePaused(true)}
                 onMouseLeave={() => setExperiencePaused(false)}
@@ -1035,32 +891,36 @@ export default function Page() {
                     key={job.title + job.org}
                     data-experience-item
                     variants={SECTION_CHILD}
-                    className="min-w-[92%] sm:min-w-[78%] lg:min-w-[62%] scroll-ml-4 snap-center rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
+                    className="min-w-[92%] sm:min-w-[78%] lg:min-w-[62%] scroll-ml-4 snap-center flex"
                     style={{ scrollSnapAlign: "center" }}
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                      <div>
-                        <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                          {job.title}
-                        </h3>
-                        <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                          {job.org}
+                    <div className="flex flex-col w-full h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div>
+                          <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                            {job.title}
+                          </h3>
+                          <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                            {job.org}
+                          </div>
+                        </div>
+
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400 text-left sm:text-right">
+                          <div>{job.period}</div>
+                          <div className="flex items-center gap-1 sm:justify-end mt-1">
+                            <MapPin className="h-3.5 w-3.5" /> {job.location}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="text-xs text-neutral-500 dark:text-neutral-400 text-left sm:text-right">
-                        <div>{job.period}</div>
-                        <div className="flex items-center gap-1 sm:justify-end mt-1">
-                          <MapPin className="h-3.5 w-3.5" /> {job.location}
-                        </div>
-                      </div>
+                      {job.bullets?.length ? (
+                        <ul className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 list-disc pl-5 space-y-2">
+                          {job.bullets.map((bullet, idx) => (
+                            <li key={idx}>{bullet}</li>
+                          ))}
+                        </ul>
+                      ) : null}
                     </div>
-
-                    {job.bullets?.length ? (
-                      <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
-                        {job.bullets.join(", ")}
-                      </p>
-                    ) : null}
                   </motion.div>
                 ))}
               </div>
@@ -1088,86 +948,20 @@ export default function Page() {
               <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
                 Selected projects and things I’ve built.
               </p>
-
-              <div className="flex items-center gap-4">
-                <div className="hidden sm:flex items-center gap-2">
-                  {projects.map((_, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      aria-label={`Go to project ${i + 1}`}
-                      onClick={() => {
-                        const el = projectsCarouselRef.current;
-                        if (!el) {
-                          return;
-                        }
-                        const children = Array.from(
-                          el.querySelectorAll<HTMLElement>(
-                            "[data-carousel-item]",
-                          ),
-                        );
-                        const target = children[i];
-                        if (!target) {
-                          return;
-                        }
-                        pauseCarouselTemporarily(4500);
-                        el.scrollTo({
-                          left: target.offsetLeft - 16,
-                          behavior: "smooth",
-                        });
-                        setCarouselIndex(i);
-                      }}
-                      className={
-                        "h-2.5 w-2.5 rounded-full transition " +
-                        (i === carouselIndex
-                          ? "bg-neutral-900 dark:bg-white"
-                          : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
-                      }
-                    />
-                  ))}
-                </div>
-                <CarouselArrows
-                  onPrev={() =>
-                    scrollCarouselByEdge(
-                      projectsCarouselRef,
-                      "left",
-                      pauseCarouselTemporarily,
-                    )
-                  }
-                  onNext={() =>
-                    scrollCarouselByEdge(
-                      projectsCarouselRef,
-                      "right",
-                      pauseCarouselTemporarily,
-                    )
-                  }
-                />
-              </div>
             </div>
 
-            <div
-              className="relative mt-6 -mx-2"
-            >
-              <div
-                ref={projectsCarouselRef}
-                className="no-scrollbar px-2 flex gap-6 overflow-x-auto pb-4"
-                style={{ scrollSnapType: "x mandatory" }}
-                onMouseEnter={() => setCarouselPaused(true)}
-                onMouseLeave={() => setCarouselPaused(false)}
-                onWheel={() => pauseCarouselTemporarily(4500)}
-                onTouchStart={() => pauseCarouselTemporarily(4500)}
-                onPointerDown={() => pauseCarouselTemporarily(4500)}
-              >
-                {projects.map((p) => (
-                  <motion.a
-                    key={p.name}
-                    data-carousel-item
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {projects.map((p) => (
+                <motion.div
+                  key={p.name}
+                  variants={SECTION_CHILD}
+                  className="h-full"
+                >
+                  <a
                     href={p.links?.[0]?.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    variants={SECTION_CHILD}
-                    className="min-w-[88%] sm:min-w-[70%] lg:min-w-[56%] scroll-ml-4 snap-center rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
-                    style={{ scrollSnapAlign: "center" }}
+                    className="group flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
@@ -1184,11 +978,21 @@ export default function Page() {
                       </div>
                     </div>
 
-                    <p className="mt-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
+                    {p.img && (
+                      <div className="mt-5 w-full h-48 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 flex-shrink-0">
+                        <img
+                          src={p.img}
+                          alt={p.name}
+                          className={`h-full w-full object-cover transition-[opacity,filter] duration-300 grayscale group-hover:grayscale-0 ${p.imgClass}`}
+                        />
+                      </div>
+                    )}
+
+                    <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
                       {p.desc}
                     </p>
 
-                    <div className="mt-5 flex flex-wrap gap-2 text-xs text-neutral-700 dark:text-neutral-300">
+                    <div className="mt-6 flex flex-wrap gap-2 text-xs text-neutral-700 dark:text-neutral-300">
                       {p.tech.map((t) => (
                         <span
                           key={t}
@@ -1198,57 +1002,10 @@ export default function Page() {
                         </span>
                       ))}
                     </div>
-                  </motion.a>
-                ))}
-              </div>
+                  </a>
+                </motion.div>
+              ))}
             </div>
-
-            <style jsx>{`
-              .no-scrollbar::-webkit-scrollbar {
-                display: none;
-              }
-              .no-scrollbar {
-                scrollbar-width: none;
-                -ms-overflow-style: none;
-              }
-            `}</style>
-          </div>
-        </Section>
-
-        <Section
-          id="skills"
-          titleIcon={<Code2 className="h-5 w-5" />}
-          title="Skills"
-        >
-          <div className="mt-8">
-            <Card>
-              <div className="space-y-6">
-                {skills.map((s) => (
-                  <div
-                    key={s.group}
-                    className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-6"
-                  >
-                    <div className="md:col-span-1">
-                      <div className="text-[11px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400">
-                        {s.group}
-                      </div>
-                    </div>
-                    <div className="md:col-span-4">
-                      <div className="flex flex-wrap gap-2">
-                        {s.items.map((i) => (
-                          <span
-                            key={i}
-                            className="rounded-full border border-black/10 bg-white/60 px-2.5 py-1 text-xs text-neutral-800 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-neutral-200"
-                          >
-                            {i}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
           </div>
         </Section>
 
@@ -1273,138 +1030,100 @@ export default function Page() {
                   <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
                     Writing and research papers.
                   </p>
-
-                  <div className="flex items-center gap-4">
-                    <div className="hidden sm:flex items-center gap-2">
-                      {[
-                        {
-                          title:
-                            "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
-                          desc: "Survey Paper on the history of load balancing in Distributed Systems.",
-                          href: "/papers/load-balancing.pdf",
-                        },
-                        {
-                          title:
-                            "Exploring the Role of Compiler Optimizations in Modern Systems",
-                          desc: "Senior project paper published through Cal Poly Digital Commons.",
-                          href: "https://digitalcommons.calpoly.edu/cscsp/182/",
-                        },
-                      ].map((_, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          aria-label={`Go to paper ${i + 1}`}
-                          onClick={() => {
-                            const el = papersCarouselRef.current;
-                            if (!el) {
-                              return;
-                            }
-                            const children = Array.from(
-                              el.querySelectorAll<HTMLElement>(
-                                "[data-paper-item]",
-                              ),
-                            );
-                            const target = children[i];
-                            if (!target) {
-                              return;
-                            }
-                            pausePapersTemporarily(4500);
-                            el.scrollTo({
-                              left: target.offsetLeft - 16,
-                              behavior: "smooth",
-                            });
-                            setPapersIndex(i);
-                          }}
-                          className={
-                            "h-2.5 w-2.5 rounded-full transition " +
-                            (i === papersIndex
-                              ? "bg-neutral-900 dark:bg-white"
-                              : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
-                          }
-                        />
-                      ))}
-                    </div>
-                    <CarouselArrows
-                      onPrev={() =>
-                        scrollCarouselByEdge(
-                          papersCarouselRef,
-                          "left",
-                          pausePapersTemporarily,
-                        )
-                      }
-                      onNext={() =>
-                        scrollCarouselByEdge(
-                          papersCarouselRef,
-                          "right",
-                          pausePapersTemporarily,
-                        )
-                      }
-                    />
-                  </div>
                 </div>
 
-                <div
-                  className="relative mt-6 -mx-2"
-                >
-                  <div
-                    ref={papersCarouselRef}
-                    className="no-scrollbar px-2 flex gap-6 overflow-x-auto pb-4"
-                    style={{ scrollSnapType: "x mandatory" }}
-                    onMouseEnter={() => setPapersPaused(true)}
-                    onMouseLeave={() => setPapersPaused(false)}
-                    onWheel={() => pausePapersTemporarily(4500)}
-                    onTouchStart={() => pausePapersTemporarily(4500)}
-                    onPointerDown={() => pausePapersTemporarily(4500)}
-                  >
-                    {[
-                      {
-                        title:
-                          "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
-                        desc: "Survey Paper on the history of load balancing in Distributed Systems.",
-                        href: "/papers/load-balancing.pdf",
-                      },
-                      {
-                        title:
-                          "Integrating Machine Learning with an FPS Aim Trainer for Optimal Sensitivity Finding",
-                        desc: "Senior project paper published through Cal Poly Digital Commons.",
-                        href: "https://digitalcommons.calpoly.edu/cscsp/182/",
-                      },
-                    ].map((w) => (
-                      <motion.a
-                        key={w.title}
-                        data-paper-item
-                        href={w.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        variants={SECTION_CHILD}
-                        className="min-w-[88%] sm:min-w-[70%] lg:min-w-[56%] scroll-ml-4 snap-center rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15"
-                        style={{ scrollSnapAlign: "center" }}
-                      >
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[
+                    {
+                      title:
+                        "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
+                      desc: "Survey Paper on the history of load balancing in Distributed Systems.",
+                      href: "/papers/load-balancing.pdf",
+                    },
+                    {
+                      title:
+                        "Integrating Machine Learning with an FPS Aim Trainer for Optimal Sensitivity Finding",
+                      desc: "Senior project paper published through Cal Poly Digital Commons.",
+                      href: "/papers/Senior Project Final Paper.pdf",
+                      externalUrl: "https://digitalcommons.calpoly.edu/cscsp/182/",
+                    },
+                  ].map((w) => (
+                    <motion.div
+                      key={w.title}
+                      variants={SECTION_CHILD}
+                      className="h-full"
+                    >
+                      <div className="flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
                         <div className="font-semibold text-lg text-neutral-900 dark:text-neutral-100">
                           {w.title}
                         </div>
-                        <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-2">
+
+                        {w.href.endsWith(".pdf") && (
+                          <div className="mt-5 w-full h-96 overflow-hidden rounded-xl border border-black/10 dark:border-white/10">
+                            <iframe
+                              src={`${w.href}#toolbar=0&navpanes=0`}
+                              title={w.title}
+                              className="w-full h-full"
+                            />
+                          </div>
+                        )}
+
+                        <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-5 flex-grow">
                           {w.desc}
                         </p>
-                        <div className="mt-4 inline-flex items-center gap-1 text-sm text-neutral-700 dark:text-neutral-200">
-                          Read <ExternalLink className="h-4 w-4" />
-                        </div>
-                      </motion.a>
-                    ))}
-                  </div>
-                </div>
 
-                <style jsx>{`
-                  .no-scrollbar::-webkit-scrollbar {
-                    display: none;
-                  }
-                  .no-scrollbar {
-                    scrollbar-width: none;
-                    -ms-overflow-style: none;
-                  }
-                `}</style>
+                        <div className="mt-6">
+                          <a
+                            href={w.externalUrl || w.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm text-neutral-800 shadow-sm backdrop-blur-xl transition hover:bg-white/80 dark:border-white/10 dark:bg-white/10 dark:text-neutral-200 dark:hover:bg-white/20"
+                          >
+                            Read full paper <ExternalLink className="h-4 w-4" />
+                          </a>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </>
             ) : null}
+          </div>
+        </Section>
+
+        <Section id="hobbies" titleIcon={<Globe className="h-5 w-5" />} title="Hobbies">
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {hobbies.map((h) => (
+              <motion.div key={h.name} variants={SECTION_CHILD} className="h-full">
+                <div className="group flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
+                  <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                    {h.name}
+                  </h3>
+
+                  {h.img && (
+                    <div className="relative mt-5 w-full h-72 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 flex-shrink-0">
+                      <img
+                        src={h.img}
+                        alt={h.name}
+                        className={`absolute inset-0 h-full w-full transition-[opacity,filter] duration-300 grayscale group-hover:grayscale-0 ${(h as any).imgClass || "object-cover"}`}
+                      />
+                      {(h as any).hoverImg && (
+                        <img
+                          src={(h as any).hoverImg}
+                          alt={h.name + " highlight"}
+                          loading="lazy"
+                          className="absolute inset-0 z-10 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
+                    {h.caption}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </Section>
 
@@ -1413,188 +1132,22 @@ export default function Page() {
           titleIcon={<Trophy className="h-5 w-5" />}
           title="Awards & Highlights"
         >
-          {(() => {
-            const [awardsPaused, setAwardsPaused] = React.useState(false);
-            const [awardsIndex, setAwardsIndex] = React.useState(0);
-            const awardsCarouselRef = React.useRef<HTMLDivElement | null>(null);
-            const awardsResumeTimerRef = React.useRef<number | null>(null);
-
-            function pauseAwardsTemporarily(ms: number) {
-              setAwardsPaused(true);
-              if (awardsResumeTimerRef.current) {
-                window.clearTimeout(awardsResumeTimerRef.current);
-              }
-              awardsResumeTimerRef.current = window.setTimeout(() => {
-                setAwardsPaused(false);
-                awardsResumeTimerRef.current = null;
-              }, ms);
-            }
-
-            React.useEffect(() => {
-              if (awardsPaused) return;
-              const el = awardsCarouselRef.current;
-              if (!el) return;
-
-              const children = Array.from(
-                el.querySelectorAll<HTMLElement>("[data-award-item]")
-              );
-              if (children.length === 0) return;
-
-            }, [awardsPaused, awardsIndex]);
-
-            React.useEffect(() => {
-              return () => {
-                if (awardsResumeTimerRef.current) {
-                  window.clearTimeout(awardsResumeTimerRef.current);
-                }
-              };
-            }, []);
-
-            React.useEffect(() => {
-              const el = awardsCarouselRef.current;
-              if (!el) return;
-
-              let rafId: number | null = null;
-              const onScroll = () => {
-                if (rafId !== null) return;
-                rafId = window.requestAnimationFrame(() => {
-                  rafId = null;
-                  const items = Array.from(
-                    el.querySelectorAll<HTMLElement>("[data-award-item]")
-                  );
-                  if (items.length === 0) return;
-                  const maxScrollLeft = el.scrollWidth - el.clientWidth;
-                  if (maxScrollLeft <= 0
-                    ? true
-                    : el.scrollLeft >= maxScrollLeft - 2
-                  ) {
-                    const last = items.length - 1;
-                    if (last !== awardsIndex) setAwardsIndex(last);
-                    return;
-                  }
-                  const viewportCenter = el.scrollLeft + el.clientWidth / 2;
-                  let bestIndex = awardsIndex;
-                  let bestDist = Number.POSITIVE_INFINITY;
-                  for (let i = 0; i < items.length; i++) {
-                    const item = items[i];
-                    const itemCenter = item.offsetLeft + item.offsetWidth / 2;
-                    const dist = Math.abs(itemCenter - viewportCenter);
-                    if (dist < bestDist) {
-                      bestDist = dist;
-                      bestIndex = i;
-                    }
-                  }
-                  if (bestIndex !== awardsIndex) setAwardsIndex(bestIndex);
-                });
-              };
-              el.addEventListener("scroll", onScroll, { passive: true });
-              onScroll();
-              return () => {
-                el.removeEventListener("scroll", onScroll);
-                if (rafId !== null) window.cancelAnimationFrame(rafId);
-              };
-            }, [awardsIndex]);
-
-            return (
-              <div className="mt-8">
-                <div className="flex items-end justify-between gap-4">
-                  <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
-                    Awards and academic highlights.
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <div className="hidden sm:flex items-center gap-2">
-                      {awards.map((_, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          aria-label={`Go to award ${i + 1}`}
-                          onClick={() => {
-                            const el = awardsCarouselRef.current;
-                            if (!el) return;
-                            const children = Array.from(
-                              el.querySelectorAll<HTMLElement>("[data-award-item]")
-                            );
-                            const target = children[i];
-                            if (!target) return;
-                            pauseAwardsTemporarily(3500);
-                            el.scrollTo({
-                              left: target.offsetLeft - 16,
-                              behavior: "smooth",
-                            });
-                            setAwardsIndex(i);
-                          }}
-                          className={
-                            "h-2.5 w-2.5 rounded-full transition " +
-                            (i === awardsIndex
-                              ? "bg-neutral-900 dark:bg-white"
-                              : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
-                          }
-                        />
-                      ))}
-                    </div>
-                    <CarouselArrows
-                      onPrev={() =>
-                        scrollCarouselByCard(
-                          awardsCarouselRef,
-                          "left",
-                          pauseAwardsTemporarily,
-                          "[data-award-item]",
-                          24,
-                        )
-                      }
-                      onNext={() =>
-                        scrollCarouselByCard(
-                          awardsCarouselRef,
-                          "right",
-                          pauseAwardsTemporarily,
-                          "[data-award-item]",
-                          24,
-                        )
-                      }
-                    />
-                  </div>
+          <div className="mt-8">
+            <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300 mb-6">
+              Awards and academic highlights.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {awards.map((a) => (
+                <div key={a.title} className="h-full">
+                  <Card>
+                    <div className="font-medium">{a.title}</div>
+                    <div className="text-neutral-500">{a.org}</div>
+                    <div className="text-neutral-500 text-xs">{a.year}</div>
+                  </Card>
                 </div>
-                <div
-                  className="relative mt-6 -mx-2"
-                >
-                  <div
-                    ref={awardsCarouselRef}
-                    className="no-scrollbar px-2 flex gap-6 overflow-x-auto pb-4"
-                    style={{ scrollSnapType: "x mandatory" }}
-                    onMouseEnter={() => setAwardsPaused(true)}
-                    onMouseLeave={() => setAwardsPaused(false)}
-                    onWheel={() => pauseAwardsTemporarily(3500)}
-                    onTouchStart={() => pauseAwardsTemporarily(3500)}
-                    onPointerDown={() => pauseAwardsTemporarily(3500)}
-                  >
-                    {awards.map((a, i) => (
-                      <div
-                        key={a.title}
-                        data-award-item
-                        className="min-w-[60%] sm:min-w-[40%] lg:min-w-[30%] scroll-ml-4 snap-center"
-                        style={{ scrollSnapAlign: "center" }}
-                      >
-                        <Card>
-                          <div className="font-medium">{a.title}</div>
-                          <div className="text-neutral-500">{a.org}</div>
-                          <div className="text-neutral-500 text-xs">{a.year}</div>
-                        </Card>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <style jsx>{`
-                  .no-scrollbar::-webkit-scrollbar {
-                    display: none;
-                  }
-                  .no-scrollbar {
-                    scrollbar-width: none;
-                    -ms-overflow-style: none;
-                  }
-                `}</style>
-              </div>
-            );
-          })()}
+              ))}
+            </div>
+          </div>
         </Section>
 
         <Section
@@ -1615,7 +1168,7 @@ export default function Page() {
                   href="mailto:krishna.sharan@gmail.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.22)] hover:ring-1 hover:ring-black/10 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/15"
+                  className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-black/20 active:scale-95 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/30"
                 >
                   <Mail className="h-4 w-4" /> Email Me
                 </a>
@@ -1624,7 +1177,7 @@ export default function Page() {
                   href="https://www.linkedin.com/in/sharankrishna14/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/75 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/10 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
+                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
                 >
                   <Linkedin className="h-4 w-4" /> LinkedIn
                 </a>
@@ -1633,7 +1186,7 @@ export default function Page() {
                   href="https://github.com/SilverXer0"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/75 hover:ring-1 hover:ring-black/10 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/10 dark:hover:ring-white/15 dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
+                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
                 >
                   <Github className="h-4 w-4" /> GitHub
                 </a>
@@ -1642,10 +1195,55 @@ export default function Page() {
           </div>
 
           <footer className="py-10 text-center text-xs text-neutral-500">
-            © {new Date().getFullYear()} Sharan Krishna - built with Next.js &
-            Tailwind.
+            © {new Date().getFullYear()} Sharan Krishna
           </footer>
         </Section>
+      </div>
+
+      <audio
+        ref={audioRef}
+        src="/music/intentions-slow-reverb.mp3"
+        autoPlay
+        loop
+        muted={false}
+        className="hidden"
+      />
+
+      <div
+        className={`fixed bottom-6 left-6 z-50 flex items-center gap-4 rounded-2xl border border-black/10 bg-white/70 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.15)] backdrop-blur-2xl transition-transform duration-700 ease-in-out dark:border-white/10 dark:bg-white/5 dark:shadow-[0_20px_70px_rgba(0,0,0,0.55)] ${showMusicPopup ? "translate-x-0" : "-translate-x-[150%]"
+          }`}
+      >
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
+          <Music className="h-5 w-5 animate-pulse" />
+        </div>
+        <div className="flex flex-col pr-6">
+          <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+            Now Playing
+          </span>
+          <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 mt-0.5">
+            Intentions (Slowed + Reverb)
+          </span>
+          <span className="text-xs text-neutral-600 dark:text-neutral-300 mt-0.5">
+            Artist Name Here
+          </span>
+          <a
+            href="https://youtube.com/watch?v=YOUR_LINK_HERE"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 transition-colors"
+          >
+            Listen on YouTube <ExternalLinkIcon className="h-3 w-3" />
+          </a>
+        </div>
+        <button
+          className="absolute right-3 top-3 p-1 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+          onClick={() => setShowMusicPopup(false)}
+          aria-label="Close track info"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
     </div>
   );
@@ -1666,10 +1264,10 @@ function CarouselArrows({
         onClick={onPrev}
         className="inline-flex h-9 w-9 items-center justify-center rounded-full
           border border-black/10 bg-white/70 text-neutral-900 shadow-sm
-          backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/80
-          hover:ring-1 hover:ring-black/10
+          backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95
+          hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95
           dark:border-white/10 dark:bg-white/10 dark:text-neutral-100
-          dark:hover:bg-white/15 dark:hover:ring-white/15"
+          dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
@@ -1680,10 +1278,10 @@ function CarouselArrows({
         onClick={onNext}
         className="inline-flex h-9 w-9 items-center justify-center rounded-full
           border border-black/10 bg-white/70 text-neutral-900 shadow-sm
-          backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/80
-          hover:ring-1 hover:ring-black/10
+          backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95
+          hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95
           dark:border-white/10 dark:bg-white/10 dark:text-neutral-100
-          dark:hover:bg-white/15 dark:hover:ring-white/15"
+          dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
       >
         <ChevronRight className="h-4 w-4" />
       </button>
@@ -1811,22 +1409,26 @@ function Card({
   href?: string;
 }) {
   const className =
-    "rounded-3xl border border-black/10 bg-white/70 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(0,0,0,0.18)] hover:ring-1 hover:ring-black/10 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_18px_60px_rgba(0,0,0,0.65)] dark:hover:ring-white/15";
+    "rounded-3xl border border-black/10 bg-white/70 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30 h-full w-full block";
 
   if (href) {
     return (
-      <motion.a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
+      <motion.div
         initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.55, ease: APPLE_EASE }}
-        className={className + " cursor-pointer"}
+        className="h-full w-full"
       >
-        {children}
-      </motion.a>
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={className + " cursor-pointer"}
+        >
+          {children}
+        </a>
+      </motion.div>
     );
   }
 
@@ -1836,9 +1438,11 @@ function Card({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.55, ease: APPLE_EASE }}
-      className={className}
+      className="h-full w-full"
     >
-      {children}
+      <div className={className}>
+        {children}
+      </div>
     </motion.div>
   );
 }
@@ -1870,7 +1474,7 @@ function MarqueeRow<T extends { key: string; kind?: string }>({
     if (!children.length) return;
 
     const cardWidth = (children[0] as HTMLElement).offsetWidth;
-    const gap = 24; 
+    const gap = 24;
     const delta = cardWidth + gap;
 
     el.scrollBy({
