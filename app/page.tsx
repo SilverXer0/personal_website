@@ -244,6 +244,15 @@ export default function Page() {
   const hasEnteredRef = useRef(false);
 
   useEffect(() => {
+    if (mounted) {
+      document.body.style.overflow = hasEntered ? "" : "hidden";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mounted, hasEntered]);
+
+  useEffect(() => {
     setMounted(true);
 
     if (!document.getElementById("youtube-iframe-api")) {
