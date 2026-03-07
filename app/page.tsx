@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Music,
   ExternalLink as ExternalLinkIcon,
+  UserRound,
 } from "lucide-react";
 
 declare global {
@@ -40,6 +41,56 @@ const SECTION_CHILD: any = {
     transition: { duration: 0.65, ease: APPLE_EASE },
   },
 };
+
+function HobbyCardWithGif({ h }: { h: any }) {
+  const [gifSrc, setGifSrc] = useState<string | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseEnter = () => {
+    setGifSrc(`${h.hoverImg}?t=${Date.now()}`);
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setGifSrc(null);
+  };
+
+  return (
+    <motion.div variants={SECTION_CHILD} className="h-full">
+      <div
+        className="group flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+          {h.name}
+        </h3>
+
+        {h.img && (
+          <div className="relative mt-5 w-full h-72 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 flex-shrink-0">
+            <img
+              src={h.img}
+              alt={h.name}
+              className={`absolute inset-0 h-full w-full transition-[opacity,filter] duration-300 ${isHovered ? "grayscale-0" : "grayscale"} ${h.imgClass || "object-cover"}`}
+            />
+            {gifSrc && (
+              <img
+                src={gifSrc}
+                alt={h.name + " highlight"}
+                className={`absolute inset-0 z-10 h-full w-full object-cover transition-opacity duration-300 ${isHovered ? "opacity-100" : "opacity-0"}`}
+              />
+            )}
+          </div>
+        )}
+
+        <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
+          {h.caption}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
 
 export default function Page() {
 
@@ -189,14 +240,12 @@ export default function Page() {
   const [mounted, setMounted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [showMusicPopup, setShowMusicPopup] = useState(false);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const ytPlayers = useRef<{ [key: string]: any }>({});
+  const [hasEntered, setHasEntered] = useState(false);
+  const hasEnteredRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
-
-    const showTimer = setTimeout(() => setShowMusicPopup(true), 1500);
-    const hideTimer = setTimeout(() => setShowMusicPopup(false), 7000);
 
     if (!document.getElementById("youtube-iframe-api")) {
       const tag = document.createElement("script");
@@ -210,46 +259,57 @@ export default function Page() {
       }
     }
 
-    window.onYouTubeIframeAPIReady = () => {
+    const handleVisibilityChange = () => {
+      if (!hasEnteredRef.current || !audioRef.current) return;
+      if (document.hidden) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play().catch(() => { });
+      }
     };
 
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
-      clearTimeout(showTimer);
-      clearTimeout(hideTimer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
   useEffect(() => {
-    if (!audioRef.current) return;
+    const currentMedia = aboutMediaItems[aboutMediaIndex];
+    if (currentMedia.kind !== "video") return;
 
-    if (isVideoPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play().catch(() => {
+    const iframeId = `yt-player-${aboutMediaIndex}`;
+    if (ytPlayers.current[iframeId]) return;
+
+    const bindPlayer = () => {
+      ytPlayers.current[iframeId] = new window.YT.Player(iframeId, {
+        events: {
+          onStateChange: (event: any) => {
+            if (!audioRef.current) return;
+            if (event.data === 1) {
+              audioRef.current.pause();
+            } else if (event.data === 2 || event.data === 0) {
+              if (hasEnteredRef.current && !document.hidden) {
+                audioRef.current.play().catch(() => { });
+              }
+            }
+          }
+        }
       });
+    };
+
+    if (window.YT && window.YT.Player) {
+      bindPlayer();
+    } else {
+      const pollTimer = setInterval(() => {
+        if (window.YT && window.YT.Player) {
+          clearInterval(pollTimer);
+          if (!ytPlayers.current[iframeId]) bindPlayer();
+        }
+      }, 500);
+      return () => clearInterval(pollTimer);
     }
-  }, [isVideoPlaying]);
-
-  useEffect(() => {
-    const handleFirstInteraction = () => {
-      if (audioRef.current && !isVideoPlaying) {
-        audioRef.current.play().catch(() => { });
-      }
-      document.removeEventListener("click", handleFirstInteraction);
-      document.removeEventListener("keydown", handleFirstInteraction);
-      document.removeEventListener("scroll", handleFirstInteraction);
-    };
-
-    document.addEventListener("click", handleFirstInteraction);
-    document.addEventListener("keydown", handleFirstInteraction);
-    document.addEventListener("scroll", handleFirstInteraction, { once: true });
-
-    return () => {
-      document.removeEventListener("click", handleFirstInteraction);
-      document.removeEventListener("keydown", handleFirstInteraction);
-      document.removeEventListener("scroll", handleFirstInteraction);
-    };
-  }, [isVideoPlaying]);
+  }, [aboutMediaIndex]);
 
 
   useEffect(() => {
@@ -580,353 +640,371 @@ export default function Page() {
     { title: "ACT", org: "36/36", year: "April 2021" },
   ];
   return (
-    <div
-      className={mounted ? "dark" : "dark"}
-      suppressHydrationWarning
-    >
-      <div className="fixed inset-0 z-[-1] bg-[url('/photos/bg.jpg')] bg-cover bg-center" />
-      <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
-        <nav className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-black/35">
-          <div className="mx-auto max-w-[80rem] px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 font-medium">
-              <img src="/photos/karina-logo.png" alt="Logo" className="h-6 w-6 rounded-full object-cover" />
-              <span>Sharan Krishna</span>
-            </div>
-
-            <div className="hidden md:flex items-center gap-6 text-sm">
-              <a href="#about" className="hover:opacity-80">
-                About
-              </a>
-              <a href="#experience" className="hover:opacity-80">
-                Experience
-              </a>
-              <a href="#projects" className="hover:opacity-80">
-                Projects
-              </a>
-              <a href="#papers" className="hover:opacity-80">
-                Papers
-              </a>
-              <a href="#hobbies" className="hover:opacity-80">
-                Hobbies
-              </a>
-              <a href="#awards" className="hover:opacity-80">
-                Awards
-              </a>
-              <a href="#contact" className="hover:opacity-80">
-                Contact
-              </a>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <a
-                href="/resume/Sharan_K_Resume.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-sm text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
-                title="Open resume (PDF)"
-              >
-                <Download className="h-4 w-4" /> Résumé
-              </a>
-
-            </div>
-          </div>
-        </nav>
-
-        <header className="mx-auto max-w-[80rem] px-4 pt-24 pb-28 min-h-[100svh] flex flex-col justify-center">
-          <motion.div
-            variants={heroStagger}
-            initial={reducedMotion ? false : "hidden"}
-            animate={reducedMotion ? false : "show"}
-            className="relative mx-auto -mt-12 sm:-mt-16 flex max-w-3xl flex-col items-center text-center"
-          >
-            {!reducedMotion ? <PixelRevealOverlay /> : null}
-            <motion.h1
-              variants={heroItem}
-              className="mt-2 text-7xl sm:text-8xl font-semibold tracking-tight font-sans"
-            >
-              Hi, I'm Sharan.
-            </motion.h1>
-            <motion.div
-              variants={heroItem}
-              className="mt-10 flex flex-col items-center text-center"
-            >
-              <div className="text-4xl sm:text-5xl font-semibold text-neutral-800 dark:text-neutral-300">
-                Software Engineer
-              </div>
-              <div className="mt-4 text-lg sm:text-xl text-neutral-600 dark:text-neutral-400">
-                Distributed Systems, Infrastructure, Machine Learning
-              </div>
-            </motion.div>
-            <motion.div
-              variants={heroItem}
-              className="mt-9 flex flex-wrap items-center gap-4"
-            >
-              <div className="flex gap-3">
-                <a
-                  href="#experience"
-                  className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-black/20 active:scale-95 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/30"
-                >
-                  See Experience <ArrowRight className="h-4 w-4" />
-                </a>
-                <a
-                  href="#contact"
-                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-5 py-2.5 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
-                >
-                  Get in touch <Mail className="h-4 w-4" />
-                </a>
-              </div>
-            </motion.div>
-          </motion.div>
-
-        </header>
-
-        <Section
-          id="about"
-          titleIcon={<Code2 className="h-5 w-5" />}
-          title="About"
+    <>
+      {!hasEntered && mounted && (
+        <div
+          className="fixed inset-0 z-[9999] flex cursor-pointer flex-col items-center justify-center bg-black/90 text-white backdrop-blur-sm transition-opacity duration-500"
+          onClick={() => {
+            setHasEntered(true);
+            hasEnteredRef.current = true;
+            if (audioRef.current) {
+              audioRef.current.volume = 0.1;
+              audioRef.current.play().catch(() => { });
+            }
+            setTimeout(() => setShowMusicPopup(true), 500);
+          }}
         >
-          <div className="mt-10">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-center">
-              <div className="lg:col-span-2 h-full">
-                <div className="h-full flex flex-col justify-center rounded-3xl border border-black/10 bg-white/70 p-10 sm:p-14 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
-                  <div className="w-full text-left">
-                    <p className="text-lg sm:text-lg leading-relaxed text-neutral-800 dark:text-neutral-200">
-                      I have a BS in Computer Science from <strong>Cal Poly SLO</strong> and am currently {" "}
-                      working at <strong>Plaid</strong>, working on infrastructure for the developer dashboard with {" "}
-                      a focus on scalability and low latency.
-                    </p>
-                    <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
-                      I work across multiple domains within technology, including Distributed Systems, {" "}
-                      Infrastructure, and Low Latency. This has taken me across different tech stacks, {" "}
-                      from Python and Go to Swift and Typescript.
-                    </p>
-                    <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
-                      In my personal time, I love watching sports like Basketball and F1, and I enjoy playing competitive first-person shooters {" "}
-                      like Valorant and Counter Strike 2. I&apos;ve created some youtube montages of my gameplay, check them out on the right!
-                    </p>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center gap-4 text-center"
+          >
+            <h1 className="text-4xl font-semibold tracking-tight">
+              Welcome
+            </h1>
+            <p className="text-lg font-medium tracking-wide text-neutral-300">
+              Click anywhere to enter
+            </p>
+            <Music className="mt-1 h-8 w-8 animate-pulse text-neutral-400" />
+          </motion.div>
+        </div>
+      )}
+
+      <div
+        className={mounted ? "dark" : "dark"}
+        suppressHydrationWarning
+      >
+        <div className="fixed inset-0 z-[-1] bg-[url('/photos/bg.jpg')] bg-cover bg-center" />
+        <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
+          <nav className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-black/35">
+            <div className="mx-auto max-w-[80rem] px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2 font-medium">
+                <img src="/photos/karina-logo.png" alt="Logo" className="h-6 w-6 rounded-full object-cover" />
+                <span>Sharan Krishna</span>
+              </div>
+
+              <div className="hidden md:flex items-center gap-6 text-sm">
+                <a href="#about" className="hover:opacity-80">
+                  About
+                </a>
+                <a href="#experience" className="hover:opacity-80">
+                  Experience
+                </a>
+                <a href="#projects" className="hover:opacity-80">
+                  Projects
+                </a>
+                <a href="#papers" className="hover:opacity-80">
+                  Papers
+                </a>
+                <a href="#hobbies" className="hover:opacity-80">
+                  Hobbies
+                </a>
+                <a href="#awards" className="hover:opacity-80">
+                  Awards
+                </a>
+                <a href="#contact" className="hover:opacity-80">
+                  Contact
+                </a>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href="/resume/Sharan_K_Resume.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-sm text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
+                  title="Open resume (PDF)"
+                >
+                  <Download className="h-4 w-4" /> Résumé
+                </a>
+
+              </div>
+            </div>
+          </nav>
+
+          <header className="mx-auto max-w-[80rem] px-4 pt-24 pb-28 min-h-[100svh] flex flex-col justify-center">
+            <motion.div
+              variants={heroStagger}
+              initial={reducedMotion ? false : "hidden"}
+              animate={hasEntered ? (reducedMotion ? false : "show") : "hidden"}
+              className="relative mx-auto -mt-12 sm:-mt-16 flex max-w-3xl flex-col items-center text-center"
+            >
+              {!reducedMotion ? <PixelRevealOverlay /> : null}
+              <motion.h1
+                variants={heroItem}
+                className="mt-2 text-7xl sm:text-8xl font-semibold tracking-tight font-sans"
+              >
+                Hi, I'm Sharan.
+              </motion.h1>
+              <motion.div
+                variants={heroItem}
+                className="mt-10 flex flex-col items-center text-center"
+              >
+                <div className="text-4xl sm:text-5xl font-semibold text-neutral-800 dark:text-neutral-300">
+                  Software Engineer
+                </div>
+                <div className="mt-4 text-lg sm:text-xl text-neutral-600 dark:text-neutral-400">
+                  Distributed Systems, Infrastructure, Machine Learning
+                </div>
+              </motion.div>
+              <motion.div
+                variants={heroItem}
+                className="mt-9 flex flex-wrap items-center gap-4"
+              >
+                <div className="flex gap-3">
+                  <a
+                    href="#experience"
+                    className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-black/20 active:scale-95 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/30"
+                  >
+                    See Experience <ArrowRight className="h-4 w-4" />
+                  </a>
+                  <a
+                    href="#contact"
+                    className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-5 py-2.5 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
+                  >
+                    Get in touch <Mail className="h-4 w-4" />
+                  </a>
+                </div>
+              </motion.div>
+            </motion.div>
+
+          </header>
+
+          <Section
+            id="about"
+            titleIcon={<UserRound className="h-5 w-5" />}
+            title="About"
+          >
+            <div className="mt-10">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-center">
+                <div className="lg:col-span-2 h-full">
+                  <div className="h-full flex flex-col justify-center rounded-3xl border border-black/10 bg-white/70 p-10 sm:p-14 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
+                    <div className="w-full text-left">
+                      <p className="text-lg sm:text-lg leading-relaxed text-neutral-800 dark:text-neutral-200">
+                        I have a BS in Computer Science from <strong>Cal Poly SLO</strong> and am currently {" "}
+                        working at <strong>Plaid</strong>, working on infrastructure for the developer dashboard with {" "}
+                        a focus on scalability and low latency.
+                      </p>
+                      <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
+                        I work across multiple domains within technology, including Distributed Systems, {" "}
+                        Infrastructure, and Low Latency. This has taken me across different tech stacks, {" "}
+                        from Python and Go to Swift and Typescript.
+                      </p>
+                      <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
+                        In my personal time, I love watching sports like Basketball and F1, and I enjoy playing competitive first-person shooters {" "}
+                        like Valorant and Counter Strike 2. I&apos;ve created some youtube montages of my gameplay, check them out on the right!
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="lg:col-span-1 h-full">
-                <div className="h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
-                  <div className="h-full flex flex-col justify-center gap-4">
-                    <div className="relative flex-1 overflow-hidden rounded-2xl border border-black/10 bg-black/5 dark:border-white/10 dark:bg-black min-h-[250px]">
-                      <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex items-center justify-between px-3">
-                        <button
-                          type="button"
-                          aria-label="Previous media"
-                          className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
-                          onClick={() => {
-                            setAboutMediaIndex(
-                              (i) =>
-                                (i - 1 + aboutMediaItems.length) %
-                                aboutMediaItems.length,
-                            );
-                          }}
-                        >
-                          <ChevronLeft className="h-5 w-5" />
-                        </button>
+                <div className="lg:col-span-1 h-full">
+                  <div className="h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
+                    <div className="h-full flex flex-col justify-center gap-4">
+                      <div className="relative flex-1 overflow-hidden rounded-2xl border border-black/10 bg-black/5 dark:border-white/10 dark:bg-black min-h-[250px]">
+                        <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex items-center justify-between px-3">
+                          <button
+                            type="button"
+                            aria-label="Previous media"
+                            className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
+                            onClick={() => {
+                              setAboutMediaIndex(
+                                (i) =>
+                                  (i - 1 + aboutMediaItems.length) %
+                                  aboutMediaItems.length,
+                              );
+                              if (hasEnteredRef.current && !document.hidden && audioRef.current) {
+                                audioRef.current.play().catch(() => { });
+                              }
+                            }}
+                          >
+                            <ChevronLeft className="h-5 w-5" />
+                          </button>
 
-                        <button
-                          type="button"
-                          aria-label="Next media"
-                          className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
-                          onClick={() => {
-                            setAboutMediaIndex(
-                              (i) => (i + 1) % aboutMediaItems.length,
-                            );
-                          }}
-                        >
-                          <ChevronRight className="h-5 w-5" />
-                        </button>
+                          <button
+                            type="button"
+                            aria-label="Next media"
+                            className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
+                            onClick={() => {
+                              setAboutMediaIndex(
+                                (i) => (i + 1) % aboutMediaItems.length,
+                              );
+                              if (hasEnteredRef.current && !document.hidden && audioRef.current) {
+                                audioRef.current.play().catch(() => { });
+                              }
+                            }}
+                          >
+                            <ChevronRight className="h-5 w-5" />
+                          </button>
+                        </div>
+
+                        {aboutMediaItems[aboutMediaIndex].kind === "video" ? (
+                          <iframe
+                            id={`yt-player-${aboutMediaIndex}`}
+                            className="w-full h-full absolute inset-0"
+                            src={aboutMediaItems[aboutMediaIndex].src}
+                            title={aboutMediaItems[aboutMediaIndex].title}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <img
+                            src={aboutMediaItems[aboutMediaIndex].src}
+                            alt={aboutMediaItems[aboutMediaIndex].title}
+                            className="w-full h-full absolute inset-0 object-cover"
+                          />
+                        )}
                       </div>
 
-                      {aboutMediaItems[aboutMediaIndex].kind === "video" ? (
-                        <iframe
-                          id={`yt-player-${aboutMediaIndex}`}
-                          className="w-full h-full absolute inset-0"
-                          src={aboutMediaItems[aboutMediaIndex].src}
-                          title={aboutMediaItems[aboutMediaIndex].title}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                          allowFullScreen
-                          onLoad={(e) => {
-                            if (window.YT && window.YT.Player) {
-                              const iframeId = `yt-player-${aboutMediaIndex}`;
-                              if (!ytPlayers.current[iframeId]) {
-                                ytPlayers.current[iframeId] = new window.YT.Player(iframeId, {
-                                  events: {
-                                    onStateChange: (event: any) => {
-                                      if (event.data === 1) {
-                                        setIsVideoPlaying(true);
-                                      }
-                                      else if (event.data === 2 || event.data === 0) {
-                                        setIsVideoPlaying(false);
-                                      }
-                                    }
-                                  }
-                                });
-                              }
+                      <div className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300 text-center shrink-0">
+                        {aboutMediaItems[aboutMediaIndex].caption}
+                      </div>
+
+                      <div className="-mt-1 flex items-center justify-center gap-2 shrink-0">
+                        {aboutMediaItems.map((_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            aria-label={`Go to media ${i + 1}`}
+                            onClick={() => setAboutMediaIndex(i)}
+                            className={
+                              "h-2.5 w-2.5 rounded-full transition " +
+                              (i === aboutMediaIndex
+                                ? "bg-neutral-900 dark:bg-white"
+                                : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
                             }
-                          }}
-                        />
-                      ) : (
-                        <img
-                          src={aboutMediaItems[aboutMediaIndex].src}
-                          alt={aboutMediaItems[aboutMediaIndex].title}
-                          className="w-full h-full absolute inset-0 object-cover"
-                        />
-                      )}
-                    </div>
-
-                    <div className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300 text-center shrink-0">
-                      {aboutMediaItems[aboutMediaIndex].caption}
-                    </div>
-
-                    <div className="-mt-1 flex items-center justify-center gap-2 shrink-0">
-                      {aboutMediaItems.map((_, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          aria-label={`Go to media ${i + 1}`}
-                          onClick={() => setAboutMediaIndex(i)}
-                          className={
-                            "h-2.5 w-2.5 rounded-full transition " +
-                            (i === aboutMediaIndex
-                              ? "bg-neutral-900 dark:bg-white"
-                              : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
-                          }
-                        />
-                      ))}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </Section>
+          </Section>
 
-        <Section
-          id="experience"
-          titleIcon={<Rocket className="h-5 w-5" />}
-          title="Experience"
-        >
-          <div className="mt-8">
-            <div className="flex items-end justify-between gap-4">
-              <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
-                My roles and professional experience, past and present.
-              </p>
+          <Section
+            id="experience"
+            titleIcon={<Rocket className="h-5 w-5" />}
+            title="Experience"
+          >
+            <div className="mt-8">
+              <div className="flex items-end justify-between gap-4">
+                <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
+                  My roles and professional experience, past and present.
+                </p>
 
-              <div className="flex items-center gap-4">
-                <div className="hidden sm:flex items-center gap-2">
-                  {experience.map((job, i) => (
-                    <button
-                      key={job.title + String(i)}
-                      type="button"
-                      aria-label={`Go to experience ${i + 1}`}
-                      onClick={() => {
-                        const el = experienceCarouselRef.current;
-                        if (!el) {
-                          return;
+                <div className="flex items-center gap-4">
+                  <div className="hidden sm:flex items-center gap-2">
+                    {experience.map((job, i) => (
+                      <button
+                        key={job.title + String(i)}
+                        type="button"
+                        aria-label={`Go to experience ${i + 1}`}
+                        onClick={() => {
+                          const el = experienceCarouselRef.current;
+                          if (!el) {
+                            return;
+                          }
+                          const children = Array.from(
+                            el.querySelectorAll<HTMLElement>(
+                              "[data-experience-item]",
+                            ),
+                          );
+                          const target = children[i];
+                          if (!target) {
+                            return;
+                          }
+                          pauseExperienceTemporarily(4500);
+                          el.scrollTo({
+                            left: target.offsetLeft - 16,
+                            behavior: "smooth",
+                          });
+                          setExperienceIndex(i);
+                        }}
+                        className={
+                          "h-2.5 w-2.5 rounded-full transition " +
+                          (i === experienceIndex
+                            ? "bg-neutral-900 dark:bg-white"
+                            : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
                         }
-                        const children = Array.from(
-                          el.querySelectorAll<HTMLElement>(
-                            "[data-experience-item]",
-                          ),
-                        );
-                        const target = children[i];
-                        if (!target) {
-                          return;
-                        }
-                        pauseExperienceTemporarily(4500);
-                        el.scrollTo({
-                          left: target.offsetLeft - 16,
-                          behavior: "smooth",
-                        });
-                        setExperienceIndex(i);
-                      }}
-                      className={
-                        "h-2.5 w-2.5 rounded-full transition " +
-                        (i === experienceIndex
-                          ? "bg-neutral-900 dark:bg-white"
-                          : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
-                      }
-                    />
+                      />
+                    ))}
+                  </div>
+                  <CarouselArrows
+                    onPrev={() =>
+                      scrollCarouselByEdge(
+                        experienceCarouselRef,
+                        "left",
+                        pauseExperienceTemporarily,
+                      )
+                    }
+                    onNext={() =>
+                      scrollCarouselByEdge(
+                        experienceCarouselRef,
+                        "right",
+                        pauseExperienceTemporarily,
+                      )
+                    }
+                  />
+                </div>
+              </div>
+
+              <div
+                className="relative mt-6 -mx-2"
+              >
+                <div
+                  ref={experienceCarouselRef}
+                  className="no-scrollbar px-4 pt-4 flex gap-6 overflow-x-auto pb-8 -mt-4 items-stretch"
+                  style={{ scrollSnapType: "x mandatory" }}
+                  onMouseEnter={() => setExperiencePaused(true)}
+                  onMouseLeave={() => setExperiencePaused(false)}
+                  onWheel={() => pauseExperienceTemporarily(4500)}
+                  onTouchStart={() => pauseExperienceTemporarily(4500)}
+                  onPointerDown={() => pauseExperienceTemporarily(4500)}
+                >
+                  {experience.map((job) => (
+                    <motion.div
+                      key={job.title + job.org}
+                      data-experience-item
+                      variants={SECTION_CHILD}
+                      className="min-w-[92%] sm:min-w-[78%] lg:min-w-[62%] scroll-ml-4 snap-center flex"
+                      style={{ scrollSnapAlign: "center" }}
+                    >
+                      <div className="flex flex-col w-full h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                          <div>
+                            <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                              {job.title}
+                            </h3>
+                            <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                              {job.org}
+                            </div>
+                          </div>
+
+                          <div className="text-xs text-neutral-500 dark:text-neutral-400 text-left sm:text-right">
+                            <div>{job.period}</div>
+                            <div className="flex items-center gap-1 sm:justify-end mt-1">
+                              <MapPin className="h-3.5 w-3.5" /> {job.location}
+                            </div>
+                          </div>
+                        </div>
+
+                        {job.bullets?.length ? (
+                          <ul className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 list-disc pl-5 space-y-2">
+                            {job.bullets.map((bullet, idx) => (
+                              <li key={idx}>{bullet}</li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
+                    </motion.div>
                   ))}
                 </div>
-                <CarouselArrows
-                  onPrev={() =>
-                    scrollCarouselByEdge(
-                      experienceCarouselRef,
-                      "left",
-                      pauseExperienceTemporarily,
-                    )
-                  }
-                  onNext={() =>
-                    scrollCarouselByEdge(
-                      experienceCarouselRef,
-                      "right",
-                      pauseExperienceTemporarily,
-                    )
-                  }
-                />
               </div>
-            </div>
 
-            <div
-              className="relative mt-6 -mx-2"
-            >
-              <div
-                ref={experienceCarouselRef}
-                className="no-scrollbar px-4 pt-4 flex gap-6 overflow-x-auto pb-8 -mt-4 items-stretch"
-                style={{ scrollSnapType: "x mandatory" }}
-                onMouseEnter={() => setExperiencePaused(true)}
-                onMouseLeave={() => setExperiencePaused(false)}
-                onWheel={() => pauseExperienceTemporarily(4500)}
-                onTouchStart={() => pauseExperienceTemporarily(4500)}
-                onPointerDown={() => pauseExperienceTemporarily(4500)}
-              >
-                {experience.map((job) => (
-                  <motion.div
-                    key={job.title + job.org}
-                    data-experience-item
-                    variants={SECTION_CHILD}
-                    className="min-w-[92%] sm:min-w-[78%] lg:min-w-[62%] scroll-ml-4 snap-center flex"
-                    style={{ scrollSnapAlign: "center" }}
-                  >
-                    <div className="flex flex-col w-full h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                        <div>
-                          <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                            {job.title}
-                          </h3>
-                          <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                            {job.org}
-                          </div>
-                        </div>
-
-                        <div className="text-xs text-neutral-500 dark:text-neutral-400 text-left sm:text-right">
-                          <div>{job.period}</div>
-                          <div className="flex items-center gap-1 sm:justify-end mt-1">
-                            <MapPin className="h-3.5 w-3.5" /> {job.location}
-                          </div>
-                        </div>
-                      </div>
-
-                      {job.bullets?.length ? (
-                        <ul className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 list-disc pl-5 space-y-2">
-                          {job.bullets.map((bullet, idx) => (
-                            <li key={idx}>{bullet}</li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            <style jsx>{`
+              <style jsx>{`
               .no-scrollbar::-webkit-scrollbar {
                 display: none;
               }
@@ -935,317 +1013,313 @@ export default function Page() {
                 -ms-overflow-style: none;
               }
             `}</style>
-          </div>
-        </Section>
-
-        <Section
-          id="projects"
-          titleIcon={<Code2 className="h-5 w-5" />}
-          title="Projects"
-        >
-          <div className="mt-8">
-            <div className="flex items-end justify-between gap-4">
-              <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
-                Selected projects and things I’ve built.
-              </p>
             </div>
+          </Section>
 
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-              {projects.map((p) => (
-                <motion.div
-                  key={p.name}
-                  variants={SECTION_CHILD}
-                  className="h-full"
-                >
+          <Section
+            id="projects"
+            titleIcon={<Code2 className="h-5 w-5" />}
+            title="Projects"
+          >
+            <div className="mt-8">
+              <div className="flex items-end justify-between gap-4">
+                <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
+                  Selected projects and things I’ve built.
+                </p>
+              </div>
+
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {projects.map((p) => (
+                  <motion.div
+                    key={p.name}
+                    variants={SECTION_CHILD}
+                    className="h-full"
+                  >
+                    <a
+                      href={p.links?.[0]?.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                            {p.name}
+                          </h3>
+                          <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                            {p.tagline}
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 inline-flex items-center gap-1 rounded-full border border-black/10 bg-white/60 px-3 py-1 text-xs text-neutral-800 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-neutral-200">
+                          View repo <ExternalLink className="h-3.5 w-3.5" />
+                        </div>
+                      </div>
+
+                      {p.img && (
+                        <div className="mt-5 w-full h-48 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 flex-shrink-0">
+                          <img
+                            src={p.img}
+                            alt={p.name}
+                            className={`h-full w-full object-cover transition-[opacity,filter] duration-300 grayscale group-hover:grayscale-0 ${p.imgClass}`}
+                          />
+                        </div>
+                      )}
+
+                      <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
+                        {p.desc}
+                      </p>
+
+                      <div className="mt-6 flex flex-wrap gap-2 text-xs text-neutral-700 dark:text-neutral-300">
+                        {p.tech.map((t) => (
+                          <span
+                            key={t}
+                            className="rounded-full border border-black/10 bg-white/60 px-2.5 py-1 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </a>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </Section>
+
+          <Section id="papers" titleIcon={<PenIcon />} title="Papers">
+            <div className="mt-8">
+              {[
+                {
+                  title:
+                    "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
+                  desc: "Survey Paper on the history of load balancing in Distributed Systems.",
+                  href: "/papers/load-balancing.pdf",
+                },
+                {
+                  title:
+                    "Exploring the Role of Compiler Optimizations in Modern Systems",
+                  desc: "Senior project paper published through Cal Poly Digital Commons.",
+                  href: "https://digitalcommons.calpoly.edu/cscsp/182/",
+                },
+              ].length ? (
+                <>
+                  <div className="flex items-end justify-between gap-4">
+                    <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
+                      Writing and research papers.
+                    </p>
+                  </div>
+
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[
+                      {
+                        title:
+                          "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
+                        desc: "Survey Paper on the history of load balancing in Distributed Systems.",
+                        href: "/papers/load-balancing.pdf",
+                      },
+                      {
+                        title:
+                          "Integrating Machine Learning with an FPS Aim Trainer for Optimal Sensitivity Finding",
+                        desc: "Senior project paper published through Cal Poly Digital Commons.",
+                        href: "/papers/Senior Project Final Paper.pdf",
+                        externalUrl: "https://digitalcommons.calpoly.edu/cscsp/182/",
+                      },
+                    ].map((w) => (
+                      <motion.div
+                        key={w.title}
+                        variants={SECTION_CHILD}
+                        className="h-full"
+                      >
+                        <div className="flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
+                          <div className="font-semibold text-lg text-neutral-900 dark:text-neutral-100">
+                            {w.title}
+                          </div>
+
+                          {w.href.endsWith(".pdf") && (
+                            <div className="mt-5 w-full h-96 overflow-hidden rounded-xl border border-black/10 dark:border-white/10">
+                              <iframe
+                                src={`${w.href}#toolbar=0&navpanes=0`}
+                                title={w.title}
+                                className="w-full h-full"
+                              />
+                            </div>
+                          )}
+
+                          <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-5 flex-grow">
+                            {w.desc}
+                          </p>
+
+                          <div className="mt-6">
+                            <a
+                              href={w.externalUrl || w.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm text-neutral-800 shadow-sm backdrop-blur-xl transition hover:bg-white/80 dark:border-white/10 dark:bg-white/10 dark:text-neutral-200 dark:hover:bg-white/20"
+                            >
+                              Read full paper <ExternalLink className="h-4 w-4" />
+                            </a>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+            </div>
+          </Section>
+
+          <Section id="hobbies" titleIcon={<Globe className="h-5 w-5" />} title="Hobbies">
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {hobbies.map((h) => {
+                if ((h as any).hoverImg) {
+                  return <HobbyCardWithGif key={h.name} h={h} />;
+                }
+                return (
+                  <motion.div key={h.name} variants={SECTION_CHILD} className="h-full">
+                    <div className="group flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
+                      <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                        {h.name}
+                      </h3>
+
+                      {h.img && (
+                        <div className="relative mt-5 w-full h-72 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 flex-shrink-0">
+                          <img
+                            src={h.img}
+                            alt={h.name}
+                            className={`absolute inset-0 h-full w-full transition-[opacity,filter] duration-300 grayscale group-hover:grayscale-0 ${(h as any).imgClass || "object-cover"}`}
+                          />
+                        </div>
+                      )}
+
+                      <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
+                        {h.caption}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </Section>
+
+          <Section
+            id="awards"
+            titleIcon={<Trophy className="h-5 w-5" />}
+            title="Awards & Highlights"
+          >
+            <div className="mt-8">
+              <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300 mb-6">
+                Awards and academic highlights.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {awards.map((a) => (
+                  <div key={a.title} className="h-full">
+                    <Card>
+                      <div className="font-medium">{a.title}</div>
+                      <div className="text-neutral-500">{a.org}</div>
+                      <div className="text-neutral-500 text-xs">{a.year}</div>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Section>
+
+          <Section
+            id="contact"
+            titleIcon={<Mail className="h-5 w-5" />}
+            title="Get in touch"
+          >
+            <div className="mt-8">
+              <Card>
+                <p className="text-neutral-700 dark:text-neutral-300">
+                  I’m always down to chat about job opportunites, research, or fun
+                  side projects. Feel free to email me or connect with me on
+                  LinkedIn!
+                </p>
+
+                <div className="mt-4 flex flex-wrap items-center gap-3">
                   <a
-                    href={p.links?.[0]?.href}
+                    href="mailto:krishna.sharan@gmail.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"
+                    className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-black/20 active:scale-95 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/30"
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                          {p.name}
-                        </h3>
-                        <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                          {p.tagline}
-                        </div>
-                      </div>
-
-                      <div className="shrink-0 inline-flex items-center gap-1 rounded-full border border-black/10 bg-white/60 px-3 py-1 text-xs text-neutral-800 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-neutral-200">
-                        View repo <ExternalLink className="h-3.5 w-3.5" />
-                      </div>
-                    </div>
-
-                    {p.img && (
-                      <div className="mt-5 w-full h-48 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 flex-shrink-0">
-                        <img
-                          src={p.img}
-                          alt={p.name}
-                          className={`h-full w-full object-cover transition-[opacity,filter] duration-300 grayscale group-hover:grayscale-0 ${p.imgClass}`}
-                        />
-                      </div>
-                    )}
-
-                    <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
-                      {p.desc}
-                    </p>
-
-                    <div className="mt-6 flex flex-wrap gap-2 text-xs text-neutral-700 dark:text-neutral-300">
-                      {p.tech.map((t) => (
-                        <span
-                          key={t}
-                          className="rounded-full border border-black/10 bg-white/60 px-2.5 py-1 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
+                    <Mail className="h-4 w-4" /> Email Me
                   </a>
-                </motion.div>
-              ))}
+
+                  <a
+                    href="https://www.linkedin.com/in/sharankrishna14/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
+                  >
+                    <Linkedin className="h-4 w-4" /> LinkedIn
+                  </a>
+
+                  <a
+                    href="https://github.com/SilverXer0"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
+                  >
+                    <Github className="h-4 w-4" /> GitHub
+                  </a>
+                </div>
+              </Card>
             </div>
-          </div>
-        </Section>
 
-        <Section id="papers" titleIcon={<PenIcon />} title="Papers">
-          <div className="mt-8">
-            {[
-              {
-                title:
-                  "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
-                desc: "Survey Paper on the history of load balancing in Distributed Systems.",
-                href: "/papers/load-balancing.pdf",
-              },
-              {
-                title:
-                  "Exploring the Role of Compiler Optimizations in Modern Systems",
-                desc: "Senior project paper published through Cal Poly Digital Commons.",
-                href: "https://digitalcommons.calpoly.edu/cscsp/182/",
-              },
-            ].length ? (
-              <>
-                <div className="flex items-end justify-between gap-4">
-                  <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
-                    Writing and research papers.
-                  </p>
-                </div>
-
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {[
-                    {
-                      title:
-                        "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
-                      desc: "Survey Paper on the history of load balancing in Distributed Systems.",
-                      href: "/papers/load-balancing.pdf",
-                    },
-                    {
-                      title:
-                        "Integrating Machine Learning with an FPS Aim Trainer for Optimal Sensitivity Finding",
-                      desc: "Senior project paper published through Cal Poly Digital Commons.",
-                      href: "/papers/Senior Project Final Paper.pdf",
-                      externalUrl: "https://digitalcommons.calpoly.edu/cscsp/182/",
-                    },
-                  ].map((w) => (
-                    <motion.div
-                      key={w.title}
-                      variants={SECTION_CHILD}
-                      className="h-full"
-                    >
-                      <div className="flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
-                        <div className="font-semibold text-lg text-neutral-900 dark:text-neutral-100">
-                          {w.title}
-                        </div>
-
-                        {w.href.endsWith(".pdf") && (
-                          <div className="mt-5 w-full h-96 overflow-hidden rounded-xl border border-black/10 dark:border-white/10">
-                            <iframe
-                              src={`${w.href}#toolbar=0&navpanes=0`}
-                              title={w.title}
-                              className="w-full h-full"
-                            />
-                          </div>
-                        )}
-
-                        <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-5 flex-grow">
-                          {w.desc}
-                        </p>
-
-                        <div className="mt-6">
-                          <a
-                            href={w.externalUrl || w.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm text-neutral-800 shadow-sm backdrop-blur-xl transition hover:bg-white/80 dark:border-white/10 dark:bg-white/10 dark:text-neutral-200 dark:hover:bg-white/20"
-                          >
-                            Read full paper <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </>
-            ) : null}
-          </div>
-        </Section>
-
-        <Section id="hobbies" titleIcon={<Globe className="h-5 w-5" />} title="Hobbies">
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {hobbies.map((h) => (
-              <motion.div key={h.name} variants={SECTION_CHILD} className="h-full">
-                <div className="group flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
-                  <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                    {h.name}
-                  </h3>
-
-                  {h.img && (
-                    <div className="relative mt-5 w-full h-72 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 flex-shrink-0">
-                      <img
-                        src={h.img}
-                        alt={h.name}
-                        className={`absolute inset-0 h-full w-full transition-[opacity,filter] duration-300 grayscale group-hover:grayscale-0 ${(h as any).imgClass || "object-cover"}`}
-                      />
-                      {(h as any).hoverImg && (
-                        <img
-                          src={(h as any).hoverImg}
-                          alt={h.name + " highlight"}
-                          loading="lazy"
-                          className="absolute inset-0 z-10 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                        />
-                      )}
-                    </div>
-                  )}
-
-                  <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
-                    {h.caption}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </Section>
-
-        <Section
-          id="awards"
-          titleIcon={<Trophy className="h-5 w-5" />}
-          title="Awards & Highlights"
-        >
-          <div className="mt-8">
-            <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300 mb-6">
-              Awards and academic highlights.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {awards.map((a) => (
-                <div key={a.title} className="h-full">
-                  <Card>
-                    <div className="font-medium">{a.title}</div>
-                    <div className="text-neutral-500">{a.org}</div>
-                    <div className="text-neutral-500 text-xs">{a.year}</div>
-                  </Card>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Section>
-
-        <Section
-          id="contact"
-          titleIcon={<Mail className="h-5 w-5" />}
-          title="Get in touch"
-        >
-          <div className="mt-8">
-            <Card>
-              <p className="text-neutral-700 dark:text-neutral-300">
-                I’m always down to chat about job opportunites, research, or fun
-                side projects. Feel free to email me or connect with me on
-                LinkedIn!
-              </p>
-
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                <a
-                  href="mailto:krishna.sharan@gmail.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-black/20 active:scale-95 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/30"
-                >
-                  <Mail className="h-4 w-4" /> Email Me
-                </a>
-
-                <a
-                  href="https://www.linkedin.com/in/sharankrishna14/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
-                >
-                  <Linkedin className="h-4 w-4" /> LinkedIn
-                </a>
-
-                <a
-                  href="https://github.com/SilverXer0"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
-                >
-                  <Github className="h-4 w-4" /> GitHub
-                </a>
-              </div>
-            </Card>
-          </div>
-
-          <footer className="py-10 text-center text-xs text-neutral-500">
-            © {new Date().getFullYear()} Sharan Krishna
-          </footer>
-        </Section>
-      </div>
-
-      <audio
-        ref={audioRef}
-        src="/music/intentions-slow-reverb.mp3"
-        autoPlay
-        loop
-        muted={false}
-        className="hidden"
-      />
-
-      <div
-        className={`fixed bottom-6 left-6 z-50 flex items-center gap-4 rounded-2xl border border-black/10 bg-white/70 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.15)] backdrop-blur-2xl transition-transform duration-700 ease-in-out dark:border-white/10 dark:bg-white/5 dark:shadow-[0_20px_70px_rgba(0,0,0,0.55)] ${showMusicPopup ? "translate-x-0" : "-translate-x-[150%]"
-          }`}
-      >
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
-          <Music className="h-5 w-5 animate-pulse" />
+            <footer className="py-10 text-center text-xs text-neutral-500">
+              © {new Date().getFullYear()} Sharan Krishna
+            </footer>
+          </Section>
         </div>
-        <div className="flex flex-col pr-6">
-          <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-            Now Playing
-          </span>
-          <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 mt-0.5">
-            Intentions (Slowed + Reverb)
-          </span>
-          <span className="text-xs text-neutral-600 dark:text-neutral-300 mt-0.5">
-            Artist Name Here
-          </span>
-          <a
-            href="https://youtube.com/watch?v=YOUR_LINK_HERE"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 transition-colors"
+
+        <audio
+          ref={audioRef}
+          src="/music/intentions-slow-reverb.mp3"
+          loop
+          className="hidden"
+        />
+
+        <div
+          className={`fixed bottom-6 left-6 z-50 flex items-center gap-4 rounded-2xl border border-black/10 bg-white/70 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.15)] backdrop-blur-2xl transition-transform duration-700 ease-in-out dark:border-white/10 dark:bg-white/5 dark:shadow-[0_20px_70px_rgba(0,0,0,0.55)] ${showMusicPopup ? "translate-x-0" : "-translate-x-[150%]"
+            }`}
+        >
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
+            <Music className="h-5 w-5 animate-pulse" />
+          </div>
+          <div className="flex flex-col pr-6">
+            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+              Now Playing
+            </span>
+            <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 mt-0.5">
+              Intentions (Slowed + Reverb)
+            </span>
+            <span className="text-xs text-neutral-600 dark:text-neutral-300 mt-0.5">
+              Starfall
+            </span>
+            <a
+              href="https://www.youtube.com/watch?v=BmcFbSbcKms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 transition-colors"
+            >
+              Listen on YouTube <ExternalLinkIcon className="h-3 w-3" />
+            </a>
+          </div>
+          <button
+            className="absolute right-3 top-3 p-1 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+            onClick={() => setShowMusicPopup(false)}
+            aria-label="Close track info"
           >
-            Listen on YouTube <ExternalLinkIcon className="h-3 w-3" />
-          </a>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-        <button
-          className="absolute right-3 top-3 p-1 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
-          onClick={() => setShowMusicPopup(false)}
-          aria-label="Close track info"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
       </div>
-    </div>
+    </>
   );
 }
 
