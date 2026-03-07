@@ -20,7 +20,6 @@ import {
   ChevronRight,
   Music,
   ExternalLink as ExternalLinkIcon,
-  UserRound,
 } from "lucide-react";
 
 declare global {
@@ -773,7 +772,7 @@ export default function Page() {
 
           <Section
             id="about"
-            titleIcon={<UserRound className="h-5 w-5" />}
+            titleIcon={<Code2 className="h-5 w-5" />}
             title="About"
           >
             <div className="mt-10">
@@ -782,7 +781,7 @@ export default function Page() {
                   <div className="h-full flex flex-col justify-center rounded-3xl border border-black/10 bg-white/70 p-10 sm:p-14 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
                     <div className="w-full text-left">
                       <p className="text-lg sm:text-lg leading-relaxed text-neutral-800 dark:text-neutral-200">
-                        I have a BS in Computer Science from <strong>Cal Poly SLO</strong> and am currently {" "}
+                        I graduated with a B.S. in Computer Science from <strong>Cal Poly SLO</strong> and am currently {" "}
                         working at <strong>Plaid</strong>, working on infrastructure for the developer dashboard with {" "}
                         a focus on scalability and low latency.
                       </p>
