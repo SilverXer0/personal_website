@@ -1,6 +1,6 @@
 # Sharan's Portfolio Website
 
-Personal portfolio site for Sharan Krishna — Software Engineer at Plaid, CS graduate from Cal Poly SLO.
+Personal portfolio site for Sharan Krishna: CS graduate from Cal Poly SLO.
 Live at **[skrsh.dev](https://skrsh.dev)**.
 
 ---
@@ -10,7 +10,7 @@ Live at **[skrsh.dev](https://skrsh.dev)**.
 | Layer | Choice |
 |---|---|
 | Framework | [Next.js 14](https://nextjs.org/) (App Router) |
-| Language | TypeScript |
+| Language | TypeScript |g
 | Styling | Tailwind CSS v3 |
 | Animations | [Framer Motion](https://www.framer.com/motion/) |
 | Icons | [Lucide React](https://lucide.dev/) |
