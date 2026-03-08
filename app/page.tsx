@@ -43,10 +43,6 @@ const SECTION_CHILD: any = {
   },
 };
 
-// ─── Shared touch-section context ───────────────────────────────────────────
-// Cards register themselves into the nearest TouchSectionProvider.
-// The provider watches all registered elements with ONE observer and marks
-// only the card with the highest intersection ratio as active.
 type TouchSectionCtx = {
   register: (id: string, setActive: (v: boolean) => void, el: HTMLElement) => () => void;
 };
@@ -55,15 +51,12 @@ const TouchSectionContext = React.createContext<TouchSectionCtx | null>(null);
 function TouchSectionProvider({ children }: { children: React.ReactNode }) {
   const isTouchRef = useRef<boolean | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
-  // id → { setter, latest ratio }
   const registryRef = useRef<Map<string, { setActive: (v: boolean) => void; ratio: number }>>(new Map());
 
-  // Build (or reuse) the shared observer
   const getObserver = useCallback(() => {
     if (observerRef.current) return observerRef.current;
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        // Update stored ratios
         for (const entry of entries) {
           const id = (entry.target as HTMLElement).dataset.sectionCardId;
           if (id) {
@@ -71,18 +64,15 @@ function TouchSectionProvider({ children }: { children: React.ReactNode }) {
             if (card) card.ratio = entry.intersectionRatio;
           }
         }
-        // Find the card with the highest ratio; require at least 0.25 to activate
         let bestId: string | null = null;
         let bestRatio = 0.25;
         for (const [id, { ratio }] of registryRef.current) {
           if (ratio > bestRatio) { bestRatio = ratio; bestId = id; }
         }
-        // Exclusively activate the winner, deactivate everyone else
         for (const [id, { setActive }] of registryRef.current) {
           setActive(id === bestId);
         }
       },
-      // Fine-grained thresholds so updates fire as the card scrolls in/out
       { threshold: Array.from({ length: 21 }, (_, i) => i * 0.05) }
     );
     return observerRef.current;
@@ -90,12 +80,11 @@ function TouchSectionProvider({ children }: { children: React.ReactNode }) {
 
   const register = useCallback(
     (id: string, setActive: (v: boolean) => void, el: HTMLElement) => {
-      if (typeof window === "undefined") return () => {};
-      // Detect touch once
+      if (typeof window === "undefined") return () => { };
       if (isTouchRef.current === null) {
         isTouchRef.current = window.matchMedia("(hover: none)").matches;
       }
-      if (!isTouchRef.current) return () => {};
+      if (!isTouchRef.current) return () => { };
 
       registryRef.current.set(id, { setActive, ratio: 0 });
       el.dataset.sectionCardId = id;
@@ -118,9 +107,6 @@ function TouchSectionProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ─── Touch-activation hook ────────────────────────────────────────────────────
-// Returns [ref, isActive]. On touch-primary devices, isActive becomes true
-// when this card is the most-visible card in its parent TouchSectionProvider.
 const cardIdCounter = { n: 0 };
 function useIntersectionActive<T extends HTMLElement>(): [React.RefObject<T>, boolean] {
   const ref = useRef<T>(null);
@@ -132,19 +118,16 @@ function useIntersectionActive<T extends HTMLElement>(): [React.RefObject<T>, bo
     const el = ref.current;
     if (!el || !context) return;
     return context.register(idRef.current, setIsActive, el);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [context]);
 
   return [ref, isActive];
 }
 
-// ─── HobbyCardWithGif ────────────────────────────────────────────────────────
 function HobbyCardWithGif({ h }: { h: any }) {
   const [gifSrc, setGifSrc] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [cardRef, touchActive] = useIntersectionActive<HTMLDivElement>();
 
-  // Touch activation mirrors hover
   useEffect(() => {
     if (!touchActive) {
       setIsHovered(false);
@@ -208,7 +191,6 @@ function HobbyCardWithGif({ h }: { h: any }) {
   );
 }
 
-// ─── HobbyCard (plain, no gif) ───────────────────────────────────────────────
 function HobbyCard({ h }: { h: any }) {
   const [cardRef, touchActive] = useIntersectionActive<HTMLDivElement>();
   return (
@@ -243,7 +225,6 @@ function HobbyCard({ h }: { h: any }) {
   );
 }
 
-// ─── ProjectCard ─────────────────────────────────────────────────────────────
 function ProjectCard({ p }: { p: any }) {
   const [cardRef, touchActive] = useIntersectionActive<HTMLAnchorElement>();
   return (
@@ -302,7 +283,6 @@ function ProjectCard({ p }: { p: any }) {
   );
 }
 
-// ─── PaperCard ───────────────────────────────────────────────────────────────
 function PaperCard({ w }: { w: any }) {
   const [cardRef, touchActive] = useIntersectionActive<HTMLDivElement>();
   return (
