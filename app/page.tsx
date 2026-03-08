@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -20,6 +20,8 @@ import {
   ChevronRight,
   Music,
   ExternalLink as ExternalLinkIcon,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
 declare global {
@@ -41,9 +43,117 @@ const SECTION_CHILD: any = {
   },
 };
 
+// ─── Shared touch-section context ───────────────────────────────────────────
+// Cards register themselves into the nearest TouchSectionProvider.
+// The provider watches all registered elements with ONE observer and marks
+// only the card with the highest intersection ratio as active.
+type TouchSectionCtx = {
+  register: (id: string, setActive: (v: boolean) => void, el: HTMLElement) => () => void;
+};
+const TouchSectionContext = React.createContext<TouchSectionCtx | null>(null);
+
+function TouchSectionProvider({ children }: { children: React.ReactNode }) {
+  const isTouchRef = useRef<boolean | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  // id → { setter, latest ratio }
+  const registryRef = useRef<Map<string, { setActive: (v: boolean) => void; ratio: number }>>(new Map());
+
+  // Build (or reuse) the shared observer
+  const getObserver = useCallback(() => {
+    if (observerRef.current) return observerRef.current;
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        // Update stored ratios
+        for (const entry of entries) {
+          const id = (entry.target as HTMLElement).dataset.sectionCardId;
+          if (id) {
+            const card = registryRef.current.get(id);
+            if (card) card.ratio = entry.intersectionRatio;
+          }
+        }
+        // Find the card with the highest ratio; require at least 0.25 to activate
+        let bestId: string | null = null;
+        let bestRatio = 0.25;
+        for (const [id, { ratio }] of registryRef.current) {
+          if (ratio > bestRatio) { bestRatio = ratio; bestId = id; }
+        }
+        // Exclusively activate the winner, deactivate everyone else
+        for (const [id, { setActive }] of registryRef.current) {
+          setActive(id === bestId);
+        }
+      },
+      // Fine-grained thresholds so updates fire as the card scrolls in/out
+      { threshold: Array.from({ length: 21 }, (_, i) => i * 0.05) }
+    );
+    return observerRef.current;
+  }, []);
+
+  const register = useCallback(
+    (id: string, setActive: (v: boolean) => void, el: HTMLElement) => {
+      if (typeof window === "undefined") return () => {};
+      // Detect touch once
+      if (isTouchRef.current === null) {
+        isTouchRef.current = window.matchMedia("(hover: none)").matches;
+      }
+      if (!isTouchRef.current) return () => {};
+
+      registryRef.current.set(id, { setActive, ratio: 0 });
+      el.dataset.sectionCardId = id;
+      getObserver().observe(el);
+
+      return () => {
+        registryRef.current.delete(id);
+        observerRef.current?.unobserve(el);
+      };
+    },
+    [getObserver]
+  );
+
+  useEffect(() => () => { observerRef.current?.disconnect(); }, []);
+
+  return (
+    <TouchSectionContext.Provider value={{ register }}>
+      {children}
+    </TouchSectionContext.Provider>
+  );
+}
+
+// ─── Touch-activation hook ────────────────────────────────────────────────────
+// Returns [ref, isActive]. On touch-primary devices, isActive becomes true
+// when this card is the most-visible card in its parent TouchSectionProvider.
+const cardIdCounter = { n: 0 };
+function useIntersectionActive<T extends HTMLElement>(): [React.RefObject<T>, boolean] {
+  const ref = useRef<T>(null);
+  const [isActive, setIsActive] = useState(false);
+  const context = React.useContext(TouchSectionContext);
+  const idRef = useRef(`sc-${cardIdCounter.n++}`);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !context) return;
+    return context.register(idRef.current, setIsActive, el);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [context]);
+
+  return [ref, isActive];
+}
+
+// ─── HobbyCardWithGif ────────────────────────────────────────────────────────
 function HobbyCardWithGif({ h }: { h: any }) {
   const [gifSrc, setGifSrc] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [cardRef, touchActive] = useIntersectionActive<HTMLDivElement>();
+
+  // Touch activation mirrors hover
+  useEffect(() => {
+    if (!touchActive) {
+      setIsHovered(false);
+      setGifSrc(null);
+    } else {
+      setGifSrc(`${h.hoverImg}?t=${Date.now()}`);
+      setIsHovered(true);
+    }
+  }, [touchActive, h.hoverImg]);
 
   const handleMouseEnter = () => {
     setGifSrc(`${h.hoverImg}?t=${Date.now()}`);
@@ -55,10 +165,17 @@ function HobbyCardWithGif({ h }: { h: any }) {
     setGifSrc(null);
   };
 
+  const active = isHovered || touchActive;
+
   return (
     <motion.div variants={SECTION_CHILD} className="h-full">
       <div
-        className="group flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"
+        ref={cardRef}
+        className={`group flex flex-col h-full rounded-3xl border bg-white/70 p-6 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
+          ${active
+            ? "border-black/20 -translate-y-1 shadow-[0_20px_60px_rgba(0,0,0,0.22)] bg-white/95 ring-2 ring-black/20 dark:border-white/30 dark:bg-white/10 dark:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:ring-white/30"
+            : "border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/10 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"}
+        `}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
@@ -71,13 +188,13 @@ function HobbyCardWithGif({ h }: { h: any }) {
             <img
               src={h.img}
               alt={h.name}
-              className={`absolute inset-0 h-full w-full transition-[opacity,filter] duration-300 ${isHovered ? "grayscale-0" : "grayscale"} ${h.imgClass || "object-cover"}`}
+              className={`absolute inset-0 h-full w-full transition-[opacity,filter] duration-300 ${active ? "grayscale-0" : "grayscale"} ${h.imgClass || "object-cover"}`}
             />
             {gifSrc && (
               <img
                 src={gifSrc}
                 alt={h.name + " highlight"}
-                className={`absolute inset-0 z-10 h-full w-full object-cover transition-opacity duration-300 ${isHovered ? "opacity-100" : "opacity-0"}`}
+                className={`absolute inset-0 z-10 h-full w-full object-cover transition-opacity duration-300 ${active ? "opacity-100" : "opacity-0"}`}
               />
             )}
           </div>
@@ -86,6 +203,146 @@ function HobbyCardWithGif({ h }: { h: any }) {
         <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
           {h.caption}
         </p>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── HobbyCard (plain, no gif) ───────────────────────────────────────────────
+function HobbyCard({ h }: { h: any }) {
+  const [cardRef, touchActive] = useIntersectionActive<HTMLDivElement>();
+  return (
+    <motion.div variants={SECTION_CHILD} className="h-full">
+      <div
+        ref={cardRef}
+        className={`group flex flex-col h-full rounded-3xl border bg-white/70 p-6 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
+          ${touchActive
+            ? "border-black/20 -translate-y-1 shadow-[0_20px_60px_rgba(0,0,0,0.22)] bg-white/95 ring-2 ring-black/20 dark:border-white/30 dark:bg-white/10 dark:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:ring-white/30"
+            : "border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/10 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"}
+        `}
+      >
+        <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+          {h.name}
+        </h3>
+
+        {h.img && (
+          <div className="relative mt-5 w-full h-72 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 flex-shrink-0">
+            <img
+              src={h.img}
+              alt={h.name}
+              className={`absolute inset-0 h-full w-full transition-[opacity,filter] duration-300 ${touchActive ? "grayscale-0" : "grayscale group-hover:grayscale-0"} ${(h as any).imgClass || "object-cover"}`}
+            />
+          </div>
+        )}
+
+        <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
+          {h.caption}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── ProjectCard ─────────────────────────────────────────────────────────────
+function ProjectCard({ p }: { p: any }) {
+  const [cardRef, touchActive] = useIntersectionActive<HTMLAnchorElement>();
+  return (
+    <motion.div variants={SECTION_CHILD} className="h-full">
+      <a
+        ref={cardRef}
+        href={p.links?.[0]?.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`group flex flex-col h-full rounded-3xl border bg-white/70 p-6 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
+          ${touchActive
+            ? "border-black/20 -translate-y-1 shadow-[0_20px_60px_rgba(0,0,0,0.22)] bg-white/95 ring-2 ring-black/20 dark:border-white/30 dark:bg-white/10 dark:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:ring-white/30"
+            : "border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/10 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"}
+        `}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+              {p.name}
+            </h3>
+            <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+              {p.tagline}
+            </div>
+          </div>
+          <div className="shrink-0 inline-flex items-center gap-1 rounded-full border border-black/10 bg-white/60 px-3 py-1 text-xs text-neutral-800 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-neutral-200">
+            View repo <ExternalLink className="h-3.5 w-3.5" />
+          </div>
+        </div>
+
+        {p.img && (
+          <div className="mt-5 w-full h-48 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 flex-shrink-0">
+            <img
+              src={p.img}
+              alt={p.name}
+              className={`h-full w-full object-cover transition-[opacity,filter] duration-300 ${touchActive ? "grayscale-0" : "grayscale group-hover:grayscale-0"} ${p.imgClass}`}
+            />
+          </div>
+        )}
+
+        <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
+          {p.desc}
+        </p>
+
+        <div className="mt-6 flex flex-wrap gap-2 text-xs text-neutral-700 dark:text-neutral-300">
+          {p.tech.map((t: string) => (
+            <span
+              key={t}
+              className="rounded-full border border-black/10 bg-white/60 px-2.5 py-1 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      </a>
+    </motion.div>
+  );
+}
+
+// ─── PaperCard ───────────────────────────────────────────────────────────────
+function PaperCard({ w }: { w: any }) {
+  const [cardRef, touchActive] = useIntersectionActive<HTMLDivElement>();
+  return (
+    <motion.div variants={SECTION_CHILD} className="h-full">
+      <div
+        ref={cardRef}
+        className={`flex flex-col h-full rounded-3xl border bg-white/70 p-6 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
+          ${touchActive
+            ? "border-black/20 -translate-y-1 shadow-[0_20px_60px_rgba(0,0,0,0.22)] bg-white/95 ring-2 ring-black/20 dark:border-white/30 dark:bg-white/10 dark:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:ring-white/30"
+            : "border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/10 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"}
+        `}
+      >
+        <div className="font-semibold text-lg text-neutral-900 dark:text-neutral-100">
+          {w.title}
+        </div>
+
+        {w.href.endsWith(".pdf") && (
+          <div className="mt-5 w-full h-96 overflow-hidden rounded-xl border border-black/10 dark:border-white/10">
+            <iframe
+              src={`${w.href}#toolbar=0&navpanes=0`}
+              title={w.title}
+              className="w-full h-full"
+            />
+          </div>
+        )}
+
+        <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-5 flex-grow">
+          {w.desc}
+        </p>
+
+        <div className="mt-6">
+          <a
+            href={w.externalUrl || w.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm text-neutral-800 shadow-sm backdrop-blur-xl transition hover:bg-white/80 dark:border-white/10 dark:bg-white/10 dark:text-neutral-200 dark:hover:bg-white/20"
+          >
+            Read full paper <ExternalLink className="h-4 w-4" />
+          </a>
+        </div>
       </div>
     </motion.div>
   );
@@ -242,6 +499,7 @@ export default function Page() {
   const ytPlayers = useRef<{ [key: string]: any }>({});
   const [hasEntered, setHasEntered] = useState(false);
   const hasEnteredRef = useRef(false);
+  const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
     if (mounted) {
@@ -483,7 +741,7 @@ export default function Page() {
         period: "March 2026 - Present",
         location: "San Francisco, CA",
         bullets: [
-          "Focusing on Infrastructure to maintain scalability, reliability, and low latency",
+          "Focusing on Infrastructure to maintain scalability, reliability, and low latency for Plaid's Developer Dashboard",
         ],
       },
       {
@@ -717,6 +975,15 @@ export default function Page() {
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="inline-flex items-center justify-center h-[34px] w-[34px] rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
+                  aria-label={isMuted ? "Unmute music" : "Mute music"}
+                  title={isMuted ? "Unmute music" : "Mute music"}
+                >
+                  {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                </button>
                 <a
                   href="/resume/Sharan_K_Resume.pdf"
                   target="_blank"
@@ -726,7 +993,6 @@ export default function Page() {
                 >
                   <Download className="h-4 w-4" /> Résumé
                 </a>
-
               </div>
             </div>
           </nav>
@@ -1036,62 +1302,13 @@ export default function Page() {
                 </p>
               </div>
 
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                {projects.map((p) => (
-                  <motion.div
-                    key={p.name}
-                    variants={SECTION_CHILD}
-                    className="h-full"
-                  >
-                    <a
-                      href={p.links?.[0]?.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                            {p.name}
-                          </h3>
-                          <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                            {p.tagline}
-                          </div>
-                        </div>
-
-                        <div className="shrink-0 inline-flex items-center gap-1 rounded-full border border-black/10 bg-white/60 px-3 py-1 text-xs text-neutral-800 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-neutral-200">
-                          View repo <ExternalLink className="h-3.5 w-3.5" />
-                        </div>
-                      </div>
-
-                      {p.img && (
-                        <div className="mt-5 w-full h-48 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 flex-shrink-0">
-                          <img
-                            src={p.img}
-                            alt={p.name}
-                            className={`h-full w-full object-cover transition-[opacity,filter] duration-300 grayscale group-hover:grayscale-0 ${p.imgClass}`}
-                          />
-                        </div>
-                      )}
-
-                      <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
-                        {p.desc}
-                      </p>
-
-                      <div className="mt-6 flex flex-wrap gap-2 text-xs text-neutral-700 dark:text-neutral-300">
-                        {p.tech.map((t) => (
-                          <span
-                            key={t}
-                            className="rounded-full border border-black/10 bg-white/60 px-2.5 py-1 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    </a>
-                  </motion.div>
-                ))}
-              </div>
+              <TouchSectionProvider>
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {projects.map((p) => (
+                    <ProjectCard key={p.name} p={p} />
+                  ))}
+                </div>
+              </TouchSectionProvider>
             </div>
           </Section>
 
@@ -1118,96 +1335,43 @@ export default function Page() {
                     </p>
                   </div>
 
-                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {[
-                      {
-                        title:
-                          "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
-                        desc: "Survey Paper on the history of load balancing in Distributed Systems.",
-                        href: "/papers/load-balancing.pdf",
-                      },
-                      {
-                        title:
-                          "Integrating Machine Learning with an FPS Aim Trainer for Optimal Sensitivity Finding",
-                        desc: "Senior project paper published through Cal Poly Digital Commons.",
-                        href: "/papers/Senior Project Final Paper.pdf",
-                        externalUrl: "https://digitalcommons.calpoly.edu/cscsp/182/",
-                      },
-                    ].map((w) => (
-                      <motion.div
-                        key={w.title}
-                        variants={SECTION_CHILD}
-                        className="h-full"
-                      >
-                        <div className="flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
-                          <div className="font-semibold text-lg text-neutral-900 dark:text-neutral-100">
-                            {w.title}
-                          </div>
-
-                          {w.href.endsWith(".pdf") && (
-                            <div className="mt-5 w-full h-96 overflow-hidden rounded-xl border border-black/10 dark:border-white/10">
-                              <iframe
-                                src={`${w.href}#toolbar=0&navpanes=0`}
-                                title={w.title}
-                                className="w-full h-full"
-                              />
-                            </div>
-                          )}
-
-                          <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-5 flex-grow">
-                            {w.desc}
-                          </p>
-
-                          <div className="mt-6">
-                            <a
-                              href={w.externalUrl || w.href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm text-neutral-800 shadow-sm backdrop-blur-xl transition hover:bg-white/80 dark:border-white/10 dark:bg-white/10 dark:text-neutral-200 dark:hover:bg-white/20"
-                            >
-                              Read full paper <ExternalLink className="h-4 w-4" />
-                            </a>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
+                  <TouchSectionProvider>
+                    <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {[
+                        {
+                          title:
+                            "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
+                          desc: "Survey Paper on the history of load balancing in Distributed Systems.",
+                          href: "/papers/load-balancing.pdf",
+                        },
+                        {
+                          title:
+                            "Integrating Machine Learning with an FPS Aim Trainer for Optimal Sensitivity Finding",
+                          desc: "Senior project paper published through Cal Poly Digital Commons.",
+                          href: "/papers/Senior Project Final Paper.pdf",
+                          externalUrl: "https://digitalcommons.calpoly.edu/cscsp/182/",
+                        },
+                      ].map((w) => (
+                        <PaperCard key={w.title} w={w} />
+                      ))}
+                    </div>
+                  </TouchSectionProvider>
                 </>
               ) : null}
             </div>
           </Section>
 
           <Section id="hobbies" titleIcon={<Globe className="h-5 w-5" />} title="Hobbies">
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-              {hobbies.map((h) => {
-                if ((h as any).hoverImg) {
-                  return <HobbyCardWithGif key={h.name} h={h} />;
-                }
-                return (
-                  <motion.div key={h.name} variants={SECTION_CHILD} className="h-full">
-                    <div className="group flex flex-col h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
-                      <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                        {h.name}
-                      </h3>
-
-                      {h.img && (
-                        <div className="relative mt-5 w-full h-72 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 flex-shrink-0">
-                          <img
-                            src={h.img}
-                            alt={h.name}
-                            className={`absolute inset-0 h-full w-full transition-[opacity,filter] duration-300 grayscale group-hover:grayscale-0 ${(h as any).imgClass || "object-cover"}`}
-                          />
-                        </div>
-                      )}
-
-                      <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
-                        {h.caption}
-                      </p>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+            <TouchSectionProvider>
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {hobbies.map((h) => {
+                  if ((h as any).hoverImg) {
+                    return <HobbyCardWithGif key={h.name} h={h} />;
+                  }
+                  return <HobbyCard key={h.name} h={h} />;
+                })}
+              </div>
+            </TouchSectionProvider>
           </Section>
 
           <Section
@@ -1287,6 +1451,7 @@ export default function Page() {
           ref={audioRef}
           src="/music/intentions-slow-reverb.mp3"
           loop
+          muted={isMuted}
           className="hidden"
         />
 
