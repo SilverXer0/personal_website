@@ -177,7 +177,7 @@ function HobbyCardWithGif({ h }: { h: any }) {
               <img
                 src={gifSrc}
                 alt={h.name + " highlight"}
-                className={`absolute inset-0 z-10 h-full w-full object-cover transition-opacity duration-300 ${active ? "opacity-100" : "opacity-0"}`}
+                className={`absolute inset-0 z-10 h-full w-full transition-opacity duration-300 ${active ? "opacity-100" : "opacity-0"} ${h.imgClass || "object-cover"}`}
               />
             )}
           </div>
@@ -681,7 +681,7 @@ export default function Page() {
         name: "Competitive FPS",
         img: "/photos/360_static.jpg",
         hoverImg: "/photos/360.gif",
-        caption: "I'm tuff at Valorant, but my CS2 inventory costs too much to not play",
+        caption: "I'm tuff at Valorant, but my CS2 inventory costs too much to not play.",
       },
       {
         name: "PCs and (mostly) peripherals",
@@ -689,9 +689,9 @@ export default function Page() {
         caption: "My glorious desk setup with hidden cables (lot of work) and my million mice, keyboards, and other expensive stuff.",
       },
       {
-        name: "Video Editing",
-        img: "/photos/editing.jpg",
-        caption: "Creating montages and edits of gameplay highlights. I win the fight above btw, watch Distance on my YT for proof.",
+        name: "Music",
+        img: "/photos/music.jpg",
+        caption: "I'm a classically trained pianist (California Certificate of Merit Level 10) and an aspiring singer (I got lucky with the genetics).",
       },
       {
         name: "Formula 1",
@@ -702,11 +702,13 @@ export default function Page() {
         name: "Basketball",
         img: "/photos/basketball.jpg",
         imgClass: "object-cover object-bottom",
-        caption: "Watching the NBA and playing pickup games whenever I get the chance. Go Warriors! (They beat the suns in this game)",
+        caption: "Watching the NBA and playing pickup games whenever I get the chance. Go Warriors! (They beat the suns in this game).",
       },
       {
         name: "Anime",
         img: "/photos/anime.jpg",
+        hoverImg: "/photos/anime.gif",
+        imgClass: "object-cover object-[center_30%]",
         caption: "Watching anime (and reading manga). Got a massive collection of the media, but my favorite will always be this scene.",
       },
     ],
@@ -802,7 +804,7 @@ export default function Page() {
         tagline: "Emotion-aware journaling",
         img: "/photos/moodmuse.jpg",
         imgClass: "",
-        desc: "Captures images and entries, performs on-device analysis, and surfaces trends privately.",
+        desc: "Captures images and entries, performs on-device analysis, and surfaces trends privately",
         tech: ["Swift", "SwiftUI", "VisionKit", "Spotify Web API"],
         links: [
           { label: "Repo", href: "https://github.com/SilverXer0/MoodMuse" },
@@ -813,7 +815,7 @@ export default function Page() {
         tagline: "FPS tasks with AI-driven sensitivity suggestions",
         img: "/photos/aimtrainer.jpg",
         imgClass: "",
-        desc: "Procedural drills, crosshair UI, and analytics to estimate optimal sensitivity across maps.",
+        desc: "Procedural drills, crosshair UI, and analytics to estimate optimal sensitivity across maps",
         tech: ["Unity", "C#"],
         links: [
           {
@@ -1011,7 +1013,7 @@ export default function Page() {
                     href="#experience"
                     className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-black/20 active:scale-95 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/30"
                   >
-                    See Experience <ArrowRight className="h-4 w-4" />
+                    My Experience <ArrowRight className="h-4 w-4" />
                   </a>
                   <a
                     href="#contact"
@@ -1298,13 +1300,13 @@ export default function Page() {
                 {
                   title:
                     "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
-                  desc: "Survey Paper on the history of load balancing in Distributed Systems.",
+                  desc: "Survey Paper on the history of load balancing in Distributed Systems",
                   href: "/papers/load-balancing.pdf",
                 },
                 {
                   title:
                     "Exploring the Role of Compiler Optimizations in Modern Systems",
-                  desc: "Senior project paper published through Cal Poly Digital Commons.",
+                  desc: "Senior project paper published through Cal Poly Digital Commons",
                   href: "https://digitalcommons.calpoly.edu/cscsp/182/",
                 },
               ].length ? (
@@ -1587,7 +1589,7 @@ function PixelRevealOverlay() {
     const rows = 10;
     const out: { key: string; delay: number }[] = [];
     for (let i = 0; i < cols * rows; i++) {
-      out.push({ key: String(i), delay: Math.random() * 0.55 });
+      out.push({ key: String(i), delay: Math.random() * 1.0 });
     }
     out.sort((a, b) => a.delay - b.delay);
     return { cols, rows, out };
@@ -1611,7 +1613,7 @@ function PixelRevealOverlay() {
             key={c.key}
             initial={{ opacity: 1 }}
             animate={{ opacity: 0 }}
-            transition={{ duration: 0.55, delay: c.delay, ease: APPLE_EASE }}
+            transition={{ duration: 0.85, delay: c.delay, ease: APPLE_EASE }}
             className="rounded-md bg-white/65 dark:bg-black/55"
           />
         ))}
@@ -1620,7 +1622,7 @@ function PixelRevealOverlay() {
       <motion.div
         initial={{ opacity: 0.9 }}
         animate={{ opacity: 0 }}
-        transition={{ duration: 0.75, delay: 0.25, ease: APPLE_EASE }}
+        transition={{ duration: 1.1, delay: 0.5, ease: APPLE_EASE }}
         className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent dark:from-black/40"
         aria-hidden
       />
