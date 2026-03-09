@@ -20,14 +20,14 @@ Live at **[skrsh.dev](https://skrsh.dev)**.
 
 ## Features
 
-- **Welcome screen** — click-to-enter gate with background music; scrolling is locked until entry
-- **Background music** — auto-plays on entry with an in-app mute toggle in the navbar
-- **Pixel-reveal animation** — mosaic tile animation that clears to reveal the hero section
-- **YouTube embed integration** — music pauses when a YouTube video plays, resumes on pause/end
-- **Touch-first card hover states** — on mobile/touchscreen devices, cards auto-activate as they scroll into view using `IntersectionObserver`, with exclusive single-card activation per section
-- **Animated GIF OG embed** — the link preview image is an animated GIF (works on Discord; first frame shown elsewhere)
-- **Dark mode** — forced dark theme with glassmorphism card styling
-- **Sections** — About, Experience (scrollable carousel), Projects, Papers, Hobbies, Awards, Contact
+- **Welcome screen** click-to-enter gate with background music; scrolling is locked until entry
+- **Background music** auto-plays on entry with an in-app mute toggle in the navbar
+- **Pixel-reveal animation**  mosaic tile animation that clears to reveal the hero section
+- **YouTube embed integration** music pauses when a YouTube video plays, resumes on pause/end
+- **Touch-first card hover states** on mobile/touchscreen devices, cards auto-activate as they scroll into view using `IntersectionObserver`, with exclusive single-card activation per section
+- **Animated GIF OG embed**  the link preview image is an animated GIF (works on Discord; first frame shown elsewhere)
+- **Dark mode**  forced dark theme with glassmorphism card styling
+- **Sections** About, Experience (scrollable carousel), Projects, Papers, Hobbies, Awards, Contact
 
 ---
 
