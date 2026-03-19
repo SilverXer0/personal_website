@@ -862,8 +862,15 @@ export default function Page() {
       {
         kind: "video" as const,
         title: "whyy (Valorant Highlights)",
-        caption: "My most recent Montage",
+        caption: "My Second Montage",
         src: "https://www.youtube.com/embed/smKGpHc3RAs?enablejsapi=1",
+      },
+      {
+        kind: "link" as const,
+        title: "My YouTube Channel",
+        caption: "My Youtube Channel, with every new montage I make when I do enough cool things!",
+        src: "photos/gokublack.jpg",
+        href: "https://www.youtube.com/@mythra_aim",
       },
     ],
     [],
@@ -1104,10 +1111,26 @@ export default function Page() {
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             allowFullScreen
                           />
+                        ) : aboutMediaItems[aboutMediaIndex].kind === "link" ? (
+                          <a
+                            href={(aboutMediaItems[aboutMediaIndex] as any).href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full h-full absolute inset-0 block group"
+                          >
+                            <img
+                              src={aboutMediaItems[aboutMediaIndex].src}
+                              alt={aboutMediaItems[aboutMediaIndex].title}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <ExternalLink className="w-12 h-12 text-white" />
+                            </div>
+                          </a>
                         ) : (
                           <img
-                            src={aboutMediaItems[aboutMediaIndex].src}
-                            alt={aboutMediaItems[aboutMediaIndex].title}
+                            src={(aboutMediaItems[aboutMediaIndex] as any).src}
+                            alt={(aboutMediaItems[aboutMediaIndex] as any).title}
                             className="w-full h-full absolute inset-0 object-cover"
                           />
                         )}
