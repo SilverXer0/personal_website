@@ -869,7 +869,8 @@ export default function Page() {
         kind: "link" as const,
         title: "My YouTube Channel",
         caption: "My Youtube Channel, with every new montage I make when I do enough cool things!",
-        src: "photos/gokublack.jpg",
+        src: "/photos/gokublack.jpg",
+        gifSrc: "/photos/gokublack.gif",
         href: "https://www.youtube.com/@mythra_aim",
       },
     ],
@@ -1119,7 +1120,7 @@ export default function Page() {
                             className="w-full h-full absolute inset-0 block group"
                           >
                             <img
-                              src={aboutMediaItems[aboutMediaIndex].src}
+                              src={(aboutMediaItems[aboutMediaIndex] as any).gifSrc || aboutMediaItems[aboutMediaIndex].src}
                               alt={aboutMediaItems[aboutMediaIndex].title}
                               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                             />
