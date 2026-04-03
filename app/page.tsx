@@ -1323,6 +1323,12 @@ export default function Page() {
               {[
                 {
                   title:
+                    "Scalable Concurrency Paradigms",
+                  desc: "Research on scalable concurrency models, comparing Communicating Sequential Processes (CSP) in Go and the C++ Actor Framework (CAF).",
+                  href: "/papers/Scalable_Concurrency_Paradigms.pdf",
+                },
+                {
+                  title:
                     "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
                   desc: "Survey Paper on the history of load balancing in Distributed Systems",
                   href: "/papers/load-balancing.pdf",
@@ -1344,6 +1350,12 @@ export default function Page() {
                   <TouchSectionProvider>
                     <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                       {[
+                        {
+                          title:
+                            "Scalable Concurrency Paradigms",
+                          desc: "Research on scalable concurrency models, comparing Communicating Sequential Processes (CSP) in Go and the C++ Actor Framework (CAF).",
+                          href: "/papers/Scalable_Concurrency_Paradigms.pdf",
+                        },
                         {
                           title:
                             "The Evolution of Algorithms and Techniques of Load Balancing in Distributed Systems",
