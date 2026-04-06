@@ -778,14 +778,14 @@ export default function Page() {
   const projects = useMemo(
     () => [
       {
-        name: "AniSense",
-        tagline: "Find your next binge",
+        name: "Kitsu",
+        tagline: "Find Your Next Binge",
         img: "/photos/anisense.jpg",
         imgClass: "object-top",
-        desc: "Anime recommender with GCP and locally trained machine learning models",
-        tech: ["GCP", "Typescript", "Python", "React", "Flask", "Apache", "Kubernetes"],
+        desc: "Production-grade anime recommendation platform focused on ML infrastructure, offline data pipelines, caching strategies, and concurrency",
+        tech: ["Go", "Python", "Typescript", "PostgreSQL", "Redis", "Docker", "C++"],
         links: [
-          { label: "Repo", href: "https://github.com/SilverXer0/AniSense" },
+          { label: "Repo", href: "https://github.com/SilverXer0/Kitsu" },
         ],
       },
       {
@@ -797,6 +797,17 @@ export default function Page() {
         tech: ["C++", "gRPC", "Protobuf", "RocksDB", "OpenTelemetry"],
         links: [
           { label: "Repo", href: "https://github.com/SilverXer0/Aurora" },
+        ],
+      },
+      {
+        name: "AniSense",
+        tagline: "Personalized MyAnimeList Recommendations",
+        img: "/photos/anime2.png",
+        imgClass: "object-[center_20%]",
+        desc: "Anime recommender with GCP and locally trained machine learning models, based on your own MyAnimeList Account",
+        tech: ["GCP", "Typescript", "Python", "React", "Flask", "Apache", "Kubernetes"],
+        links: [
+          { label: "Repo", href: "https://github.com/SilverXer0/AniSense" },
         ],
       },
       {
@@ -834,17 +845,6 @@ export default function Page() {
         tech: ["Solidity", "Javascript", "Smart Contracts"],
         links: [
           { label: "Repo", href: "https://github.com/SilverXer0/MintMatch" },
-        ],
-      },
-      {
-        name: "Chatter",
-        tagline: "Talk with simple AI and learn more about it",
-        img: "/photos/chatter.jpg",
-        imgClass: "",
-        desc: "Self Learning Chatbot",
-        tech: ["Python", "NLTK", "NLP"],
-        links: [
-          { label: "Repo", href: "https://github.com/SilverXer0/Chatbot" },
         ],
       },
     ],
