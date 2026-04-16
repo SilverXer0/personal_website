@@ -783,9 +783,20 @@ export default function Page() {
         img: "/photos/anisense.jpg",
         imgClass: "object-top",
         desc: "Production-grade anime recommendation platform focused on ML infrastructure, offline data pipelines, caching strategies, and concurrency",
-        tech: ["Go", "Python", "Typescript", "PostgreSQL", "Redis", "Docker", "C++"],
+        tech: ["Go", "Python", "Typescript", "PostgreSQL", "Redis", "Docker"],
         links: [
           { label: "Repo", href: "https://github.com/SilverXer0/Kitsu" },
+        ],
+      },
+      {
+        name: "Aether",
+        tagline: "High-Performance Compression Utility",
+        img: "/photos/aether.jpg",
+        imgClass: "",
+        desc: "A multithreaded compression tool built to achieve maximum disk-to-disk throughput on modern multi-core processors",
+        tech: ["C++", "ZSTD", "Linux", "POSIX", "Docker", "GoogleTest"],
+        links: [
+          { label: "Repo", href: "https://github.com/SilverXer0/Aether" },
         ],
       },
       {
@@ -815,7 +826,7 @@ export default function Page() {
         tagline: "Emotion-aware journaling",
         img: "/photos/moodmuse.jpg",
         imgClass: "",
-        desc: "Captures images and entries, performs on-device analysis, and surfaces trends privately",
+        desc: "Captures images and entries, performs on-device analysis, and shows music recommendations based on your mood",
         tech: ["Swift", "SwiftUI", "VisionKit", "Spotify Web API"],
         links: [
           { label: "Repo", href: "https://github.com/SilverXer0/MoodMuse" },
@@ -826,25 +837,13 @@ export default function Page() {
         tagline: "FPS tasks with AI-driven sensitivity suggestions",
         img: "/photos/aimtrainer.jpg",
         imgClass: "",
-        desc: "Procedural drills, crosshair UI, and analytics to estimate optimal sensitivity across maps",
+        desc: "Procedural drills, crosshair UI, and analytics to estimate optimal FPS sensitivity",
         tech: ["Unity", "C#"],
         links: [
           {
             label: "Repo",
             href: "https://github.com/SilverXer0/FPS-Aim-Trainer/tree/master",
           },
-        ],
-      },
-      {
-        name: "MintMatch",
-        tagline:
-          "Win real tokens on the blockchain and save them to your wallet",
-        img: "/photos/mintmatch.jpg",
-        imgClass: "",
-        desc: "Blockchain token matching game",
-        tech: ["Solidity", "Javascript", "Smart Contracts"],
-        links: [
-          { label: "Repo", href: "https://github.com/SilverXer0/MintMatch" },
         ],
       },
     ],
