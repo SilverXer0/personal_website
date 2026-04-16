@@ -723,7 +723,7 @@ export default function Page() {
         period: "March 2026 - Present",
         location: "San Francisco, CA",
         bullets: [
-          "Focusing on Infrastructure to maintain scalability, reliability, and low latency for Plaid's Developer Dashboard",
+          "Focusing on Infrastructure to maintain scalability, reliability, and low latency for Plaid's Customer Portal (Developer Dashboard)",
         ],
       },
       {
@@ -1046,7 +1046,7 @@ export default function Page() {
                     <div className="w-full text-left">
                       <p className="text-lg sm:text-lg leading-relaxed text-neutral-800 dark:text-neutral-200">
                         I graduated with a B.S. in Computer Science from <strong>Cal Poly SLO</strong> and am currently {" "}
-                        working at <strong>Plaid</strong>, working on infrastructure for the developer dashboard with {" "}
+                        working at <strong>Plaid</strong>, working on infrastructure for the customer portal (developer dashboard) with {" "}
                         a focus on scalability and low latency.
                       </p>
                       <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
