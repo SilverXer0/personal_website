@@ -1322,7 +1322,7 @@ export default function Page() {
               {[
                 {
                   title:
-                    "Scalable Concurrency Paradigms",
+                    "Scalable Concurrency Paradigms: A Comparative Analysis of CSP in Go and the Actor Model in Modern C++",
                   desc: "Research on scalable concurrency models, comparing Communicating Sequential Processes (CSP) in Go and the C++ Actor Framework (CAF).",
                   href: "/papers/Scalable_Concurrency_Paradigms.pdf",
                 },
@@ -1351,7 +1351,7 @@ export default function Page() {
                       {[
                         {
                           title:
-                            "Scalable Concurrency Paradigms",
+                            "Scalable Concurrency Paradigms: A Comparative Analysis of CSP in Go and the Actor Model in Modern C++",
                           desc: "Research on scalable concurrency models, comparing Communicating Sequential Processes (CSP) in Go and the C++ Actor Framework (CAF).",
                           href: "/papers/Scalable_Concurrency_Paradigms.pdf",
                         },
