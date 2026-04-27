@@ -127,19 +127,20 @@ function HobbyCardWithGif({ h }: { h: any }) {
   const [gifSrc, setGifSrc] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [cardRef, touchActive] = useIntersectionActive<HTMLDivElement>();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (!touchActive) {
       setIsHovered(false);
       setGifSrc(null);
     } else {
-      setGifSrc(`${h.hoverImg}?t=${Date.now()}`);
+      if (h.hoverImg) setGifSrc(`${h.hoverImg}?t=${Date.now()}`);
       setIsHovered(true);
     }
   }, [touchActive, h.hoverImg]);
 
   const handleMouseEnter = () => {
-    setGifSrc(`${h.hoverImg}?t=${Date.now()}`);
+    if (h.hoverImg) setGifSrc(`${h.hoverImg}?t=${Date.now()}`);
     setIsHovered(true);
   };
 
@@ -149,6 +150,17 @@ function HobbyCardWithGif({ h }: { h: any }) {
   };
 
   const active = isHovered || touchActive;
+
+  useEffect(() => {
+    if (videoRef.current) {
+      if (active) {
+        videoRef.current.currentTime = 0;
+        videoRef.current.play().catch(() => {});
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [active]);
 
   return (
     <motion.div variants={SECTION_CHILD} className="h-full">
@@ -177,6 +189,16 @@ function HobbyCardWithGif({ h }: { h: any }) {
               <img
                 src={gifSrc}
                 alt={h.name + " highlight"}
+                className={`absolute inset-0 z-10 h-full w-full transition-opacity duration-300 ${active ? "opacity-100" : "opacity-0"} ${h.imgClass || "object-cover"}`}
+              />
+            )}
+            {h.hoverVideo && (
+              <video
+                ref={videoRef}
+                src={h.hoverVideo}
+                loop
+                muted
+                playsInline
                 className={`absolute inset-0 z-10 h-full w-full transition-opacity duration-300 ${active ? "opacity-100" : "opacity-0"} ${h.imgClass || "object-cover"}`}
               />
             )}
@@ -331,10 +353,6 @@ function PaperCard({ w }: { w: any }) {
 export default function Page() {
 
 
-  const experienceCarouselRef = useRef<HTMLDivElement | null>(null);
-  const experienceResumeTimerRef = useRef<number | null>(null);
-  const [experiencePaused, setExperiencePaused] = useState(false);
-  const [experienceIndex, setExperienceIndex] = useState(0);
   const [aboutMediaIndex, setAboutMediaIndex] = useState(0);
 
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -378,100 +396,6 @@ export default function Page() {
     [],
   );
 
-
-  function edgeHoverScroll(
-    e: React.MouseEvent<HTMLDivElement>,
-    elRef: React.RefObject<HTMLDivElement>,
-    cooldownRef: React.MutableRefObject<number>,
-    direction: "left" | "right",
-    pauseFn?: (ms: number) => void,
-  ) {
-    const el = elRef.current;
-    if (!el) {
-      return;
-    }
-
-    const now = Date.now();
-    if (now - cooldownRef.current < 450) {
-      return;
-    }
-
-    const rect = el.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-
-    const edge = 92;
-    const shouldScrollLeft = direction === "left" && x <= edge;
-    const shouldScrollRight = direction === "right" && x >= rect.width - edge;
-
-    if (!shouldScrollLeft && !shouldScrollRight) {
-      return;
-    }
-
-    cooldownRef.current = now;
-
-    if (pauseFn) {
-      pauseFn(2200);
-    }
-
-    const delta = Math.max(280, Math.floor(rect.width * 0.65));
-    el.scrollBy({
-      left: direction === "left" ? -delta : delta,
-      behavior: "smooth",
-    });
-  }
-
-  function scrollCarouselByEdge(
-    elRef: React.RefObject<HTMLDivElement>,
-    direction: "left" | "right",
-    pauseFn?: (ms: number) => void,
-  ) {
-    const el = elRef.current;
-    if (!el) return;
-
-    if (pauseFn) {
-      pauseFn(2200);
-    }
-
-    const delta = Math.max(280, Math.floor(el.clientWidth * 0.65));
-    el.scrollBy({
-      left: direction === "left" ? -delta : delta,
-      behavior: "smooth",
-    });
-  }
-
-  function scrollCarouselByCard(
-    elRef: React.RefObject<HTMLDivElement>,
-    direction: "left" | "right",
-    pauseFn?: (ms: number) => void,
-    cardSelector: string = "[data-carousel-item]",
-    gap: number = 24,
-  ) {
-    const el = elRef.current;
-    if (!el) return;
-
-    if (pauseFn) {
-      pauseFn(2200);
-    }
-    const card = el.querySelector<HTMLElement>(cardSelector);
-    if (!card) return;
-    const cardWidth = card.offsetWidth;
-    const delta = cardWidth + gap;
-    el.scrollBy({
-      left: direction === "left" ? -delta : delta,
-      behavior: "smooth",
-    });
-  }
-
-  function pauseExperienceTemporarily(ms: number) {
-    setExperiencePaused(true);
-    if (experienceResumeTimerRef.current) {
-      window.clearTimeout(experienceResumeTimerRef.current);
-    }
-    experienceResumeTimerRef.current = window.setTimeout(() => {
-      setExperiencePaused(false);
-      experienceResumeTimerRef.current = null;
-    }, ms);
-  }
 
   const [mounted, setMounted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -564,124 +488,14 @@ export default function Page() {
     }
   }, [mounted]);
 
-  useEffect(() => {
-    return () => {
-      if (experienceResumeTimerRef.current) {
-        window.clearTimeout(experienceResumeTimerRef.current);
-      }
-    };
-  }, []);
-
-
-  function isAtScrollEnd(el: HTMLDivElement, epsilonPx = 2) {
-    const maxScrollLeft = el.scrollWidth - el.clientWidth;
-    return maxScrollLeft <= 0
-      ? true
-      : el.scrollLeft >= maxScrollLeft - epsilonPx;
-  }
-
-  function getNearestIndexFromScroll(
-    el: HTMLDivElement,
-    itemSelector: string,
-    currentIndex: number,
-  ) {
-    const items = Array.from(el.querySelectorAll<HTMLElement>(itemSelector));
-    if (items.length === 0) {
-      return currentIndex;
-    }
-
-    const viewportCenter = el.scrollLeft + el.clientWidth / 2;
-
-    let bestIndex = currentIndex;
-    let bestDist = Number.POSITIVE_INFINITY;
-
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      const itemCenter = item.offsetLeft + item.offsetWidth / 2;
-      const dist = Math.abs(itemCenter - viewportCenter);
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestIndex = i;
-      }
-    }
-
-    return bestIndex;
-  }
-  useEffect(() => {
-    if (!mounted) {
-      return;
-    }
-    if (experiencePaused) {
-      return;
-    }
-
-  }, [mounted, experiencePaused, experienceIndex]);
-
-
-
-  useEffect(() => {
-    if (!mounted) {
-      return;
-    }
-
-    const el = experienceCarouselRef.current;
-    if (!el) {
-      return;
-    }
-
-    let rafId: number | null = null;
-
-    const onScroll = () => {
-      if (rafId !== null) {
-        return;
-      }
-      rafId = window.requestAnimationFrame(() => {
-        rafId = null;
-        const items = Array.from(
-          el.querySelectorAll<HTMLElement>("[data-experience-item]"),
-        );
-        if (items.length === 0) {
-          return;
-        }
-
-        if (isAtScrollEnd(el)) {
-          const last = items.length - 1;
-          if (last !== experienceIndex) {
-            setExperienceIndex(last);
-          }
-          return;
-        }
-
-        const next = getNearestIndexFromScroll(
-          el,
-          "[data-experience-item]",
-          experienceIndex,
-        );
-        if (next !== experienceIndex) {
-          setExperienceIndex(next);
-        }
-      });
-    };
-
-    el.addEventListener("scroll", onScroll, { passive: true });
-
-    onScroll();
-
-    return () => {
-      el.removeEventListener("scroll", onScroll);
-      if (rafId !== null) {
-        window.cancelAnimationFrame(rafId);
-      }
-    };
-  }, [mounted, experienceIndex]);
 
   const hobbies = useMemo(
     () => [
       {
         name: "Competitive FPS",
         img: "/photos/360_static.jpg",
-        hoverImg: "/photos/360.gif",
-        caption: "I'm tuff at Valorant, but my CS2 inventory costs too much to not play.",
+        hoverVideo: "/photos/360.mp4",
+        caption: "I'm tough at Valorant, but my CS2 inventory costs too much to not play.",
       },
       {
         name: "PCs and (mostly) peripherals",
@@ -722,6 +536,7 @@ export default function Page() {
         org: "Software Engineer",
         period: "March 2026 - Present",
         location: "San Francisco, CA",
+        logo: "/photos/plaid.png",
         bullets: [
           "Focusing on Infrastructure to maintain scalability, reliability, and low latency for Plaid's Customer Portal (Developer Dashboard)",
         ],
@@ -731,6 +546,7 @@ export default function Page() {
         org: "Software Engineering Intern",
         period: "June - September 2025",
         location: "Cupertino, CA",
+        logo: "/photos/apple.jpg",
         bullets: [
           "Built Drag and Drop Application with Swift and SwiftUi for easily creating upsell sheets for first-party Apple Services",
           "Focused on Swift Codable and Concurrency to support real time component editing and low-latency sheet-to-JSON conversions",
@@ -742,6 +558,7 @@ export default function Page() {
         org: "Software Engineering Intern",
         period: "May - August 2024",
         location: "Houston, TX",
+        logo: "/photos/capgemini.png",
         bullets: [
           "Developed an Automated Testing App using JavaScript and React to automate code generation and streamline code reviews for code repositories and APIs",
           "Integrated a retrieval-augmented generation (RAG) service using Python and Flask to dynamically generate tests, improve coverage, and scale test generation",
@@ -753,6 +570,7 @@ export default function Page() {
         org: "Software Engineering Intern",
         period: "June - September 2023",
         location: "Berkeley, CA",
+        logo: "/photos/geopogo.png",
         bullets: [
           "Engineered real-time augmented reality simulations in C# and Unity for creating and placing buildings in real locations around the world",
           "Enhanced visualization accuracy and rendering performance in simulations by refining spatial metrics and customization pipelines to increase stakeholder review efficiency",
@@ -765,6 +583,7 @@ export default function Page() {
         org: "Software Developer",
         period: "September 2022 — June 2025",
         location: "San Luis Obispo, CA",
+        logo: "/photos/hack.png",
         bullets: [
           "Worked with Wilshire Health and Community to create a dynamic donation-tracking website with Full Stack, Development, AWS Amplify, and GraphQL",
           "Built a web scraper for EcoLogistics using AWS Chalice and Beautiful Soup to automate the scraping of untracked data from SLO county websites",
@@ -931,6 +750,7 @@ export default function Page() {
         suppressHydrationWarning
       >
         <div className="fixed inset-0 z-[-1] bg-[url('/photos/bg.jpg')] bg-cover bg-center" />
+        <div className="fixed inset-0 z-[-1] bg-black/5 dark:bg-black/40" />
         <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
           <nav className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-black/35">
             <div className="mx-auto max-w-[80rem] px-4 py-3 flex items-center justify-between">
@@ -986,17 +806,17 @@ export default function Page() {
             </div>
           </nav>
 
-          <header className="mx-auto max-w-[80rem] px-4 pt-24 pb-28 min-h-[100svh] flex flex-col justify-center">
+          <header className="mx-auto max-w-[80rem] px-4 pt-24 pb-28 min-h-[calc(100svh-50px)] flex flex-col justify-center">
             <motion.div
               variants={heroStagger}
               initial={reducedMotion ? false : "hidden"}
               animate={hasEntered ? (reducedMotion ? false : "show") : "hidden"}
-              className="relative mx-auto -mt-12 sm:-mt-16 flex max-w-3xl flex-col items-center text-center"
+              className="relative mx-auto -mt-12 sm:-mt-16 flex max-w-6xl flex-col items-center text-center"
             >
               {!reducedMotion ? <PixelRevealOverlay /> : null}
               <motion.h1
                 variants={heroItem}
-                className="mt-2 text-7xl sm:text-8xl font-semibold tracking-tight font-sans"
+                className="mt-2 text-6xl sm:text-[7.5rem] font-bold tracking-tight font-sans whitespace-nowrap"
               >
                 Hi, I'm Sharan.
               </motion.h1>
@@ -1004,10 +824,10 @@ export default function Page() {
                 variants={heroItem}
                 className="mt-10 flex flex-col items-center text-center"
               >
-                <div className="text-4xl sm:text-5xl font-semibold text-neutral-800 dark:text-neutral-300">
+                <div className="text-4xl sm:text-5xl font-bold text-neutral-800 dark:text-neutral-300 tracking-tight">
                   Software Engineer
                 </div>
-                <div className="mt-4 text-lg sm:text-xl text-neutral-600 dark:text-neutral-400">
+                <div className="mt-4 text-lg sm:text-xl font-medium text-neutral-600 dark:text-neutral-400">
                   Distributed Systems, Infrastructure, Machine Learning
                 </div>
               </motion.div>
@@ -1031,11 +851,10 @@ export default function Page() {
                 </div>
               </motion.div>
             </motion.div>
-
           </header>
 
           <Section
-            id="about"
+              id="about"
             titleIcon={<Code2 className="h-5 w-5" />}
             title="About"
           >
@@ -1173,125 +992,48 @@ export default function Page() {
                 <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300">
                   My roles and professional experience, past and present.
                 </p>
-
-                <div className="flex items-center gap-4">
-                  <div className="hidden sm:flex items-center gap-2">
-                    {experience.map((job, i) => (
-                      <button
-                        key={job.title + String(i)}
-                        type="button"
-                        aria-label={`Go to experience ${i + 1}`}
-                        onClick={() => {
-                          const el = experienceCarouselRef.current;
-                          if (!el) {
-                            return;
-                          }
-                          const children = Array.from(
-                            el.querySelectorAll<HTMLElement>(
-                              "[data-experience-item]",
-                            ),
-                          );
-                          const target = children[i];
-                          if (!target) {
-                            return;
-                          }
-                          pauseExperienceTemporarily(4500);
-                          el.scrollTo({
-                            left: target.offsetLeft - 16,
-                            behavior: "smooth",
-                          });
-                          setExperienceIndex(i);
-                        }}
-                        className={
-                          "h-2.5 w-2.5 rounded-full transition " +
-                          (i === experienceIndex
-                            ? "bg-neutral-900 dark:bg-white"
-                            : "bg-black/15 hover:bg-black/25 dark:bg-white/20 dark:hover:bg-white/30")
-                        }
-                      />
-                    ))}
-                  </div>
-                  <CarouselArrows
-                    onPrev={() =>
-                      scrollCarouselByEdge(
-                        experienceCarouselRef,
-                        "left",
-                        pauseExperienceTemporarily,
-                      )
-                    }
-                    onNext={() =>
-                      scrollCarouselByEdge(
-                        experienceCarouselRef,
-                        "right",
-                        pauseExperienceTemporarily,
-                      )
-                    }
-                  />
-                </div>
               </div>
 
-              <div
-                className="relative mt-6 -mx-2"
-              >
-                <div
-                  ref={experienceCarouselRef}
-                  className="no-scrollbar px-4 pt-4 flex gap-6 overflow-x-auto pb-8 -mt-4 items-stretch"
-                  style={{ scrollSnapType: "x mandatory" }}
-                  onMouseEnter={() => setExperiencePaused(true)}
-                  onMouseLeave={() => setExperiencePaused(false)}
-                  onWheel={() => pauseExperienceTemporarily(4500)}
-                  onTouchStart={() => pauseExperienceTemporarily(4500)}
-                  onPointerDown={() => pauseExperienceTemporarily(4500)}
-                >
-                  {experience.map((job) => (
-                    <motion.div
-                      key={job.title + job.org}
-                      data-experience-item
-                      variants={SECTION_CHILD}
-                      className="min-w-[92%] sm:min-w-[78%] lg:min-w-[62%] scroll-ml-4 snap-center flex"
-                      style={{ scrollSnapAlign: "center" }}
-                    >
-                      <div className="flex flex-col w-full h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                          <div>
-                            <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                              {job.title}
-                            </h3>
-                            <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                              {job.org}
-                            </div>
+              <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                {experience.map((job) => (
+                  <motion.div
+                    key={job.title + job.org}
+                    variants={SECTION_CHILD}
+                    className="flex"
+                  >
+                    <div className="flex flex-col w-full h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-col">
+                          <h3 className="text-xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                            {job.title}
+                          </h3>
+                          <div className="mt-1 text-base font-medium text-neutral-800 dark:text-neutral-200">
+                            {job.org}
                           </div>
-
-                          <div className="text-xs text-neutral-500 dark:text-neutral-400 text-left sm:text-right">
+                          <div className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
                             <div>{job.period}</div>
-                            <div className="flex items-center gap-1 sm:justify-end mt-1">
+                            <div className="flex items-center gap-1 mt-1">
                               <MapPin className="h-3.5 w-3.5" /> {job.location}
                             </div>
                           </div>
                         </div>
 
-                        {job.bullets?.length ? (
-                          <ul className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 list-disc pl-5 space-y-2">
-                            {job.bullets.map((bullet, idx) => (
-                              <li key={idx}>{bullet}</li>
-                            ))}
-                          </ul>
-                        ) : null}
+                        <div className="shrink-0 h-14 w-14 sm:h-16 sm:w-16 rounded-2xl overflow-hidden flex items-center justify-center">
+                          <img src={(job as any).logo} alt={job.org} className="h-full w-full object-contain" />
+                        </div>
                       </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
 
-              <style jsx>{`
-              .no-scrollbar::-webkit-scrollbar {
-                display: none;
-              }
-              .no-scrollbar {
-                scrollbar-width: none;
-                -ms-overflow-style: none;
-              }
-            `}</style>
+                      {job.bullets?.length ? (
+                        <ul className="mt-6 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 list-disc pl-5 space-y-2">
+                          {job.bullets.map((bullet, idx) => (
+                            <li key={idx}>{bullet}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </Section>
 
@@ -1382,7 +1124,7 @@ export default function Page() {
             <TouchSectionProvider>
               <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                 {hobbies.map((h) => {
-                  if ((h as any).hoverImg) {
+                  if ((h as any).hoverImg || (h as any).hoverVideo) {
                     return <HobbyCardWithGif key={h.name} h={h} />;
                   }
                   return <HobbyCard key={h.name} h={h} />;
@@ -1513,46 +1255,6 @@ export default function Page() {
   );
 }
 
-function CarouselArrows({
-  onPrev,
-  onNext,
-}: {
-  onPrev: () => void;
-  onNext: () => void;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        aria-label="Previous"
-        onClick={onPrev}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full
-          border border-black/10 bg-white/70 text-neutral-900 shadow-sm
-          backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95
-          hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95
-          dark:border-white/10 dark:bg-white/10 dark:text-neutral-100
-          dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </button>
-
-      <button
-        type="button"
-        aria-label="Next"
-        onClick={onNext}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full
-          border border-black/10 bg-white/70 text-neutral-900 shadow-sm
-          backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95
-          hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95
-          dark:border-white/10 dark:bg-white/10 dark:text-neutral-100
-          dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </button>
-    </div>
-  );
-}
-
 function Section({
   id,
   title,
@@ -1567,7 +1269,7 @@ function Section({
   return (
     <motion.section
       id={id}
-      className="mx-auto max-w-[80rem] px-4 sm:px-6 py-20 scroll-mt-28"
+      className="mx-auto max-w-[80rem] px-4 sm:px-6 py-40 scroll-mt-28 min-h-[80vh]"
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.18 }}
