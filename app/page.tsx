@@ -22,6 +22,7 @@ import {
   ExternalLink as ExternalLinkIcon,
   Volume2,
   VolumeX,
+  User,
 } from "lucide-react";
 
 declare global {
@@ -854,8 +855,8 @@ export default function Page() {
           </header>
 
           <Section
-              id="about"
-            titleIcon={<Code2 className="h-5 w-5" />}
+            id="about"
+            titleIcon={<User className="h-5 w-5" />}
             title="About"
           >
             <div className="mt-10">
