@@ -50,7 +50,6 @@ type TouchSectionCtx = {
 const TouchSectionContext = React.createContext<TouchSectionCtx | null>(null);
 
 function TouchSectionProvider({ children }: { children: React.ReactNode }) {
-  const isTouchRef = useRef<boolean | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const registryRef = useRef<Map<string, { setActive: (v: boolean) => void; ratio: number }>>(new Map());
 
@@ -70,8 +69,9 @@ function TouchSectionProvider({ children }: { children: React.ReactNode }) {
         for (const [id, { ratio }] of registryRef.current) {
           if (ratio > bestRatio) { bestRatio = ratio; bestId = id; }
         }
+        const isMobile = window.matchMedia("(hover: none), (max-width: 768px)").matches;
         for (const [id, { setActive }] of registryRef.current) {
-          setActive(id === bestId);
+          setActive(isMobile && id === bestId);
         }
       },
       { threshold: Array.from({ length: 21 }, (_, i) => i * 0.05) }
@@ -82,10 +82,6 @@ function TouchSectionProvider({ children }: { children: React.ReactNode }) {
   const register = useCallback(
     (id: string, setActive: (v: boolean) => void, el: HTMLElement) => {
       if (typeof window === "undefined") return () => { };
-      if (isTouchRef.current === null) {
-        isTouchRef.current = window.matchMedia("(hover: none)").matches;
-      }
-      if (!isTouchRef.current) return () => { };
 
       registryRef.current.set(id, { setActive, ratio: 0 });
       el.dataset.sectionCardId = id;
@@ -302,6 +298,55 @@ function ProjectCard({ p }: { p: any }) {
           ))}
         </div>
       </a>
+    </motion.div>
+  );
+}
+
+function ExperienceCard({ job }: { job: any }) {
+  const [cardRef, touchActive] = useIntersectionActive<HTMLDivElement>();
+  return (
+    <motion.div variants={SECTION_CHILD} className="flex">
+      <div
+        ref={cardRef}
+        className={`group flex flex-col w-full h-full rounded-3xl border bg-white/70 p-6 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
+          ${touchActive
+            ? "border-black/20 -translate-y-1 shadow-[0_20px_60px_rgba(0,0,0,0.22)] bg-white/95 ring-2 ring-black/20 dark:border-white/30 dark:bg-white/10 dark:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:ring-white/30"
+            : "border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/10 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"}
+        `}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col">
+            <h3 className="text-xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+              {job.title}
+            </h3>
+            <div className="mt-1 text-base font-medium text-neutral-800 dark:text-neutral-200">
+              {job.org}
+            </div>
+            <div className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
+              <div>{job.period}</div>
+              <div className="flex items-center gap-1 mt-1">
+                <MapPin className="h-3.5 w-3.5" /> {job.location}
+              </div>
+            </div>
+          </div>
+
+          <div className="shrink-0 h-14 w-14 sm:h-16 sm:w-16 rounded-2xl overflow-hidden flex items-center justify-center">
+            <img 
+              src={job.logo} 
+              alt={job.org} 
+              className={`h-full w-full object-contain transition-[opacity,filter] duration-300 ${touchActive ? "grayscale-0 opacity-100" : "grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100"}`} 
+            />
+          </div>
+        </div>
+
+        {job.bullets?.length ? (
+          <ul className="mt-6 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 list-disc pl-5 space-y-2">
+            {job.bullets.map((bullet: string, idx: number) => (
+              <li key={idx}>{bullet}</li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
     </motion.div>
   );
 }
@@ -995,46 +1040,13 @@ export default function Page() {
                 </p>
               </div>
 
-              <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-                {experience.map((job) => (
-                  <motion.div
-                    key={job.title + job.org}
-                    variants={SECTION_CHILD}
-                    className="flex"
-                  >
-                    <div className="flex flex-col w-full h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex flex-col">
-                          <h3 className="text-xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                            {job.title}
-                          </h3>
-                          <div className="mt-1 text-base font-medium text-neutral-800 dark:text-neutral-200">
-                            {job.org}
-                          </div>
-                          <div className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
-                            <div>{job.period}</div>
-                            <div className="flex items-center gap-1 mt-1">
-                              <MapPin className="h-3.5 w-3.5" /> {job.location}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="shrink-0 h-14 w-14 sm:h-16 sm:w-16 rounded-2xl overflow-hidden flex items-center justify-center">
-                          <img src={(job as any).logo} alt={job.org} className="h-full w-full object-contain" />
-                        </div>
-                      </div>
-
-                      {job.bullets?.length ? (
-                        <ul className="mt-6 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 list-disc pl-5 space-y-2">
-                          {job.bullets.map((bullet, idx) => (
-                            <li key={idx}>{bullet}</li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+              <TouchSectionProvider>
+                <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                  {experience.map((job) => (
+                    <ExperienceCard key={job.title + job.org} job={job} />
+                  ))}
+                </div>
+              </TouchSectionProvider>
             </div>
           </Section>
 
@@ -1143,17 +1155,19 @@ export default function Page() {
               <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300 mb-6">
                 Awards and academic highlights.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {awards.map((a) => (
-                  <div key={a.title} className="h-full">
-                    <Card>
-                      <div className="font-medium">{a.title}</div>
-                      <div className="text-neutral-500">{a.org}</div>
-                      <div className="text-neutral-500 text-xs">{a.year}</div>
-                    </Card>
-                  </div>
-                ))}
-              </div>
+              <TouchSectionProvider>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {awards.map((a) => (
+                    <div key={a.title} className="h-full">
+                      <Card>
+                        <div className="font-medium">{a.title}</div>
+                        <div className="text-neutral-500">{a.org}</div>
+                        <div className="text-neutral-500 text-xs">{a.year}</div>
+                      </Card>
+                    </div>
+                  ))}
+                </div>
+              </TouchSectionProvider>
             </div>
           </Section>
 
@@ -1163,42 +1177,44 @@ export default function Page() {
             title="Get in touch"
           >
             <div className="mt-8">
-              <Card>
-                <p className="text-neutral-700 dark:text-neutral-300">
-                  I’m always down to chat about job opportunites, research, or fun
-                  side projects. Feel free to email me or connect with me on
-                  LinkedIn!
-                </p>
+              <TouchSectionProvider>
+                <Card>
+                  <p className="text-neutral-700 dark:text-neutral-300">
+                    I’m always down to chat about job opportunites, research, or fun
+                    side projects. Feel free to email me or connect with me on
+                    LinkedIn!
+                  </p>
 
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <a
-                    href="mailto:krishna.sharan@gmail.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-black/20 active:scale-95 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/30"
-                  >
-                    <Mail className="h-4 w-4" /> Email Me
-                  </a>
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <a
+                      href="mailto:krishna.sharan@gmail.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-black/20 active:scale-95 dark:bg-white dark:text-neutral-900 dark:hover:ring-white/30"
+                    >
+                      <Mail className="h-4 w-4" /> Email Me
+                    </a>
 
-                  <a
-                    href="https://www.linkedin.com/in/sharankrishna14/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
-                  >
-                    <Linkedin className="h-4 w-4" /> LinkedIn
-                  </a>
+                    <a
+                      href="https://www.linkedin.com/in/sharankrishna14/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
+                    >
+                      <Linkedin className="h-4 w-4" /> LinkedIn
+                    </a>
 
-                  <a
-                    href="https://github.com/SilverXer0"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
-                  >
-                    <Github className="h-4 w-4" /> GitHub
-                  </a>
-                </div>
-              </Card>
+                    <a
+                      href="https://github.com/SilverXer0"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100 dark:hover:bg-white/15 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
+                    >
+                      <Github className="h-4 w-4" /> GitHub
+                    </a>
+                  </div>
+                </Card>
+              </TouchSectionProvider>
             </div>
 
             <footer className="py-10 text-center text-xs text-neutral-500">
@@ -1375,8 +1391,12 @@ function Card({
   children: React.ReactNode;
   href?: string;
 }) {
-  const className =
-    "rounded-3xl border border-black/10 bg-white/70 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30 h-full w-full block";
+  const [cardRef, touchActive] = useIntersectionActive<any>();
+  const className = `rounded-3xl border bg-white/70 p-5 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5 h-full w-full block
+    ${touchActive
+      ? "border-black/20 -translate-y-1 shadow-[0_20px_60px_rgba(0,0,0,0.22)] bg-white/95 ring-2 ring-black/20 dark:border-white/30 dark:bg-white/10 dark:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:ring-white/30"
+      : "border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/10 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"}
+  `;
 
   if (href) {
     return (
@@ -1388,6 +1408,7 @@ function Card({
         className="h-full w-full"
       >
         <a
+          ref={cardRef}
           href={href}
           target="_blank"
           rel="noopener noreferrer"
@@ -1407,7 +1428,7 @@ function Card({
       transition={{ duration: 0.55, ease: APPLE_EASE }}
       className="h-full w-full"
     >
-      <div className={className}>
+      <div ref={cardRef} className={className}>
         {children}
       </div>
     </motion.div>
