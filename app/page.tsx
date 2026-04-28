@@ -1155,19 +1155,17 @@ export default function Page() {
               <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-300 mb-6">
                 Awards and academic highlights.
               </p>
-              <TouchSectionProvider>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {awards.map((a) => (
-                    <div key={a.title} className="h-full">
-                      <Card>
-                        <div className="font-medium">{a.title}</div>
-                        <div className="text-neutral-500">{a.org}</div>
-                        <div className="text-neutral-500 text-xs">{a.year}</div>
-                      </Card>
-                    </div>
-                  ))}
-                </div>
-              </TouchSectionProvider>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {awards.map((a) => (
+                  <div key={a.title} className="h-full">
+                    <Card>
+                      <div className="font-medium">{a.title}</div>
+                      <div className="text-neutral-500">{a.org}</div>
+                      <div className="text-neutral-500 text-xs">{a.year}</div>
+                    </Card>
+                  </div>
+                ))}
+              </div>
             </div>
           </Section>
 
@@ -1177,15 +1175,14 @@ export default function Page() {
             title="Get in touch"
           >
             <div className="mt-8">
-              <TouchSectionProvider>
-                <Card>
-                  <p className="text-neutral-700 dark:text-neutral-300">
-                    I’m always down to chat about job opportunites, research, or fun
-                    side projects. Feel free to email me or connect with me on
-                    LinkedIn!
-                  </p>
+              <Card>
+                <p className="text-neutral-700 dark:text-neutral-300">
+                  I’m always down to chat about job opportunites, research, or fun
+                  side projects. Feel free to email me or connect with me on
+                  LinkedIn!
+                </p>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                <div className="mt-4 flex flex-wrap items-center gap-3">
                     <a
                       href="mailto:krishna.sharan@gmail.com"
                       target="_blank"
@@ -1214,7 +1211,6 @@ export default function Page() {
                     </a>
                   </div>
                 </Card>
-              </TouchSectionProvider>
             </div>
 
             <footer className="py-10 text-center text-xs text-neutral-500">
@@ -1391,12 +1387,8 @@ function Card({
   children: React.ReactNode;
   href?: string;
 }) {
-  const [cardRef, touchActive] = useIntersectionActive<any>();
-  const className = `rounded-3xl border bg-white/70 p-5 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5 h-full w-full block
-    ${touchActive
-      ? "border-black/20 -translate-y-1 shadow-[0_20px_60px_rgba(0,0,0,0.22)] bg-white/95 ring-2 ring-black/20 dark:border-white/30 dark:bg-white/10 dark:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:ring-white/30"
-      : "border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/10 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"}
-  `;
+  const className =
+    "rounded-3xl border border-black/10 bg-white/70 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30 h-full w-full block";
 
   if (href) {
     return (
@@ -1408,7 +1400,6 @@ function Card({
         className="h-full w-full"
       >
         <a
-          ref={cardRef}
           href={href}
           target="_blank"
           rel="noopener noreferrer"
@@ -1428,7 +1419,7 @@ function Card({
       transition={{ duration: 0.55, ease: APPLE_EASE }}
       className="h-full w-full"
     >
-      <div ref={cardRef} className={className}>
+      <div className={className}>
         {children}
       </div>
     </motion.div>
