@@ -1,5 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Aurora from "./components/Aurora";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -795,7 +796,14 @@ export default function Page() {
         className={mounted ? "dark" : "dark"}
         suppressHydrationWarning
       >
-        <div className="fixed inset-0 z-[-1] bg-[url('/photos/bg.jpg')] bg-cover bg-center" />
+        <div className="fixed inset-0 z-[-1]">
+          <Aurora
+            colorStops={["#06B6D4", "#B497CF", "#5227FF"]}
+            blend={0.5}
+            amplitude={1.0}
+            speed={0.5}
+          />
+        </div>
         <div className="fixed inset-0 z-[-1] bg-black/5 dark:bg-black/40" />
         <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
           <nav className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-black/35">
