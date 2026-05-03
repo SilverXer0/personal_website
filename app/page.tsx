@@ -1,6 +1,7 @@
 "use client";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Aurora from "./components/Aurora";
+import BorderGlow from "./components/BorderGlow";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -162,17 +163,20 @@ function HobbyCardWithGif({ h }: { h: any }) {
 
   return (
     <motion.div variants={SECTION_CHILD} className="h-full">
-      <div
-        ref={cardRef}
-        className={`group flex flex-col h-full rounded-3xl border bg-white/70 p-6 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
+      <BorderGlow
+        className={`group flex flex-col h-full rounded-3xl border bg-white/70 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
           ${active
             ? "border-black/20 -translate-y-1 shadow-[0_20px_60px_rgba(0,0,0,0.22)] bg-white/95 ring-2 ring-black/20 dark:border-white/30 dark:bg-white/10 dark:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:ring-white/30"
             : "border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/10 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"}
         `}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
       >
-        <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+        <div
+          ref={cardRef}
+          className="flex flex-col h-full p-6"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
           {h.name}
         </h3>
 
@@ -206,7 +210,8 @@ function HobbyCardWithGif({ h }: { h: any }) {
         <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
           {h.caption}
         </p>
-      </div>
+        </div>
+      </BorderGlow>
     </motion.div>
   );
 }
@@ -215,15 +220,18 @@ function HobbyCard({ h }: { h: any }) {
   const [cardRef, touchActive] = useIntersectionActive<HTMLDivElement>();
   return (
     <motion.div variants={SECTION_CHILD} className="h-full">
-      <div
-        ref={cardRef}
-        className={`group flex flex-col h-full rounded-3xl border bg-white/70 p-6 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
+      <BorderGlow
+        className={`group flex flex-col h-full rounded-3xl border bg-white/70 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
           ${touchActive
             ? "border-black/20 -translate-y-1 shadow-[0_20px_60px_rgba(0,0,0,0.22)] bg-white/95 ring-2 ring-black/20 dark:border-white/30 dark:bg-white/10 dark:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:ring-white/30"
             : "border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/10 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"}
         `}
       >
-        <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+        <div
+          ref={cardRef}
+          className="flex flex-col h-full p-6"
+        >
+          <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
           {h.name}
         </h3>
 
@@ -240,7 +248,8 @@ function HobbyCard({ h }: { h: any }) {
         <p className="mt-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 flex-grow">
           {h.caption}
         </p>
-      </div>
+        </div>
+      </BorderGlow>
     </motion.div>
   );
 }
@@ -249,18 +258,21 @@ function ProjectCard({ p }: { p: any }) {
   const [cardRef, touchActive] = useIntersectionActive<HTMLAnchorElement>();
   return (
     <motion.div variants={SECTION_CHILD} className="h-full">
-      <a
-        ref={cardRef}
-        href={p.links?.[0]?.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`group flex flex-col h-full rounded-3xl border bg-white/70 p-6 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
+      <BorderGlow
+        className={`group flex flex-col h-full rounded-3xl border bg-white/70 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
           ${touchActive
             ? "border-black/20 -translate-y-1 shadow-[0_20px_60px_rgba(0,0,0,0.22)] bg-white/95 ring-2 ring-black/20 dark:border-white/30 dark:bg-white/10 dark:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:ring-white/30"
             : "border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/10 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"}
         `}
       >
-        <div className="flex items-start justify-between gap-4">
+        <a
+          ref={cardRef}
+          href={p.links?.[0]?.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex flex-col h-full p-6"
+        >
+          <div className="flex items-start justify-between gap-4">
           <div>
             <h3 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
               {p.name}
@@ -298,7 +310,8 @@ function ProjectCard({ p }: { p: any }) {
             </span>
           ))}
         </div>
-      </a>
+        </a>
+      </BorderGlow>
     </motion.div>
   );
 }
@@ -306,16 +319,19 @@ function ProjectCard({ p }: { p: any }) {
 function ExperienceCard({ job }: { job: any }) {
   const [cardRef, touchActive] = useIntersectionActive<HTMLDivElement>();
   return (
-    <motion.div variants={SECTION_CHILD} className="flex">
-      <div
-        ref={cardRef}
-        className={`group flex flex-col w-full h-full rounded-3xl border bg-white/70 p-6 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
+    <motion.div variants={SECTION_CHILD} className="flex w-full">
+      <BorderGlow
+        className={`group flex flex-col w-full h-full rounded-3xl border bg-white/70 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
           ${touchActive
             ? "border-black/20 -translate-y-1 shadow-[0_20px_60px_rgba(0,0,0,0.22)] bg-white/95 ring-2 ring-black/20 dark:border-white/30 dark:bg-white/10 dark:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:ring-white/30"
             : "border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/10 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"}
         `}
       >
-        <div className="flex items-start justify-between gap-4">
+        <div
+          ref={cardRef}
+          className="flex flex-col w-full h-full p-6"
+        >
+          <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col">
             <h3 className="text-xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
               {job.title}
@@ -347,7 +363,8 @@ function ExperienceCard({ job }: { job: any }) {
             ))}
           </ul>
         ) : null}
-      </div>
+        </div>
+      </BorderGlow>
     </motion.div>
   );
 }
@@ -356,15 +373,18 @@ function PaperCard({ w }: { w: any }) {
   const [cardRef, touchActive] = useIntersectionActive<HTMLDivElement>();
   return (
     <motion.div variants={SECTION_CHILD} className="h-full">
-      <div
-        ref={cardRef}
-        className={`flex flex-col h-full rounded-3xl border bg-white/70 p-6 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
+      <BorderGlow
+        className={`flex flex-col h-full rounded-3xl border bg-white/70 backdrop-blur-2xl transition will-change-transform active:scale-[0.98] dark:bg-white/5
           ${touchActive
             ? "border-black/20 -translate-y-1 shadow-[0_20px_60px_rgba(0,0,0,0.22)] bg-white/95 ring-2 ring-black/20 dark:border-white/30 dark:bg-white/10 dark:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:ring-white/30"
             : "border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/10 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"}
         `}
       >
-        <div className="font-semibold text-lg text-neutral-900 dark:text-neutral-100">
+        <div
+          ref={cardRef}
+          className="flex flex-col h-full p-6"
+        >
+          <div className="font-semibold text-lg text-neutral-900 dark:text-neutral-100">
           {w.title}
         </div>
 
@@ -392,7 +412,8 @@ function PaperCard({ w }: { w: any }) {
             Read full paper <ExternalLink className="h-4 w-4" />
           </a>
         </div>
-      </div>
+        </div>
+      </BorderGlow>
     </motion.div>
   );
 }
@@ -585,7 +606,7 @@ export default function Page() {
         location: "San Francisco, CA",
         logo: "/photos/plaid.png",
         bullets: [
-          "Focusing on Infrastructure to maintain scalability, reliability, and low latency for Plaid's Customer Portal (Developer Dashboard)",
+          "Building Infrastructure for the Developer Dashboard",
         ],
       },
       {
@@ -798,20 +819,20 @@ export default function Page() {
       >
         <div className="fixed inset-0 z-[-1]">
           <Aurora
-            colorStops={["#06B6D4", "#B497CF", "#5227FF"]}
+            colorStops={["#06B6D4", "#B497CF", "#3B82F6"]}
             blend={0.5}
             amplitude={1.0}
-            speed={0.5}
+            speed={1.0}
           />
         </div>
         <div className="fixed inset-0 z-[-1] bg-black/5 dark:bg-black/40" />
         <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
           <nav className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-black/35">
             <div className="mx-auto max-w-[80rem] px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-2 font-medium">
+              <a href="#" className="flex items-center gap-2 font-medium hover:opacity-80 transition-opacity">
                 <img src="/photos/karina-logo.png" alt="Logo" className="h-6 w-6 rounded-full object-cover" />
                 <span>Sharan Krishna</span>
-              </div>
+              </a>
 
               <div className="hidden md:flex items-center gap-6 text-sm">
                 <a href="#about" className="hover:opacity-80">
@@ -915,29 +936,30 @@ export default function Page() {
             <div className="mt-10">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-center">
                 <div className="lg:col-span-2 h-full">
-                  <div className="h-full flex flex-col justify-center rounded-3xl border border-black/10 bg-white/70 p-10 sm:p-14 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
-                    <div className="w-full text-left">
+                  <BorderGlow className="h-full flex flex-col justify-center rounded-3xl border border-black/10 bg-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
+                    <div className="h-full flex flex-col justify-center p-10 sm:p-14">
+                      <div className="w-full text-left">
                       <p className="text-lg sm:text-lg leading-relaxed text-neutral-800 dark:text-neutral-200">
                         I graduated with a B.S. in Computer Science from <strong>Cal Poly SLO</strong> and am currently {" "}
-                        working at <strong>Plaid</strong>, working on infrastructure for the customer portal (developer dashboard) with {" "}
-                        a focus on scalability and low latency.
+                        a software engineer at <strong>Plaid</strong>, working on infrastructure for the Developer Dashboard.
                       </p>
                       <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
-                        I work across multiple domains within technology, including Distributed Systems, {" "}
-                        Infrastructure, and Low Latency. This has taken me across different tech stacks, {" "}
+                        I work across multiple domains within technology, which currently covers Distributed Systems and {" "}
+                        Infrastructure. This has taken me across different tech stacks, {" "}
                         from Python and Go to Swift and Typescript.
                       </p>
                       <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
                         In my personal time, I love watching sports like Basketball and F1, and I enjoy playing competitive first-person shooters {" "}
                         like Valorant and Counter Strike 2. I&apos;ve created some youtube montages of my gameplay, check them out on the right!
                       </p>
+                      </div>
                     </div>
-                  </div>
+                  </BorderGlow>
                 </div>
 
                 <div className="lg:col-span-1 h-full">
-                  <div className="h-full rounded-3xl border border-black/10 bg-white/70 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
-                    <div className="h-full flex flex-col justify-center gap-4">
+                  <BorderGlow className="h-full rounded-3xl border border-black/10 bg-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
+                    <div className="h-full flex flex-col justify-center gap-4 p-6">
                       <div className="relative flex-1 overflow-hidden rounded-2xl border border-black/10 bg-black/5 dark:border-white/10 dark:bg-black min-h-[250px]">
                         <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex items-center justify-between px-3">
                           <button
@@ -1030,7 +1052,7 @@ export default function Page() {
                         ))}
                       </div>
                     </div>
-                  </div>
+                  </BorderGlow>
                 </div>
               </div>
             </div>
@@ -1396,7 +1418,7 @@ function Card({
   href?: string;
 }) {
   const className =
-    "rounded-3xl border border-black/10 bg-white/70 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30 h-full w-full block";
+    "rounded-3xl border border-black/10 bg-white/70 backdrop-blur-2xl transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30 h-full w-full block";
 
   if (href) {
     return (
@@ -1407,14 +1429,16 @@ function Card({
         transition={{ duration: 0.55, ease: APPLE_EASE }}
         className="h-full w-full"
       >
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={className + " cursor-pointer"}
-        >
-          {children}
-        </a>
+        <BorderGlow className={className + " cursor-pointer"}>
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="h-full w-full block p-5"
+          >
+            {children}
+          </a>
+        </BorderGlow>
       </motion.div>
     );
   }
@@ -1427,9 +1451,11 @@ function Card({
       transition={{ duration: 0.55, ease: APPLE_EASE }}
       className="h-full w-full"
     >
-      <div className={className}>
-        {children}
-      </div>
+      <BorderGlow className={className}>
+        <div className="h-full w-full block p-5">
+          {children}
+        </div>
+      </BorderGlow>
     </motion.div>
   );
 }
