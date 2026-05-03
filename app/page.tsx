@@ -755,7 +755,7 @@ export default function Page() {
       {
         kind: "link" as const,
         title: "My YouTube Channel",
-        caption: "My Youtube Channel, with every new montage I make when I do enough cool things!",
+        caption: "My Youtube Channel, Check it out for more!",
         src: "/photos/gokublack.jpg",
         gifSrc: "/photos/gokublack.gif",
         href: "https://www.youtube.com/@mythra_aim",
