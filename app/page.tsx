@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Aurora from "./components/Aurora";
 import BorderGlow from "./components/BorderGlow";
+import ShinyText from "./components/ShinyText";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -1345,7 +1346,7 @@ function Section({
           {titleIcon}
         </div>
         <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-          {title}
+          <ShinyText text={title} disabled={false} speed={3} />
         </h2>
       </motion.div>
       <motion.div
