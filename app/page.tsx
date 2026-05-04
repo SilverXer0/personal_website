@@ -514,11 +514,12 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
+    if (!hasEntered) return;
+    
     const currentMedia = aboutMediaItems[aboutMediaIndex];
     if (currentMedia.kind !== "video") return;
 
     const iframeId = `yt-player-${aboutMediaIndex}`;
-    if (ytPlayers.current[iframeId]) return;
 
     const bindPlayer = () => {
       ytPlayers.current[iframeId] = new window.YT.Player(iframeId, {
@@ -543,12 +544,12 @@ export default function Page() {
       const pollTimer = setInterval(() => {
         if (window.YT && window.YT.Player) {
           clearInterval(pollTimer);
-          if (!ytPlayers.current[iframeId]) bindPlayer();
+          bindPlayer();
         }
       }, 500);
       return () => clearInterval(pollTimer);
     }
-  }, [aboutMediaIndex]);
+  }, [aboutMediaIndex, hasEntered]);
 
 
   useEffect(() => {
@@ -828,7 +829,7 @@ export default function Page() {
         </div>
         <div className="fixed inset-0 z-[-1] bg-black/5 dark:bg-black/40" />
         <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
-          <nav className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-black/35">
+          <nav className="fixed inset-x-0 top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-black/35">
             <div className="mx-auto max-w-[80rem] px-4 py-3 flex items-center justify-between">
               <a href="#" className="flex items-center gap-2 font-medium hover:opacity-80 transition-opacity">
                 <img src="/photos/karina-logo.png" alt="Logo" className="h-6 w-6 rounded-full object-cover" />
