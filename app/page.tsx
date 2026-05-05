@@ -256,7 +256,7 @@ function HobbyCard({ h }: { h: any }) {
 }
 
 function ProjectCard({ p }: { p: any }) {
-  const [cardRef, touchActive] = useIntersectionActive<HTMLAnchorElement>();
+  const [cardRef, touchActive] = useIntersectionActive<HTMLDivElement>();
   return (
     <motion.div variants={SECTION_CHILD} className="h-full">
       <BorderGlow
@@ -266,11 +266,8 @@ function ProjectCard({ p }: { p: any }) {
             : "border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:border-white/10 dark:shadow-[0_12px_38px_rgba(0,0,0,0.55)] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30"}
         `}
       >
-        <a
+        <div
           ref={cardRef}
-          href={p.links?.[0]?.href}
-          target="_blank"
-          rel="noopener noreferrer"
           className="flex flex-col h-full p-6"
         >
           <div className="flex items-start justify-between gap-4">
@@ -282,9 +279,14 @@ function ProjectCard({ p }: { p: any }) {
               {p.tagline}
             </div>
           </div>
-          <div className="shrink-0 inline-flex items-center gap-1 rounded-full border border-black/10 bg-white/60 px-3 py-1 text-xs text-neutral-800 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-neutral-200">
+          <a
+            href={p.links?.[0]?.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 inline-flex items-center gap-1 rounded-full border border-black/10 bg-white/60 px-3 py-1 text-xs text-neutral-800 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-neutral-200 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
+          >
             View repo <ExternalLink className="h-3.5 w-3.5" />
-          </div>
+          </a>
         </div>
 
         {p.img && (
@@ -311,7 +313,7 @@ function ProjectCard({ p }: { p: any }) {
             </span>
           ))}
         </div>
-        </a>
+        </div>
       </BorderGlow>
     </motion.div>
   );
@@ -408,7 +410,7 @@ function PaperCard({ w }: { w: any }) {
             href={w.externalUrl || w.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm text-neutral-800 shadow-sm backdrop-blur-xl transition hover:bg-white/80 dark:border-white/10 dark:bg-white/10 dark:text-neutral-200 dark:hover:bg-white/20"
+            className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-sm text-neutral-800 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-200 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
           >
             Read full paper <ExternalLink className="h-4 w-4" />
           </a>
@@ -672,7 +674,7 @@ export default function Page() {
         img: "/photos/anisense.jpg",
         imgClass: "object-top",
         desc: "Production-grade anime recommendation platform focused on ML infrastructure, offline data pipelines, caching strategies, and concurrency",
-        tech: ["Go", "Python", "Typescript", "PostgreSQL", "Redis", "Docker"],
+        tech: ["Go", "Python", "TypeScript", "PostgreSQL", "Redis", "Docker"],
         links: [
           { label: "Repo", href: "https://github.com/SilverXer0/Kitsu" },
         ],
@@ -705,7 +707,7 @@ export default function Page() {
         img: "/photos/anime2.png",
         imgClass: "object-[center_20%]",
         desc: "Anime recommender with GCP and locally trained machine learning models, based on your own MyAnimeList Account",
-        tech: ["GCP", "Typescript", "Python", "React", "Flask", "Apache", "Kubernetes"],
+        tech: ["GCP", "TypeScript", "Python", "React", "Flask", "Apache", "Kubernetes"],
         links: [
           { label: "Repo", href: "https://github.com/SilverXer0/AniSense" },
         ],
@@ -727,7 +729,7 @@ export default function Page() {
         img: "/photos/aimtrainer.jpg",
         imgClass: "",
         desc: "Procedural drills, crosshair UI, and analytics to estimate optimal FPS sensitivity",
-        tech: ["Unity", "C#"],
+        tech: ["C#", "Unity"],
         links: [
           {
             label: "Repo",
