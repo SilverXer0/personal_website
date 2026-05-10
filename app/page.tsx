@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Aurora from "./components/Aurora";
 import BorderGlow from "./components/BorderGlow";
 import ShinyText from "./components/ShinyText";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
@@ -425,6 +425,27 @@ export default function Page() {
 
 
   const [aboutMediaIndex, setAboutMediaIndex] = useState(0);
+  const [carouselDirection, setCarouselDirection] = useState(0);
+
+  const mediaVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? "100%" : "-100%",
+      rotateY: direction > 0 ? 90 : -90,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      rotateY: 0,
+      opacity: 1,
+      transition: { type: "spring", stiffness: 300, damping: 30 },
+    },
+    exit: (direction: number) => ({
+      x: direction < 0 ? "100%" : "-100%",
+      rotateY: direction < 0 ? 90 : -90,
+      opacity: 0,
+      transition: { type: "spring", stiffness: 300, damping: 30 },
+    }),
+  };
 
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -964,13 +985,14 @@ export default function Page() {
                 <div className="lg:col-span-1 h-full">
                   <BorderGlow className="h-full rounded-3xl border border-black/10 bg-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
                     <div className="h-full flex flex-col justify-center gap-4 p-6">
-                      <div className="relative flex-1 overflow-hidden rounded-2xl border border-black/10 bg-black/5 dark:border-white/10 dark:bg-black min-h-[250px]">
+                      <div className="relative flex-1 overflow-hidden rounded-2xl border border-black/10 bg-black/5 dark:border-white/10 dark:bg-black min-h-[250px]" style={{ perspective: 1000 }}>
                         <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex items-center justify-between px-3">
                           <button
                             type="button"
                             aria-label="Previous media"
                             className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
                             onClick={() => {
+                              setCarouselDirection(-1);
                               setAboutMediaIndex(
                                 (i) =>
                                   (i - 1 + aboutMediaItems.length) %
@@ -989,6 +1011,7 @@ export default function Page() {
                             aria-label="Next media"
                             className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-900 shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-1 hover:bg-white/95 hover:ring-2 hover:ring-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-100 dark:hover:bg-white/20 dark:hover:ring-white/30 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)]"
                             onClick={() => {
+                              setCarouselDirection(1);
                               setAboutMediaIndex(
                                 (i) => (i + 1) % aboutMediaItems.length,
                               );
@@ -1001,38 +1024,50 @@ export default function Page() {
                           </button>
                         </div>
 
-                        {aboutMediaItems[aboutMediaIndex].kind === "video" ? (
-                          <iframe
-                            id={`yt-player-${aboutMediaIndex}`}
-                            className="w-full h-full absolute inset-0"
-                            src={aboutMediaItems[aboutMediaIndex].src}
-                            title={aboutMediaItems[aboutMediaIndex].title}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowFullScreen
-                          />
-                        ) : aboutMediaItems[aboutMediaIndex].kind === "link" ? (
-                          <a
-                            href={(aboutMediaItems[aboutMediaIndex] as any).href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full h-full absolute inset-0 block group"
+                        <AnimatePresence initial={false} custom={carouselDirection}>
+                          <motion.div
+                            key={aboutMediaIndex}
+                            custom={carouselDirection}
+                            variants={mediaVariants}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            className="absolute inset-0 w-full h-full"
                           >
-                            <img
-                              src={(aboutMediaItems[aboutMediaIndex] as any).gifSrc || aboutMediaItems[aboutMediaIndex].src}
-                              alt={aboutMediaItems[aboutMediaIndex].title}
-                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <ExternalLink className="w-12 h-12 text-white" />
-                            </div>
-                          </a>
-                        ) : (
-                          <img
-                            src={(aboutMediaItems[aboutMediaIndex] as any).src}
-                            alt={(aboutMediaItems[aboutMediaIndex] as any).title}
-                            className="w-full h-full absolute inset-0 object-cover"
-                          />
-                        )}
+                            {aboutMediaItems[aboutMediaIndex].kind === "video" ? (
+                              <iframe
+                                id={`yt-player-${aboutMediaIndex}`}
+                                className="w-full h-full absolute inset-0"
+                                src={aboutMediaItems[aboutMediaIndex].src}
+                                title={aboutMediaItems[aboutMediaIndex].title}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                              />
+                            ) : aboutMediaItems[aboutMediaIndex].kind === "link" ? (
+                              <a
+                                href={(aboutMediaItems[aboutMediaIndex] as any).href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full h-full absolute inset-0 block group"
+                              >
+                                <img
+                                  src={(aboutMediaItems[aboutMediaIndex] as any).gifSrc || aboutMediaItems[aboutMediaIndex].src}
+                                  alt={aboutMediaItems[aboutMediaIndex].title}
+                                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                  <ExternalLink className="w-12 h-12 text-white" />
+                                </div>
+                              </a>
+                            ) : (
+                              <img
+                                src={(aboutMediaItems[aboutMediaIndex] as any).src}
+                                alt={(aboutMediaItems[aboutMediaIndex] as any).title}
+                                className="w-full h-full absolute inset-0 object-cover"
+                              />
+                            )}
+                          </motion.div>
+                        </AnimatePresence>
                       </div>
 
                       <div className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300 text-center shrink-0">
@@ -1045,7 +1080,10 @@ export default function Page() {
                             key={i}
                             type="button"
                             aria-label={`Go to media ${i + 1}`}
-                            onClick={() => setAboutMediaIndex(i)}
+                            onClick={() => {
+                              setCarouselDirection(i > aboutMediaIndex ? 1 : -1);
+                              setAboutMediaIndex(i);
+                            }}
                             className={
                               "h-2.5 w-2.5 rounded-full transition " +
                               (i === aboutMediaIndex
