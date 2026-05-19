@@ -911,7 +911,7 @@ export default function Page() {
               variants={heroStagger}
               initial={reducedMotion ? false : "hidden"}
               animate={hasEntered ? (reducedMotion ? false : "show") : "hidden"}
-              className="relative mx-auto -mt-12 sm:-mt-16 flex max-w-6xl flex-col items-center text-center"
+              className="relative mx-auto flex max-w-6xl flex-col items-center text-center"
             >
               {!reducedMotion ? <PixelRevealOverlay /> : null}
               <motion.h1
