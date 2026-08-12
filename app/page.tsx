@@ -631,7 +631,7 @@ export default function Page() {
         location: "San Francisco, CA",
         logo: "/photos/plaid.png",
         bullets: [
-          "Building Infrastructure for the Developer Dashboard",
+          "Building UX and Infrastructure for the Developer Dashboard",
         ],
       },
       {
@@ -928,7 +928,7 @@ export default function Page() {
                   Software Engineer
                 </div>
                 <div className="mt-4 text-lg sm:text-xl font-medium text-neutral-600 dark:text-neutral-400">
-                  Distributed Systems, Infrastructure, Machine Learning
+                  Distributed Systems, Infrastructure, UX Foundations
                 </div>
               </motion.div>
               <motion.div
@@ -966,11 +966,11 @@ export default function Page() {
                       <div className="w-full text-left">
                       <p className="text-lg sm:text-lg leading-relaxed text-neutral-800 dark:text-neutral-200">
                         I graduated with a B.S. in Computer Science from <strong>Cal Poly SLO</strong> and am currently {" "}
-                        a software engineer at <strong>Plaid</strong>, working on infrastructure for the Developer Dashboard.
+                        a software engineer at <strong>Plaid</strong>, working Full Stack the Developer Dashboard.
                       </p>
                       <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
-                        I work across multiple domains within technology, which currently covers Distributed Systems and {" "}
-                        Infrastructure. This has taken me across different tech stacks, {" "}
+                        I work across multiple domains within technology, which currently covers Distributed Systems, {" "}
+                        Infrastructure, and the Foundations behind User Experiences. This has taken me across different tech stacks, {" "}
                         from Python and Go to Swift and Typescript.
                       </p>
                       <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">

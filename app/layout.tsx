@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 export const metadata: Metadata = {
   title: "Sharan's Website",
-  description: 'CS @ Cal Poly. Distributed Systems, Infrastructure, Machine Learning. Projects, experience, and writing.',
+  description: 'CS @ Cal Poly. Distributed Systems, Infrastructure, UX Foundations. Projects, experience, and writing.',
 
   metadataBase: new URL('https://skrsh.dev'),
   openGraph: {
