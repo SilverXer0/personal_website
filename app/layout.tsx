@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://skrsh.dev'),
   openGraph: {
     title: "Sharan's Website",
-    description: 'CS @ Cal Poly. Distributed Systems, Infrastructure, Machine Learning.',
+    description: 'CS @ Cal Poly. UX, Infrastructure, Distributed Systems.',
     url: '/',
     siteName: 'Sharan',
     images: [{ url: '/og.gif', width: 1200, height: 630 }],
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: "Sharan's Website",
-    description: 'CS @ Cal Poly. Distributed Systems, Infrastructure, Machine Learning.',
+    description: 'CS @ Cal Poly. UX, Infrastructure, Distributed Systems.',
     images: ['/og.gif'],
   },
 }

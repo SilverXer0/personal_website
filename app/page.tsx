@@ -928,7 +928,7 @@ export default function Page() {
                   Software Engineer
                 </div>
                 <div className="mt-4 text-lg sm:text-xl font-medium text-neutral-600 dark:text-neutral-400">
-                  Distributed Systems, Infrastructure, UX Foundations
+                 Infrastructure, UX, Distributed Systems
                 </div>
               </motion.div>
               <motion.div
