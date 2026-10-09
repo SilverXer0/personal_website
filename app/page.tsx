@@ -961,17 +961,17 @@ export default function Page() {
             <div className="mt-10">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-center">
                 <div className="lg:col-span-2 h-full">
-                  <BorderGlow className="h-full flex flex-col justify-center rounded-3xl border border-black/10 bg-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
+                  <BorderGlow className="h-full flex flex-col justify-center rounded-3xl border border-bl ack/10 bg-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_12px_38px_rgba(0,0,0,0.45)] transition will-change-transform hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.22)] hover:bg-white/95 hover:ring-2 hover:ring-black/20 active:scale-[0.98] dark:hover:bg-white/10 dark:hover:shadow-[0_20px_70px_rgba(0,0,0,0.75)] dark:hover:ring-white/30">
                     <div className="h-full flex flex-col justify-center p-10 sm:p-14">
                       <div className="w-full text-left">
                       <p className="text-lg sm:text-lg leading-relaxed text-neutral-800 dark:text-neutral-200">
                         I graduated with a B.S. in Computer Science from <strong>Cal Poly SLO</strong> and am currently {" "}
-                        a software engineer at <strong>Plaid</strong>, working Full Stack the Developer Dashboard.
+                        a software engineer at <strong>Plaid</strong>, developing full stack on <a href="https://dashboard.plaid.com" target="_blank" rel="noreferrer" className="underline hover:opacity-80">dashboard.plaid.com</a>.
                       </p>
                       <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
-                        I work across multiple domains within technology, which currently covers Distributed Systems, {" "}
-                        Infrastructure, and the Foundations behind User Experiences. This has taken me across different tech stacks, {" "}
-                        from Python and Go to Swift and Typescript.
+                        I work across mulitple domains within technology, which has taken me to this Product-Platform team 
+                        where I think about Distributed Systems, Infrastructure, and a bit of User Experience.  
+                        My experience has taken me across different tech stacks, {" "} from Python and Go to Swift and TypeScript.
                       </p>
                       <p className="mt-5 text-sm sm:text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
                         In my personal time, I love watching sports like Basketball and F1, and I enjoy playing competitive first-person shooters {" "}
